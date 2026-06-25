@@ -5,6 +5,7 @@
     "homepage": "https://flowiseai.com",
     "workspaces": [
         "packages/*",
+        "apps/*",
         "flowise",
         "ui",
         "components",

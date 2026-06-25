@@ -15,6 +15,9 @@ import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
 import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
 import { initAuthSecrets } from './enterprise/utils/authSecrets'
+import { trustEngineHeaders } from './middlewares/trustEngineHeaders'
+
+const ENGINE_MODE = process.env.ACCELANCE_ENGINE_MODE === 'true'
 import { IdentityManager } from './IdentityManager'
 import { MODE, Platform } from './Interface'
 import { IMetricsProvider } from './Interface.Metrics'
@@ -225,82 +228,95 @@ export class App {
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
 
-        await initializeJwtCookieMiddleware(this.app, this.identityManager)
-
-        this.app.use(async (req, res, next) => {
-            // Step 1: Check if the req path contains /api/v1 regardless of case
-            if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
-                // Step 2: Check if the req path is casesensitive
-                if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
-                    // Step 3: Check if the req path is in the whitelist
+        if (ENGINE_MODE) {
+            // Engine mode: NestJS API injects workspace context headers — trust them, skip JWT
+            this.app.use((req, _res, next) => {
+                if (URL_CASE_INSENSITIVE_REGEX.test(req.path) && URL_CASE_SENSITIVE_REGEX.test(req.path)) {
                     const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
-                    if (isWhitelisted) {
-                        next()
-                    } else if (req.headers['x-request-from'] === 'internal') {
-                        verifyToken(req, res, next)
-                    } else {
-                        const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
-                        if (isAPIKeyBlacklistedURLS) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
+                    if (isWhitelisted) return next()
+                    return trustEngineHeaders(req, _res, next)
+                }
+                next()
+            })
+        } else {
+            await initializeJwtCookieMiddleware(this.app, this.identityManager)
+        }
 
-                        // Only check license validity for non-open-source platforms
-                        if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
-                            if (!this.identityManager.isLicenseValid()) {
+        if (!ENGINE_MODE)
+            this.app.use(async (req, res, next) => {
+                // Step 1: Check if the req path contains /api/v1 regardless of case
+                if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
+                    // Step 2: Check if the req path is casesensitive
+                    if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
+                        // Step 3: Check if the req path is in the whitelist
+                        const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                        if (isWhitelisted) {
+                            next()
+                        } else if (req.headers['x-request-from'] === 'internal') {
+                            verifyToken(req, res, next)
+                        } else {
+                            const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
+                            if (isAPIKeyBlacklistedURLS) {
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
-                        }
 
-                        const { isValid, apiKey } = await validateAPIKey(req)
-                        if (!isValid || !apiKey) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
+                            // Only check license validity for non-open-source platforms
+                            if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
+                                if (!this.identityManager.isLicenseValid()) {
+                                    return res.status(401).json({ error: 'Unauthorized Access' })
+                                }
+                            }
 
-                        // Find workspace
-                        const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
-                            where: { id: apiKey.workspaceId }
-                        })
-                        if (!workspace) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
+                            const { isValid, apiKey } = await validateAPIKey(req)
+                            if (!isValid || !apiKey) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
 
-                        // Find organization
-                        const activeOrganizationId = workspace.organizationId as string
-                        const org = await this.AppDataSource.getRepository(Organization).findOne({
-                            where: { id: activeOrganizationId }
-                        })
-                        if (!org) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
+                            // Find workspace
+                            const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
+                                where: { id: apiKey.workspaceId }
+                            })
+                            if (!workspace) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+
+                            // Find organization
+                            const activeOrganizationId = workspace.organizationId as string
+                            const org = await this.AppDataSource.getRepository(Organization).findOne({
+                                where: { id: activeOrganizationId }
+                            })
+                            if (!org) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+                            const subscriptionId = org.subscriptionId as string
+                            const customerId = org.customerId as string
+                            const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
+                            const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
+                            // @ts-ignore
+                            req.user = {
+                                permissions: apiKey.permissions,
+                                features,
+                                activeOrganizationId: activeOrganizationId,
+                                activeOrganizationSubscriptionId: subscriptionId,
+                                activeOrganizationCustomerId: customerId,
+                                activeOrganizationProductId: productId,
+                                isOrganizationAdmin: false,
+                                activeWorkspaceId: workspace.id,
+                                activeWorkspace: workspace.name
+                            }
+                            next()
                         }
-                        const subscriptionId = org.subscriptionId as string
-                        const customerId = org.customerId as string
-                        const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
-                        const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
-                        // @ts-ignore
-                        req.user = {
-                            permissions: apiKey.permissions,
-                            features,
-                            activeOrganizationId: activeOrganizationId,
-                            activeOrganizationSubscriptionId: subscriptionId,
-                            activeOrganizationCustomerId: customerId,
-                            activeOrganizationProductId: productId,
-                            isOrganizationAdmin: false,
-                            activeWorkspaceId: workspace.id,
-                            activeWorkspace: workspace.name
-                        }
-                        next()
+                    } else {
+                        return res.status(401).json({ error: 'Unauthorized Access' })
                     }
                 } else {
-                    return res.status(401).json({ error: 'Unauthorized Access' })
+                    // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
+                    next()
                 }
-            } else {
-                // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
-                next()
-            }
-        })
+            }) // end if (!ENGINE_MODE) auth middleware
 
-        // this is for SSO and must be after the JWT cookie middleware
-        await this.identityManager.initializeSSO(this.app)
+        // SSO only applies when running as full Flowise (not engine-only mode)
+        if (!ENGINE_MODE) await this.identityManager.initializeSSO(this.app)
 
         if (process.env.ENABLE_METRICS === 'true') {
             switch (process.env.METRICS_PROVIDER) {
