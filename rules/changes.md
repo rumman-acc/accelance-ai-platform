@@ -293,4 +293,42 @@ docker run --rm \
 **Next step:** Step 07 — Docker Compose (wire gateway, api, web, engine, postgres, redis)
 See `rules/steps/step-07-docker-compose.md`
 
+## 2026-06-29 — Step 08: Invite System (COMPLETE)
+
+**Build result:** PASS — `pnpm --filter @accelance/api build` + `pnpm --filter @accelance/web build` both clean
+
+**Files created:**
+
+-   `apps/api/src/entities/invite.entity.ts` — stores pending invites (email, orgId, workspaceId, token, expiresAt, usedAt)
+-   `apps/api/src/email/email.service.ts` — Resend integration; falls back to console.log if RESEND_API_KEY not set
+-   `apps/api/src/org/org.service.ts` — inviteMember() + getMembers()
+-   `apps/api/src/org/org.controller.ts` — POST /org/invite, GET /org/members
+-   `apps/api/src/org/org.module.ts`
+-   `apps/web/src/app/settings/team/page.tsx` — invite form + members list UI
+
+**Files modified:**
+
+-   `apps/api/src/auth/dto/register.dto.ts` — added optional `inviteToken`
+-   `apps/api/src/auth/auth.service.ts` — branches on inviteToken: joins existing org instead of creating new one
+-   `apps/api/src/auth/auth.module.ts` — added Invite entity to TypeORM feature
+-   `apps/api/src/database/database.module.ts` — added Invite to entities list
+-   `apps/api/src/app.module.ts` — imports OrgModule
+-   `apps/api/package.json` — added resend dependency
+-   `apps/web/src/app/register/page.tsx` — reads ?invite= from URL, pre-fills + locks email field, Suspense boundary
+-   `apps/web/src/lib/auth.ts` — register() accepts optional inviteToken
+-   `apps/web/src/lib/api.ts` — added getMembers(), inviteMember()
+-   `apps/gateway/nginx.conf` — added /org/ → api upstream
+-   `apps/web/next.config.ts` — added /org/:path\* rewrite
+-   `.env` + `.env.example` — RESEND_API_KEY, RESEND_FROM_EMAIL, APP_URL
+
+**Invite flow:**
+
+1. Admin → POST /org/invite { email } → Resend email sent with 24h link
+2. Link: APP_URL/register?invite=<JWT> → email pre-filled + locked
+3. User fills name + password → POST /auth/register { ..., inviteToken }
+4. Backend verifies token → creates user → joins existing org/workspace as Member
+5. Returns JWT with existing tenantId + workspaceId (no new tenant created)
+
+**Known: RESEND_API_KEY not set** → invite URL is logged to NestJS console instead of emailed. Safe for dev.
+
 <!-- Add new entries below this line, newest at the top -->
