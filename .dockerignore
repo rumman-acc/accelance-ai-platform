@@ -1,10 +1,36 @@
-node_modules
-dist
-build
+# Git history — large, not needed in image
+.git
+.gitignore
 
-**/node_modules
-**/build
-**/dist
-
+# Secrets — never bake into images
+.env
 packages/server/.env
 packages/ui/.env
+
+# Node modules — installed fresh inside Docker
+node_modules
+**/node_modules
+
+# Build artifacts — built fresh inside Docker
+dist
+**/dist
+build
+**/build
+.next
+**/.next
+.turbo
+**/.turbo
+
+# Logs
+*.log
+**/logs
+
+# Test artifacts
+coverage
+**/coverage
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode
+.idea

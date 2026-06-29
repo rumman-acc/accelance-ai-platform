@@ -1,0 +1,117 @@
+name: accelance-platform
+
+# All services connect to cloud-managed PostgreSQL and Redis.
+# Copy .env.example → .env and fill in your cloud credentials before running.
+
+services:
+    # ── Public entry point ─────────────────────────────────────────────────
+    gateway:
+        build: apps/gateway
+        ports:
+            - '80:80'
+        depends_on:
+            web:
+                condition: service_healthy
+            api:
+                condition: service_healthy
+        networks:
+            - public_net
+            - internal_net
+        restart: unless-stopped
+
+    # ── Application services ────────────────────────────────────────────────
+    web:
+        build:
+            context: .
+            dockerfile: apps/web/Dockerfile
+        environment:
+            NODE_ENV: production
+            API_URL: http://api:3000
+        depends_on:
+            api:
+                condition: service_healthy
+        healthcheck:
+            test: ['CMD-SHELL', 'wget -qO /dev/null http://localhost:3001/ || exit 1']
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        networks:
+            - internal_net
+        restart: unless-stopped
+
+    api:
+        build:
+            context: .
+            dockerfile: apps/api/Dockerfile
+        environment:
+            NODE_ENV: production
+            PORT: '3000'
+            # Cloud PostgreSQL — same DB as engine
+            DB_HOST: ${DB_HOST}
+            DB_PORT: ${DB_PORT:-5432}
+            DB_USER: ${DB_USER}
+            DB_PASSWORD: ${DB_PASSWORD}
+            DB_NAME: ${DB_NAME:-flowise}
+            DB_SSL: ${DB_SSL:-true}
+            # Redis
+            REDIS_URL: ${REDIS_URL}
+            # Auth
+            JWT_SECRET: ${JWT_SECRET}
+            JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+            # Internal engine URL
+            ENGINE_URL: http://engine:3002
+        healthcheck:
+            test: ['CMD-SHELL', 'wget -qO /dev/null http://localhost:3000/health || exit 1']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+        networks:
+            - internal_net
+        restart: unless-stopped
+
+    engine:
+        build:
+            context: .
+            dockerfile: apps/engine/Dockerfile
+        environment:
+            # ENGINE_MODE is set in Dockerfile
+            # Cloud PostgreSQL — Flowise naming convention (maps to same .env vars as api)
+            DATABASE_TYPE: postgres
+            DATABASE_HOST: ${DB_HOST}
+            DATABASE_PORT: ${DB_PORT:-5432}
+            DATABASE_USER: ${DB_USER}
+            DATABASE_PASSWORD: ${DB_PASSWORD}
+            DATABASE_NAME: ${DB_NAME:-flowise}
+            DATABASE_SSL: ${DB_SSL:-true}
+            # Redis
+            REDIS_URL: ${REDIS_URL}
+            # Auth — must match api JWT_SECRET for canvas token verification
+            JWT_SECRET: ${JWT_SECRET}
+            # Storage
+            STORAGE_TYPE: local
+            BLOB_STORAGE_PATH: /data/storage
+            DISABLE_FLOWISE_TELEMETRY: 'true'
+            IFRAME_ORIGINS: http://localhost,http://localhost:3001
+            CORS_ORIGINS: http://localhost,http://localhost:3001,http://web:3001
+        volumes:
+            - engine_storage:/data/storage
+        healthcheck:
+            test: ['CMD-SHELL', 'wget -qO /dev/null http://localhost:3002/api/v1/ping || exit 1']
+            interval: 15s
+            timeout: 10s
+            retries: 5
+            start_period: 60s
+        networks:
+            - internal_net
+        restart: unless-stopped
+
+volumes:
+    engine_storage:
+
+networks:
+    public_net:
+        driver: bridge
+    internal_net:
+        driver: bridge
