@@ -164,6 +164,25 @@ See `rules/steps/step-05-nextjs-web.md`
 **Next step:** Step 06 — Nginx gateway config
 See `rules/steps/step-06-nginx-gateway.md`
 
+## 2026-06-29 — Neon DB wired up + synchronize fix
+
+**Build result:** PASS — `pnpm --filter @accelance/api build` clean
+
+**Files changed:**
+
+-   `.env` — created with Neon PostgreSQL credentials (direct connection, not pooler)
+-   `packages/server/.env` — updated with Flowise-format Neon credentials + ENGINE_MODE vars
+-   `apps/api/src/database/database.module.ts` — `synchronize: true` in dev (auto-creates NestJS tables on first run), `false` in prod
+-   JWT_SECRET generated and identical in both .env files
+
+**Why direct connection (not pooler):**
+Neon pooler URL has `-pooler` in hostname. TypeORM migrations + schema sync need direct connection.
+Pooler can be used later for production read traffic.
+
+**DB_NAME = `neondb`** (Neon's default, not `flowise` — updated in both env files)
+
+---
+
 ## 2026-06-29 — Cloud DB Switch (amendment to Step 07)
 
 Both dev and production use cloud-managed PostgreSQL and Redis — no local containers needed.
