@@ -1,94 +1,64 @@
-# Services — Current State
+# Services
 
-## apps/engine (Flowise)
+## packages/server — Flowise Engine + Enterprise Auth
 
-**Status:** Complete (Steps 02–07) — ENGINE_MODE strips auth, Dockerfile added
-**Tech:** Express + TypeORM + LangChain
-**Port:** :3002 (target)
-**What it does:** AI flow execution only — chatflows, agentflows, 200+ LangChain nodes, vector search
-**What it must NOT do:** Auth, user management, tenant management (those move to apps/api)
+| Property         | Value                                                              |
+| ---------------- | ------------------------------------------------------------------ |
+| Type             | Express.js monolith                                                |
+| Port             | **3002**                                                           |
+| Start command    | `cd packages/server && node bin/run start`                         |
+| Alt start (root) | `pnpm start:windows` (Windows) or `pnpm start:default` (Linux/Mac) |
+| Build command    | `pnpm build` (from root, builds all packages)                      |
+| Status           | ✅ Active                                                          |
+| Platform mode    | ENTERPRISE (via `FLOWISE_PLATFORM=enterprise` in `.env`)           |
+| Database         | PostgreSQL on Neon                                                 |
 
-**Key finding:** The current `packages/server/src/enterprise/` folder contains auth, org, workspace, RBAC code.
-This gets stripped out when moving to apps/engine. The NestJS api owns that instead.
+### What it does
 
-**workspaceId audit: COMPLETE (Step 03)**
-All 15 top-level entities have workspaceId. Child records (ChatMessage, DatasetRow, etc.)
-are scoped through parent FK. No migrations needed. See `rules/steps/step-03-workspace-id-audit.md`.
+-   Serves the Flowise React UI at `http://localhost:3002/`
+-   Enterprise auth: login, registration, org/workspace/user management
+-   All AI agent APIs: chatflows, agents, tools, document stores, etc.
+-   Loads 200+ AI integrations from `packages/components` at startup
+-   Runs TypeORM migrations automatically on startup
+-   Encrypts credentials at rest (SECRETKEY_PATH)
 
----
+### Enterprise Auth Routes (active when FLOWISE_PLATFORM=enterprise)
 
-## apps/api (NestJS)
+| Route                             | Method              | Purpose                     |
+| --------------------------------- | ------------------- | --------------------------- |
+| `/api/v1/account/register`        | POST                | Register org + admin user   |
+| `/api/v1/account/login`           | POST                | Login (email/password)      |
+| `/api/v1/account/logout`          | POST                | Logout                      |
+| `/api/v1/account/invite`          | POST                | Invite user to workspace    |
+| `/api/v1/account/forgot-password` | POST                | Password reset (needs SMTP) |
+| `/api/v1/workspace`               | GET/POST/PUT/DELETE | Workspace management        |
+| `/api/v1/workspaceuser`           | GET/POST/PUT/DELETE | User roles in workspace     |
+| `/api/v1/organization`            | GET/PUT             | Organization settings       |
+| `/api/v1/role`                    | GET/POST/PUT/DELETE | Custom role management      |
+| `/api/v1/user`                    | GET/PUT             | User profile                |
 
-**Status:** Complete (Step 04)
-**Tech:** NestJS 10, TypeORM, Passport-JWT
-**Port:** :3000 (target)
+### Key env vars (`packages/server/.env`)
 
-**Modules to build:**
+| Variable                       | Value                   | Purpose                              |
+| ------------------------------ | ----------------------- | ------------------------------------ |
+| `FLOWISE_PLATFORM`             | `enterprise`            | Triggers enterprise mode (our patch) |
+| `PORT`                         | `3002`                  | HTTP port                            |
+| `DATABASE_TYPE`                | `postgres`              | DB driver                            |
+| `DATABASE_HOST`                | Neon host               | PostgreSQL host                      |
+| `DATABASE_PASSWORD`            | Neon password           | DB password                          |
+| `DATABASE_SSL`                 | `true`                  | TLS for Neon                         |
+| `SECRETKEY_PATH`               | `.flowise/` path        | Encryption key storage               |
+| `JWT_AUTH_TOKEN_SECRET`        | 64-char hex             | JWT signing secret                   |
+| `EXPRESS_SESSION_SECRET`       | string                  | Session cookie secret                |
+| `SMTP_HOST/PORT/USER/PASSWORD` | Brevo                   | Email for user invites               |
+| `SENDER_EMAIL`                 | `noreply@accelance.io`  | From address                         |
+| `APP_URL`                      | `http://localhost:3002` | Base URL in email links              |
 
--   `auth/` — JWT login, register, password reset, email verification
--   `tenant/` — Organization (= tenant) CRUD
--   `workspace/` — Workspace CRUD, personal workspace on signup
--   `users/` — User management
--   `rbac/` — Owner, Admin, Member roles
--   `proxy/` — Forward engine calls, inject X-Workspace-Id header
+### First-time setup
 
-**Reference:** `packages/server/src/enterprise/` has the existing implementation to reference.
-
----
-
-## apps/web (Next.js)
-
-**Status:** Complete (Step 05)
-**Tech:** Next.js 15 (App Router)
-**Port:** :3001 (target)
-
-**Pages for v0.0:**
-
--   `/login` — auth form → NestJS /api/auth/login
--   `/register` — signup
--   `/dashboard` — list flows (via NestJS proxy)
--   `/canvas/[id]` — embeds Flowise flow builder from engine
--   `/settings` — profile/workspace settings
-
-**Note:** Flow builder canvas is NOT rewritten — it embeds the existing Flowise React UI.
-
----
-
-## apps/gateway (Nginx)
-
-**Status:** Complete (Step 06)
-**Tech:** Nginx (nginx:alpine)
-**Port:** :80 public (Cloudflare terminates TLS; direct TLS config commented in nginx.conf)
-
-**Routing rules:**
-
--   `/auth/*` → api (:3000) — rate limited 5 req/min per IP
--   `/api/*` → api (:3000) — 300s timeout, buffering off for SSE
--   `/_engine/*` → 403 blocked
--   `/*` → web (:3001) — WebSocket upgrade for HMR
--   `/nginx-health` → 200 OK (health check endpoint)
-
----
-
-## Data Services
-
-### PostgreSQL
-
-**Version:** 16+
-**Extensions:** pgvector, uuid-ossp
-**Used by:** api, engine
-**Local:** Docker container
-**Staging/Prod:** Azure Database for PostgreSQL (managed)
-
-### Redis
-
-**Version:** 7+
-**Used by:** api (BullMQ queues, session cache, rate limiting)
-**Local:** Docker container
-**Staging/Prod:** Azure Cache for Redis or Upstash (managed)
-
-### MinIO / Azure Blob Storage
-
-**Used by:** engine (agent files, working data), future audit archive
-**Local:** Docker (MinIO — S3-compatible)
-**Staging/Prod:** Azure Blob Storage (native) or AWS S3
+1. Start: `cd packages/server && node bin/run start`
+2. Migrations run automatically (creates all tables)
+3. Go to `http://localhost:3002/register`
+4. Fill: Organisation Name, Your Name, Email, Password → Submit
+5. Sign in at `http://localhost:3002/signin`
+6. Create workspaces and invite teammates
