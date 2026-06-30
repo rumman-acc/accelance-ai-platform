@@ -1,60 +1,93 @@
-# Architecture — Accelance AI Platform
+# Architecture
 
-## Status: v0.0 In Progress
+## Current State (as of 2026-06-30)
 
-## Service Map
+Single-service architecture — Flowise 3.1.2 with enterprise auth enabled via env bypass.
 
-| Service | Tech               | Port  | Network  | Hosted          | Status   |
-| ------- | ------------------ | ----- | -------- | --------------- | -------- |
-| gateway | Nginx              | :80   | public   | TBD (see below) | Complete |
-| web     | Next.js 15         | :3001 | internal | TBD             | Complete |
-| api     | NestJS 10          | :3000 | internal | TBD             | Complete |
-| engine  | Flowise (stripped) | :3002 | internal | TBD             | Complete |
+## Service
 
-## Data Services
+| Service           | Type       | Port | Description                                  |
+| ----------------- | ---------- | ---- | -------------------------------------------- |
+| `packages/server` | Express.js | 3002 | Flowise backend + enterprise auth + React UI |
 
-| Service    | Version | Purpose                          | Option A (Docker)  | Option B (Cloud Managed)        |
-| ---------- | ------- | -------------------------------- | ------------------ | ------------------------------- |
-| PostgreSQL | 16+     | Primary DB for all services      | postgres:16-alpine | Azure Database for PostgreSQL   |
-| Redis      | 7+      | Queues (BullMQ), cache, sessions | redis:7-alpine     | Azure Cache for Redis / Upstash |
-| MinIO/S3   | latest  | Files, audit archive             | minio/minio        | Azure Blob Storage / AWS S3     |
+## Database
 
-**Decision on data services:** Cloud-managed preferred for staging/prod (no container overhead, managed backups, HA built-in).
-For local dev: Docker Compose runs all three locally.
+| DB         | Provider     | Purpose            |
+| ---------- | ------------ | ------------------ |
+| PostgreSQL | Neon (cloud) | Primary — all data |
 
-## Monorepo Layout
+Env vars: `DATABASE_TYPE=postgres`, `DATABASE_HOST=...` (see `packages/server/.env`)
+
+## Platform Mode: ENTERPRISE
+
+Set via `FLOWISE_PLATFORM=enterprise` in `packages/server/.env`.
+
+Bypasses Flowise's license check → forces `Platform.ENTERPRISE` in `IdentityManager`.
+
+Patch location: `packages/server/src/IdentityManager.ts` → `_validateLicenseKey()`
+
+ENTERPRISE mode unlocks:
+
+-   `/register` page for first-time org + admin user creation
+-   `/signin` login page
+-   `/api/v1/workspace` — workspace CRUD
+-   `/api/v1/account/invite` — user invites with email
+-   `/api/v1/workspaceuser` — user role management
+-   `/api/v1/role` — custom role management
+-   All enterprise feature flags enabled
+
+## Auth Flow
 
 ```
-AI-Platform-Internal/
-├── apps/
-│   ├── gateway/          # Nginx config
-│   ├── web/              # Next.js product UI
-│   ├── api/              # NestJS — auth, tenancy, proxy
-│   └── engine/           # Flowise stripped (AI execution only)
-├── packages/
-│   ├── shared/           # TypeScript types (all services import from here)
-│   ├── components/       # LangChain node integrations (from Flowise)
-│   └── [other Flowise packages]
-├── rules/                # This folder — Claude reads/writes here
-├── CLAUDE.md             # Claude entry point
-└── docker-compose.yml    # Local dev only
+First time:
+  GET /register → fill org name, name, email, password
+  POST /api/v1/account/register → creates: org + admin user (OWNER role) + default workspace
+  → redirected to /signin
+  → login → session cookie
+
+Ongoing:
+  Admin creates workspaces: POST /api/v1/workspace
+  Admin invites users: POST /api/v1/account/invite (email sent with temp token link)
+  User clicks invite link → /register?token=<tmp> → completes signup → MEMBER role
+  Admin can promote to OWNER via workspace user settings
 ```
 
-## Coupling Rules
+## Key Files
 
--   Services communicate over HTTP only — never import each other's code
--   `engine` trusts `X-Workspace-Id` header injected by `api` — no self-auth in engine
--   `packages/shared` is the only code shared across services
--   Engine has NO public IP — only reachable from `api` on internal network
+| File                                                                | Purpose                                           |
+| ------------------------------------------------------------------- | ------------------------------------------------- |
+| `packages/server/src/IdentityManager.ts`                            | Platform detection — patched for FLOWISE_PLATFORM |
+| `packages/server/src/enterprise/services/account.service.ts`        | Registration, invite, login                       |
+| `packages/server/src/enterprise/services/organization.service.ts`   | Org management                                    |
+| `packages/server/src/enterprise/services/workspace.service.ts`      | Workspace management                              |
+| `packages/server/src/enterprise/services/workspace-user.service.ts` | User↔workspace roles                              |
+| `packages/server/src/enterprise/database/migrations/postgres/`      | All DB schema migrations                          |
+| `packages/server/src/database/migrations/postgres/index.ts`         | Migration import + order                          |
+| `packages/server/.env`                                              | Local config (gitignored)                         |
+| `packages/server/src/DataSource.ts`                                 | TypeORM connection config                         |
 
-## Why Docker for App Services (local dev)
+## Roles
 
-For **local development**: Docker Compose runs everything consistently across developer machines.
-For **staging/prod**: App services (gateway, web, api, engine) can run as:
+| Role               | Name in DB           | Capabilities                                  |
+| ------------------ | -------------------- | --------------------------------------------- |
+| OWNER              | `owner`              | Full org + workspace control, user management |
+| MEMBER             | `member`             | Limited org access                            |
+| PERSONAL_WORKSPACE | `personal workspace` | Access to own personal workspace only         |
 
--   Azure Container Apps (recommended — serverless, auto-scale)
--   Azure App Service (simpler, less flexible)
--   Docker on a VM (cheapest, most control)
--   Kubernetes (from v0.5+ when Temporal is added)
+## Constraints
 
-Data services (Postgres, Redis, Blob) should be **cloud-managed** from staging onward.
+-   ENTERPRISE mode allows only **one organization** per deployment (`ensureOneOrganizationOnly()`)
+-   This is correct — one Accelance Platform instance = one org with multiple workspaces
+-   If multi-org (SaaS) is needed → switch to CLOUD platform (requires Stripe integration)
+
+## Future Architecture (planned, not started)
+
+Original 5-service plan:
+
+1. `apps/api` — NestJS auth gateway
+2. `apps/engine` — Flowise as engine (port 3002)
+3. `apps/web` — Next.js frontend
+4. Redis — queue/cache
+5. PostgreSQL — shared DB
+
+Current decision: single service is sufficient. Expand only when specific requirements demand it.
