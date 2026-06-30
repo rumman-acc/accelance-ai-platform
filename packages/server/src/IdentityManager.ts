@@ -100,6 +100,14 @@ export class IdentityManager {
     }
 
     private _validateLicenseKey = async () => {
+        // Self-hosted enterprise mode: set FLOWISE_PLATFORM=enterprise in .env to bypass license check.
+        // Enables all enterprise features (org/workspace/user/role management) without a Flowise EE license.
+        if (process.env.FLOWISE_PLATFORM?.toLowerCase() === 'enterprise') {
+            this.licenseValid = true
+            this.currentInstancePlatform = Platform.ENTERPRISE
+            return
+        }
+
         const LICENSE_URL = process.env.LICENSE_URL
         const FLOWISE_EE_LICENSE_KEY = process.env.FLOWISE_EE_LICENSE_KEY
 
