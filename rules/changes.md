@@ -332,3 +332,46 @@ See `rules/steps/step-07-docker-compose.md`
 **Known: RESEND_API_KEY not set** → invite URL is logged to NestJS console instead of emailed. Safe for dev.
 
 <!-- Add new entries below this line, newest at the top -->
+
+## 2026-06-30 — Auth / Proxy Fixes (COMPLETE)
+
+**Root cause of 401 on /api/v1/chatflows:**
+`trustEngineHeaders` returns `{ error: '...' }` (no `message` field) → `apiFetch`'s
+`body.message` check falls through to fallback text. The error was the engine never
+receiving `x-workspace-id`/`x-tenant-id` headers because `next.config.ts` rewrites
+do **not** reliably forward the `Authorization` header from the browser request.
+
+**Root cause of Flowise migration failure:**
+`LinkWorkspaceId1729130948686` tries to `ALTER COLUMN "activeWorkspaceId"` on the
+`user` table. But the `user.entity.ts` (enterprise) doesn't declare `activeWorkspaceId`,
+so `synchronize: true` never created it. Migration crashes on every restart.
+
+**Files changed:**
+
+-   `apps/web/src/app/api/v1/[...path]/route.ts` — **NEW** Next.js Route Handler that
+    explicitly forwards `Authorization` and `Cookie` headers to NestJS. Replaces the
+    `next.config.ts` rewrite for `/api/v1/*`.
+-   `apps/web/next.config.ts` — removed the `/api/v1/:path*` rewrite (Route Handler
+    takes over; rewrite was silently dropping the Authorization header).
+-   `packages/server/src/enterprise/database/migrations/postgres/1729130948686-LinkWorkspaceId.ts`
+    — wrapped `user.activeWorkspaceId` ALTER/FK/INDEX block in `hasColumn()` guard so
+    the migration skips it when the column doesn't exist (ACCELANCE_ENGINE_MODE).
+-   `apps/api/src/main.ts` — raw Express JWT middleware on `/api/v1` validates bearer
+    token using `jsonwebtoken` directly (bypass NestJS DI) and sets `req.user` so the
+    proxy callback can inject workspace headers.
+
+**Previous auth bug fixes also recorded here:**
+
+-   `apps/web/src/middleware.ts` — added `API_PATHS` bypass so middleware never
+    intercepts `/auth/`, `/api/`, `/org/` paths.
+-   `apps/web/src/app/login/page.tsx` — changed `router.push` → `window.location.href`
+    to avoid cookie race condition on soft navigation.
+-   `apps/web/src/app/register/page.tsx` — wrapped in `<Suspense>` (Next.js 15 requires
+    this for `useSearchParams()`).
+-   Email provider switched from Resend to Brevo SMTP (Nodemailer, port 587).
+
+**Requires after this change:**
+
+1. `pnpm --filter flowise build` — recompile engine (migration fix is in TS source)
+2. Restart Flowise (`pnpm --filter flowise start:windows`)
+3. Next.js dev server auto-picks up the Route Handler on next request

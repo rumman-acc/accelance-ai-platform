@@ -11,6 +11,7 @@ After making any change, update the relevant file in `rules/`.
 -   `rules/changes.md` — log of every structural change made
 -   `rules/services.md` — what each service does, where it lives, its status
 -   `rules/known-issues.md` — bugs encountered and how they were resolved
+-   `rules/shared-database-entities.md` — **CRITICAL: entity ownership + cross-service change checklist**
 
 ## Project Overview
 
@@ -30,3 +31,4 @@ See `rules/architecture.md` for the full plan and current progress.
 -   Shared TypeScript types live in `packages/shared` only
 -   **After every step or change: run build + test and record the result** — see `rules/workflow.md`
 -   **Save the full step plan to `rules/steps/` before touching any code**
+-   **When you alter any entity/table in one service, immediately check the same table in the other service** — see `rules/shared-database-entities.md`

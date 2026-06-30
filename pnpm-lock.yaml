@@ -151,6 +151,9 @@ importers:
       http-proxy-middleware:
         specifier: 3.0.3
         version: 3.0.3
+      jsonwebtoken:
+        specifier: ^9.0.0
+        version: 9.0.3
       nodemailer:
         specifier: ^6.9.0
         version: 6.10.1
@@ -188,6 +191,9 @@ importers:
       '@types/express':
         specifier: ^4.17.13
         version: 4.17.21
+      '@types/jsonwebtoken':
+        specifier: ^9.0.0
+        version: 9.0.6
       '@types/node':
         specifier: ^20.0.0
         version: 20.12.12
@@ -38828,7 +38834,7 @@ snapshots:
       gaxios: 6.3.0(encoding@0.1.13)
       gcp-metadata: 6.1.0(encoding@0.1.13)
       gtoken: 7.1.0(encoding@0.1.13)
-      jws: 4.0.0
+      jws: 4.0.1
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -38925,7 +38931,7 @@ snapshots:
   gtoken@7.1.0(encoding@0.1.13):
     dependencies:
       gaxios: 6.3.0(encoding@0.1.13)
-      jws: 4.0.0
+      jws: 4.0.1
     transitivePeerDependencies:
       - encoding
       - supports-color
