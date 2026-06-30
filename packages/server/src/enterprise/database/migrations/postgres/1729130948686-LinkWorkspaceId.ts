@@ -19,20 +19,20 @@ export class LinkWorkspaceId1729130948686 implements MigrationInterface {
             CREATE INDEX "idx_apikey_workspaceId" ON "apikey"("workspaceId");
         `)
 
-        // user.activeWorkspaceId: only alter if the column exists. In ACCELANCE_ENGINE_MODE
-        // the user entity omits this column, so synchronize never creates it — skip safely.
-        const userHasActiveWorkspaceId = await queryRunner.hasColumn('user', 'activeWorkspaceId')
-        if (userHasActiveWorkspaceId) {
-            await queryRunner.query(`
-                ALTER TABLE "user" ALTER COLUMN "activeWorkspaceId" SET DATA TYPE UUID USING "activeWorkspaceId"::UUID;
-            `)
-            await queryRunner.query(`
-                ALTER TABLE "user" ADD CONSTRAINT "fk_user_activeWorkspaceId" FOREIGN KEY ("activeWorkspaceId") REFERENCES "workspace"("id");
-            `)
-            await queryRunner.query(`
-                CREATE INDEX "idx_user_activeWorkspaceId" ON "user"("activeWorkspaceId");
-            `)
-        }
+        // step 1 - convert from varchar to UUID type
+        await queryRunner.query(`
+            ALTER TABLE "user" ALTER COLUMN "activeWorkspaceId" SET DATA TYPE UUID USING "activeWorkspaceId"::UUID;
+        `)
+
+        // step 2 - add foreign key constraint
+        await queryRunner.query(`
+            ALTER TABLE "user" ADD CONSTRAINT "fk_user_activeWorkspaceId" FOREIGN KEY ("activeWorkspaceId") REFERENCES "workspace"("id");
+        `)
+
+        // step 3 - create index for activeWorkspaceId
+        await queryRunner.query(`
+            CREATE INDEX "idx_user_activeWorkspaceId" ON "user"("activeWorkspaceId");
+        `)
 
         // step 1 - convert from varchar to UUID type
         await queryRunner.query(`
@@ -231,15 +231,20 @@ export class LinkWorkspaceId1729130948686 implements MigrationInterface {
             ALTER TABLE "apikey" ALTER COLUMN "workspaceId" SET DATA TYPE varchar USING "workspaceId"::varchar;
         `)
 
-        // Only revert user.activeWorkspaceId if the column exists
-        const userHasActiveWorkspaceId = await queryRunner.hasColumn('user', 'activeWorkspaceId')
-        if (userHasActiveWorkspaceId) {
-            await queryRunner.query(`DROP INDEX IF EXISTS "idx_user_activeWorkspaceId";`)
-            await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT IF EXISTS "fk_user_activeWorkspaceId";`)
-            await queryRunner.query(`
-                ALTER TABLE "user" ALTER COLUMN "activeWorkspaceId" SET DATA TYPE varchar USING "activeWorkspaceId"::varchar;
-            `)
-        }
+        // step 1 - drop index
+        await queryRunner.query(`
+            DROP INDEX "idx_user_activeWorkspaceId";
+        `)
+
+        // step 2 - drop foreign key constraint
+        await queryRunner.query(`
+            ALTER TABLE "user" DROP CONSTRAINT "fk_user_activeWorkspaceId";
+        `)
+
+        // Step 3 - convert from UUID to varchar type
+        await queryRunner.query(`
+            ALTER TABLE "user" ALTER COLUMN "activeWorkspaceId" SET DATA TYPE varchar USING "activeWorkspaceId"::varchar;
+        `)
 
         // step 1 - drop index
         await queryRunner.query(`

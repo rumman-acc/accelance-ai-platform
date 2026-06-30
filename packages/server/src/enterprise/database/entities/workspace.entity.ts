@@ -18,9 +18,7 @@ export class Workspace {
     @Column({ type: 'text', nullable: true })
     description?: string
 
-    // nullable: true — shared table with NestJS; some rows created by Flowise migrations
-    // may not have these values. See rules/shared-database-entities.md
-    @Column({ nullable: true })
+    @Column({ nullable: false })
     organizationId?: string
     @ManyToOne(() => Organization, (organization) => organization.id)
     @JoinColumn({ name: 'organizationId' })
@@ -32,13 +30,13 @@ export class Workspace {
     @UpdateDateColumn()
     updatedDate?: Date
 
-    @Column({ nullable: true })
+    @Column({ nullable: false })
     createdBy?: string
     @ManyToOne(() => User, (user) => user.createdWorkspace)
     @JoinColumn({ name: 'createdBy' })
     createdByUser?: User
 
-    @Column({ nullable: true })
+    @Column({ nullable: false })
     updatedBy?: string
     @ManyToOne(() => User, (user) => user.updatedWorkspace)
     @JoinColumn({ name: 'updatedBy' })

@@ -134,20 +134,17 @@ router.use('/custom-mcp-servers', customMcpServersRouter)
 router.use('/mcp-server', mcpServerRouter)
 router.use('/mcp', mcpEndpointRouter)
 
-// Enterprise auth/org routes are owned by apps/api (NestJS) when ACCELANCE_ENGINE_MODE=true.
-// In engine mode these routes are not mounted — the engine does AI execution only.
-if (process.env.ACCELANCE_ENGINE_MODE !== 'true') {
-    router.use('/auth', authRouter)
-    router.use('/audit', IdentityManager.checkFeatureByPlan('feat:login-activity'), auditRouter)
-    router.use('/user', userRouter)
-    router.use('/organization', organizationRouter)
-    router.use('/role', IdentityManager.checkFeatureByPlan('feat:roles'), roleRouter)
-    router.use('/organizationuser', organizationUserRoute)
-    router.use('/workspace', workspaceRouter)
-    router.use('/workspaceuser', workspaceUserRouter)
-    router.use('/account', accountRouter)
-    router.use('/loginmethod', loginMethodRouter)
-    router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
-}
+router.use('/auth', authRouter)
+router.use('/audit', IdentityManager.checkFeatureByPlan('feat:login-activity'), auditRouter)
+router.use('/user', userRouter)
+router.use('/organization', organizationRouter)
+router.use('/role', IdentityManager.checkFeatureByPlan('feat:roles'), roleRouter)
+router.use('/organizationuser', organizationUserRoute)
+router.use('/workspace', workspaceRouter)
+router.use('/workspaceuser', workspaceUserRouter)
+router.use('/account', accountRouter)
+router.use('/loginmethod', loginMethodRouter)
+router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
+// router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)
 
 export default router

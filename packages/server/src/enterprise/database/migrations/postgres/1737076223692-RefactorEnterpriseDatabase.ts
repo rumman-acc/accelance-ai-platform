@@ -451,18 +451,21 @@ export class RefactorEnterpriseDatabase1737076223692 implements MigrationInterfa
         `)
     }
 
-    public async up(_queryRunner: QueryRunner): Promise<void> {
-        // NO-OP in ACCELANCE_ENGINE_MODE.
-        //
-        // This migration renames "user" → "temp_user" and "organization" → "temp_organization",
-        // recreates both tables from scratch, copies data, then drops the temp tables.
-        // In our architecture those tables are OWNED by NestJS (apps/api). Running this
-        // migration would destroy all auth data and break NestJS entirely.
-        //
-        // The only useful clause (making workspace.createdBy/updatedBy NOT NULL and
-        // adding the FK on organizationId) is already handled by NestJS’s synchronize.
-        //
-        // DO NOT re-enable this migration without coordinating with apps/api schema.
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await this.modifyTable(queryRunner)
+        await this.populateTable(queryRunner)
+        await this.deleteTempTable(queryRunner)
+
+        // This query cannot be part of the modifyTable function because:
+        // 1. The "organizationId" in the "workspace" table might be referencing data in the "temp_organization" table, so it must be altered last.
+        // 2. Setting "createdBy" and "updatedBy" to NOT NULL needs to happen after ensuring there’s no existing data that would violate the constraint,
+        //    because altering these columns while there is data could prevent new records from being inserted into the "workspace" table.
+        await queryRunner.query(`
+            alter table "workspace"
+            alter column "createdBy" set not null,
+            alter column "updatedBy" set not null,
+            add constraint "fk_organizationId" foreign key ("organizationId") references "organization" ("id");
+        `)
     }
 
     public async down(): Promise<void> {}
