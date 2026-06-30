@@ -1,377 +1,64 @@
 # Change Log
 
-Format: `[DATE] [STEP] — What changed, why, any gotchas`
+All structural changes to the project are logged here in reverse chronological order.
 
 ---
 
-## 2026-06-25 — Project Setup
+## 2026-06-30 — Enterprise Auth Enable + PostgreSQL
 
-**Step: Rules folder + CLAUDE.md created**
+**Goal:** Enable org/workspace/user management with PostgreSQL (no Flowise license)
 
--   Created `rules/` folder with architecture.md, services.md, changes.md, known-issues.md
--   Created `CLAUDE.md` as entry point for Claude sessions
--   No code changed — structural/documentation only
+**Changes:**
 
-**Current repo state:**
+-   `packages/server/src/IdentityManager.ts` — Added `FLOWISE_PLATFORM` check at start of `_validateLicenseKey()`. If `FLOWISE_PLATFORM=enterprise`, sets `Platform.ENTERPRISE` and returns immediately, bypassing license validation.
+-   `packages/server/.env` — Created (gitignored): `FLOWISE_PLATFORM=enterprise`, `PORT=3002`, PostgreSQL/Neon credentials, JWT secrets, SMTP/Brevo config
+-   `CLAUDE.md` — Recreated (was deleted in revert)
+-   `rules/` — Created: architecture.md, changes.md, services.md, known-issues.md, shared-database-entities.md
+-   `rules/steps/01-enterprise-auth-setup.md` — Step documentation
 
--   Flowise 3.1.2 monorepo, packages: server, ui, components, agentflow, api-documentation, observe
--   `packages/server/src/enterprise/` contains: auth, org/workspace/user entities, RBAC, SSO
--   `ChatFlow` entity already has `workspaceId` column
--   No `apps/` directory yet — v0.0 restructure not started
+**Result:**
 
-**Next step:** Step 1 — Create apps/ directory structure and update pnpm-workspace.yaml
-
----
-
-## 2026-06-25 — Step 01: Monorepo Restructure (COMPLETE)
-
-**Files changed:**
-
--   `pnpm-workspace.yaml` — added `apps/*` glob
--   `package.json` (root) — added `apps/*` to workspaces array
--   `turbo.json` — added `.next/**` to build outputs, added `persistent: true` to dev, added `lint` and `typecheck` tasks
--   `apps/gateway/nginx.conf` — Nginx routing config (placeholder, full config in Step 6)
--   `apps/gateway/Dockerfile` — FROM nginx:alpine
--   `apps/web/package.json` — `@accelance/web` stub (Next.js, port 3001)
--   `apps/api/package.json` — `@accelance/api` stub (NestJS, port 3000)
--   `apps/engine/package.json` — `@accelance/engine` stub (Flowise, port 3002, code moves here in Step 2)
--   `packages/shared/package.json` — `@accelance/shared` with TypeScript config
--   `packages/shared/tsconfig.json`
--   `packages/shared/src/index.ts` — barrel export
--   `packages/shared/src/types/tenant.types.ts` — ITenant, IWorkspace, IWorkspaceContext
--   `packages/shared/src/types/auth.types.ts` — IUser, IJwtPayload, UserRole enum
--   `packages/shared/src/types/common.types.ts` — IApiResponse, IPaginatedResponse, ENGINE_HEADERS constants
-
-**Verified:** `pnpm install` completes cleanly. `pnpm --filter @accelance/api run dev` reaches the package (expected error: nest not installed yet).
-
-**What did NOT change:** packages/server, packages/ui, packages/components — Flowise still runs unchanged.
-
-**Next step:** Step 02 — Strip engine (move packages/server → apps/engine, remove enterprise auth)
-See `rules/steps/step-02-strip-engine.md`
+-   Server runs on port 3002
+-   PostgreSQL connected (TypeORM migrations run automatically on first startup)
+-   Enterprise auth: registration at `/register`, login at `/signin`, workspaces, user invites
 
 ---
 
-## 2026-06-25 — Step 02: Strip Engine (COMPLETE)
+## 2026-06-29 — Full Revert to Original Flowise 3.1.2
 
-**Build result:** PASS — `pnpm --filter flowise build` completes with no errors
+**Goal:** Remove all previous custom code, restore clean Flowise 3.1.2
 
-**Files changed:**
+**What was deleted:**
 
--   `packages/server/src/middlewares/trustEngineHeaders.ts` — new middleware; reads X-Workspace-Id, X-Tenant-Id, X-User-Id headers; sets req.user with isOrganizationAdmin=true so all RBAC guards pass
--   `packages/server/src/index.ts` — added `ENGINE_MODE` const; when true: skips initializeJwtCookieMiddleware, uses trustEngineHeaders instead of verifyToken, skips initializeSSO
--   `packages/server/src/routes/index.ts` — wrapped enterprise auth routes (auth, audit, user, organization, role, workspace, account, loginmethod, logs) in `if (ACCELANCE_ENGINE_MODE !== 'true')` guard
--   `apps/engine/package.json` — updated with real scripts; dev/start both set `ACCELANCE_ENGINE_MODE=true PORT=3002`
--   `rules/workflow.md` — new: build+test rules for every step
--   `CLAUDE.md` — updated with workflow rules
+-   `apps/` — custom NestJS API + Next.js frontend
+-   `rules/` — previous architecture docs
+-   `CLAUDE.md` — previous instructions
+-   `docker-compose.yml`
+-   `packages/server/src/accelance/` — custom engine mode code
+-   `packages/server/src/middlewares/trustEngineHeaders.ts`
+-   `packages/server/src/middlewares/canvasBootstrap.ts`
+-   `packages/server/src/enterprise/database/entities/invite.entity.ts`
+-   `scripts/` — custom DB migration scripts
+-   `packages/server/.env` — had leftover PORT=3002 + ACCELANCE_ENGINE_MODE=true
 
-**How to activate engine mode:**
+**What was restored:**
 
-```bash
-ACCELANCE_ENGINE_MODE=true PORT=3002 pnpm --filter flowise start
-```
+-   `packages/server/src/index.ts` — via `git checkout 12937a5 -- packages/server/`
+-   All enterprise auth files — restored to original Flowise state
+-   `packages/server/src/enterprise/database/entities/organization-user.entity.ts`
+-   `packages/server/src/enterprise/database/entities/workspace-user.entity.ts`
 
-**Default (Flowise mode) unchanged** — no env var = original Flowise auth still works.
+**Remaining intentional differences vs original Flowise:**
 
-**Next step:** Step 03 — Audit + add workspaceId to missing entities
-See `rules/steps/step-03-workspace-id-audit.md`
-
-## 2026-06-25 — Step 03: workspaceId Audit (COMPLETE)
-
-**Build result:** PASS — no code changes, build verified clean
-
-**Finding:** ALL top-level entities already have workspaceId (15 entities confirmed).
-Child records (ChatMessage, DatasetRow, etc.) are scoped through parent FK — no direct workspaceId needed.
-No migrations required.
-
-**Key confirmed:** `getWorkspaceSearchOptionsFromReq(req)` reads `req.user.activeWorkspaceId` —
-which our Step 02 `trustEngineHeaders` middleware sets from `X-Workspace-Id` header. The chain works end-to-end.
-
-**Files changed:** None — audit only.
-
-**Next step:** Step 04 — Scaffold NestJS apps/api
-See `rules/steps/step-04-nestjs-api.md`
-
-## 2026-06-25 — Step 04: NestJS API Scaffold (COMPLETE)
-
-**Build result:** PASS — `pnpm --filter @accelance/api build` clean after 1 fix
-
-**Known issue fixed:** `import * as cookieParser` fails with esModuleInterop — must use `import cookieParser = require('cookie-parser')` in NestJS. Logged in known-issues.md.
-
-**Files created:**
-
--   `apps/api/package.json` — NestJS 10, passport-jwt, typeorm, bcryptjs, http-proxy-middleware, class-validator
--   `apps/api/tsconfig.json`, `tsconfig.build.json`, `nest-cli.json`
--   `apps/api/src/main.ts` — bootstrap + cookie-parser + proxy middleware (POST-JWT injects x-workspace-id etc)
--   `apps/api/src/app.module.ts` — global JwtAuthGuard via APP_GUARD
--   `apps/api/src/database/database.module.ts` — TypeORM postgres, synchronize:false (engine owns schema)
--   `apps/api/src/entities/` — User, Organization, Workspace, WorkspaceUser, Role, OrganizationUser (copied lean from enterprise)
--   `apps/api/src/auth/auth.module.ts` — PassportModule + JwtModule
--   `apps/api/src/auth/auth.controller.ts` — POST /auth/register, /auth/login, /auth/logout
--   `apps/api/src/auth/auth.service.ts` — register (creates org+workspace+role in transaction), login
--   `apps/api/src/auth/strategies/jwt.strategy.ts` — Bearer token, validates user exists
--   `apps/api/src/auth/guards/jwt-auth.guard.ts` — global, respects @Public() decorator
--   `apps/api/src/auth/dto/login.dto.ts`, `register.dto.ts`
--   `apps/api/src/common/decorators/public.decorator.ts` — @Public() skips JWT guard
--   `apps/api/src/common/decorators/current-user.decorator.ts` — @CurrentUser() param decorator
-
-**Proxy behaviour:**
-All `/api/v1/*` requests → validated by JWT → forwarded to engine (:3002) with headers:
-x-workspace-id, x-tenant-id, x-user-id, x-user-role
-
-**Next step:** Step 05 — Next.js web shell
-See `rules/steps/step-05-nextjs-web.md`
-
-## 2026-06-25 — Step 05: Next.js Web Shell (COMPLETE)
-
-**Build result:** PASS — `pnpm --filter @accelance/web build` clean (8 routes generated)
-
-**Canvas embed approach (canvasBootstrap):**
-
--   `GET /auth/canvas-token` (NestJS) → signs 2-min JWT `{ workspaceId, tenantId, userId, role, type:'canvas' }`
--   Next.js canvas page: fetches token → renders `<iframe src="ENGINE_URL/canvas/ID?__ctkn=TOKEN">`
--   Engine: `canvasBootstrap` middleware verifies token → sets `accel_ctx` httpOnly cookie → injects localStorage bootstrap script into index.html
--   Flowise SPA reads localStorage → RequireAuth passes → canvas loads
--   SPA API calls (`/api/v1/*`) → `trustEngineHeaders` reads `accel_ctx` cookie as fallback
-
-**Files created (new):**
-
--   `packages/server/src/middlewares/canvasBootstrap.ts` — HTML injection + cookie bootstrap
--   `apps/web/package.json` — Next.js 15, tailwindcss
--   `apps/web/tsconfig.json`, `next.config.ts`, `tailwind.config.ts`, `postcss.config.js`, `.eslintrc.json`
--   `apps/web/src/middleware.ts` — route protection via `accel_auth` cookie
--   `apps/web/src/app/layout.tsx`, `page.tsx`, `globals.css`
--   `apps/web/src/app/login/page.tsx` — POST /auth/login
--   `apps/web/src/app/register/page.tsx` — POST /auth/register
--   `apps/web/src/app/dashboard/page.tsx` — lists chatflows, create/delete
--   `apps/web/src/app/canvas/[id]/page.tsx` — fetches canvas token, renders iframe
--   `apps/web/src/app/settings/page.tsx` — user/workspace info stub
--   `apps/web/src/lib/auth.ts` — login/register/logout + localStorage seeding
--   `apps/web/src/lib/api.ts` — fetch wrapper + getChatflows/getCanvasToken/createChatflow/deleteChatflow
-
-**Files modified:**
-
--   `packages/server/src/middlewares/trustEngineHeaders.ts` — fallback: read workspace ctx from `accel_ctx` cookie
--   `packages/server/src/index.ts` — ENGINE_MODE catch-all uses canvasBootstrap; sets IFRAME_ORIGINS=\* default
--   `apps/api/src/auth/strategies/jwt.strategy.ts` — `fromExtractors([Bearer, cookie('token')])`
--   `apps/api/src/auth/auth.controller.ts` — `GET /auth/canvas-token`
--   `apps/api/src/auth/auth.service.ts` — `generateCanvasToken()`
-
-**Next.js rewrites (server-side, transparent proxy):**
-
--   `/auth/*` → `http://localhost:3000/auth/*`
--   `/api/v1/*` → `http://localhost:3000/api/v1/*`
-
-**Next step:** Step 06 — Nginx gateway config
-See `rules/steps/step-06-nginx-gateway.md`
-
-## 2026-06-29 — Neon DB wired up + synchronize fix
-
-**Build result:** PASS — `pnpm --filter @accelance/api build` clean
-
-**Files changed:**
-
--   `.env` — created with Neon PostgreSQL credentials (direct connection, not pooler)
--   `packages/server/.env` — updated with Flowise-format Neon credentials + ENGINE_MODE vars
--   `apps/api/src/database/database.module.ts` — `synchronize: true` in dev (auto-creates NestJS tables on first run), `false` in prod
--   JWT_SECRET generated and identical in both .env files
-
-**Why direct connection (not pooler):**
-Neon pooler URL has `-pooler` in hostname. TypeORM migrations + schema sync need direct connection.
-Pooler can be used later for production read traffic.
-
-**DB_NAME = `neondb`** (Neon's default, not `flowise` — updated in both env files)
+-   `package.json` — `"csstype": "3.1.3"` in pnpm.overrides (fixes agentflow build)
+-   `packages/ui/index.html` — "Accelance" branding (pre-existing, kept)
+-   `packages/ui/src/views/chatflows/EmbedChat.jsx` — Accelance branding (pre-existing, kept)
+-   `packages/shared/` — empty scaffold (harmless, not imported by anything)
 
 ---
 
-## 2026-06-29 — Cloud DB Switch (amendment to Step 07)
+## 2026-06-25 — Initial Flowise 3.1.2 Fork
 
-Both dev and production use cloud-managed PostgreSQL and Redis — no local containers needed.
+**Goal:** Fork Flowise 3.1.2 as the base for Accelance AI Platform
 
-**Files changed:**
-
--   `docker-compose.yml` — removed postgres + redis containers; all DB/Redis vars now come from `.env`
--   `.env.example` — updated with full set of cloud connection vars (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_SSL, REDIS_URL, JWT_SECRET)
--   `apps/api/src/app.module.ts` — ConfigModule now reads `../../.env` (repo root) when pnpm runs from `apps/api/`
--   `apps/api/src/database/database.module.ts` — added `ssl` option controlled by `DB_SSL` env var (required for Azure/Supabase/Neon)
-
-**How to run locally (no Docker needed):**
-
-1. `cp .env.example .env` and fill in cloud credentials
-2. `pnpm install`
-3. `pnpm --filter @accelance/shared build`
-4. Three terminals:
-    - `pnpm --filter @accelance/api start:dev` (NestJS with watch)
-    - `ACCELANCE_ENGINE_MODE=true PORT=3002 pnpm --filter flowise start` (Engine — needs `packages/server/.env` too, see below)
-    - `pnpm --filter @accelance/web dev` (Next.js)
-
-**Engine local dev:** Flowise reads `packages/server/.env` on startup. Copy root `.env` vars there with Flowise naming:
-
-```
-DATABASE_TYPE=postgres
-DATABASE_HOST=<same as DB_HOST>
-DATABASE_PORT=5432
-DATABASE_USER=<same as DB_USER>
-DATABASE_PASSWORD=<same as DB_PASSWORD>
-DATABASE_NAME=flowise
-DATABASE_SSL=true
-JWT_SECRET=<same as JWT_SECRET>
-ACCELANCE_ENGINE_MODE=true
-PORT=3002
-```
-
----
-
-## 2026-06-29 — Step 07: Docker Compose (COMPLETE)
-
-**Build result:** Config verified — `docker compose config` validates cleanly (Docker not running; build/run deferred to smoke test)
-
-**Files created:**
-
--   `docker-compose.yml` — wires gateway, web, api, engine, postgres, redis
--   `.env.example` — documents DB_PASSWORD and JWT_SECRET
--   `apps/api/Dockerfile`
--   `apps/web/Dockerfile`
--   `apps/engine/Dockerfile`
--   `rules/steps/step-07-docker-compose.md`
-
-**Files modified:**
-
--   `.dockerignore` — added .git, .env, .next, .turbo, coverage, OS/editor noise
--   `apps/gateway/nginx.conf` — added engine upstream + `/canvas/` proxy route
--   `apps/api/src/main.ts` — added `/health` Express middleware (before JWT guard)
--   `apps/web/src/app/canvas/[id]/page.tsx` — changed `||` to `??` for ENGINE_URL
-
-**Canvas URL fix:**
-`NEXT_PUBLIC_ENGINE_URL=""` baked into the web image at build time (set in web/Dockerfile).
-With `??` (not `||`), empty string stays empty → canvas iframe uses relative URL
-`/canvas/{id}?...` → nginx proxies to engine:3002 → engine validates `__ctkn` JWT.
-
-**Startup order:** postgres → api + engine (parallel) → web → gateway
-
-**Smoke test (requires Docker running):**
-
-```bash
-cp .env.example .env   # edit DB_PASSWORD and JWT_SECRET
-docker compose up --build
-curl http://localhost/nginx-health    # → OK
-curl http://localhost/health          # → {"status":"ok"}
-open http://localhost                 # → login page
-```
-
-**Next step:** Step 08 — Production hardening (pgvector init, DB migrations, env overrides)
-
----
-
-## 2026-06-29 — Step 06: Nginx Gateway Config (COMPLETE)
-
-**Build result:** PASS — `nginx -t` validates clean (config syntax ok)
-
-**Files changed:**
-
--   `apps/gateway/nginx.conf` — replaced Step 01 placeholder with production-ready config
--   `rules/steps/step-06-nginx-gateway.md` — step plan
--   `rules/services.md` — gateway, api, web statuses updated to Complete
--   `rules/architecture.md` — service map statuses updated
-
-**Key decisions:**
-
--   Port 80 primary (not 443): Cloudflare terminates TLS and forwards plain HTTP; same config works for local dev. Direct TLS block commented in nginx.conf for future use.
--   `/auth/*` and `/api/*` both route to NestJS api. NestJS owns `/auth/*` natively and proxies `/api/v1/*` to engine internally.
--   `proxy_buffering off` on `/api/` so LLM SSE streaming reaches the browser token-by-token.
--   300s read/send timeout on `/api/` for slow LLM calls.
--   Rate limit zone on `/auth/`: 5 req/min per IP, burst 20.
--   WebSocket upgrade map in `/` location for Next.js HMR and future WebSocket features.
-
-**How to verify:**
-
-```bash
-docker run --rm \
-  -v "$(pwd)/apps/gateway/nginx.conf:/etc/nginx/nginx.conf:ro" \
-  nginx:alpine nginx -t
-```
-
-**Next step:** Step 07 — Docker Compose (wire gateway, api, web, engine, postgres, redis)
-See `rules/steps/step-07-docker-compose.md`
-
-## 2026-06-29 — Step 08: Invite System (COMPLETE)
-
-**Build result:** PASS — `pnpm --filter @accelance/api build` + `pnpm --filter @accelance/web build` both clean
-
-**Files created:**
-
--   `apps/api/src/entities/invite.entity.ts` — stores pending invites (email, orgId, workspaceId, token, expiresAt, usedAt)
--   `apps/api/src/email/email.service.ts` — Resend integration; falls back to console.log if RESEND_API_KEY not set
--   `apps/api/src/org/org.service.ts` — inviteMember() + getMembers()
--   `apps/api/src/org/org.controller.ts` — POST /org/invite, GET /org/members
--   `apps/api/src/org/org.module.ts`
--   `apps/web/src/app/settings/team/page.tsx` — invite form + members list UI
-
-**Files modified:**
-
--   `apps/api/src/auth/dto/register.dto.ts` — added optional `inviteToken`
--   `apps/api/src/auth/auth.service.ts` — branches on inviteToken: joins existing org instead of creating new one
--   `apps/api/src/auth/auth.module.ts` — added Invite entity to TypeORM feature
--   `apps/api/src/database/database.module.ts` — added Invite to entities list
--   `apps/api/src/app.module.ts` — imports OrgModule
--   `apps/api/package.json` — added resend dependency
--   `apps/web/src/app/register/page.tsx` — reads ?invite= from URL, pre-fills + locks email field, Suspense boundary
--   `apps/web/src/lib/auth.ts` — register() accepts optional inviteToken
--   `apps/web/src/lib/api.ts` — added getMembers(), inviteMember()
--   `apps/gateway/nginx.conf` — added /org/ → api upstream
--   `apps/web/next.config.ts` — added /org/:path\* rewrite
--   `.env` + `.env.example` — RESEND_API_KEY, RESEND_FROM_EMAIL, APP_URL
-
-**Invite flow:**
-
-1. Admin → POST /org/invite { email } → Resend email sent with 24h link
-2. Link: APP_URL/register?invite=<JWT> → email pre-filled + locked
-3. User fills name + password → POST /auth/register { ..., inviteToken }
-4. Backend verifies token → creates user → joins existing org/workspace as Member
-5. Returns JWT with existing tenantId + workspaceId (no new tenant created)
-
-**Known: RESEND_API_KEY not set** → invite URL is logged to NestJS console instead of emailed. Safe for dev.
-
-<!-- Add new entries below this line, newest at the top -->
-
-## 2026-06-30 — Auth / Proxy Fixes (COMPLETE)
-
-**Root cause of 401 on /api/v1/chatflows:**
-`trustEngineHeaders` returns `{ error: '...' }` (no `message` field) → `apiFetch`'s
-`body.message` check falls through to fallback text. The error was the engine never
-receiving `x-workspace-id`/`x-tenant-id` headers because `next.config.ts` rewrites
-do **not** reliably forward the `Authorization` header from the browser request.
-
-**Root cause of Flowise migration failure:**
-`LinkWorkspaceId1729130948686` tries to `ALTER COLUMN "activeWorkspaceId"` on the
-`user` table. But the `user.entity.ts` (enterprise) doesn't declare `activeWorkspaceId`,
-so `synchronize: true` never created it. Migration crashes on every restart.
-
-**Files changed:**
-
--   `apps/web/src/app/api/v1/[...path]/route.ts` — **NEW** Next.js Route Handler that
-    explicitly forwards `Authorization` and `Cookie` headers to NestJS. Replaces the
-    `next.config.ts` rewrite for `/api/v1/*`.
--   `apps/web/next.config.ts` — removed the `/api/v1/:path*` rewrite (Route Handler
-    takes over; rewrite was silently dropping the Authorization header).
--   `packages/server/src/enterprise/database/migrations/postgres/1729130948686-LinkWorkspaceId.ts`
-    — wrapped `user.activeWorkspaceId` ALTER/FK/INDEX block in `hasColumn()` guard so
-    the migration skips it when the column doesn't exist (ACCELANCE_ENGINE_MODE).
--   `apps/api/src/main.ts` — raw Express JWT middleware on `/api/v1` validates bearer
-    token using `jsonwebtoken` directly (bypass NestJS DI) and sets `req.user` so the
-    proxy callback can inject workspace headers.
-
-**Previous auth bug fixes also recorded here:**
-
--   `apps/web/src/middleware.ts` — added `API_PATHS` bypass so middleware never
-    intercepts `/auth/`, `/api/`, `/org/` paths.
--   `apps/web/src/app/login/page.tsx` — changed `router.push` → `window.location.href`
-    to avoid cookie race condition on soft navigation.
--   `apps/web/src/app/register/page.tsx` — wrapped in `<Suspense>` (Next.js 15 requires
-    this for `useSearchParams()`).
--   Email provider switched from Resend to Brevo SMTP (Nodemailer, port 587).
-
-**Requires after this change:**
-
-1. `pnpm --filter flowise build` — recompile engine (migration fix is in TS source)
-2. Restart Flowise (`pnpm --filter flowise start:windows`)
-3. Next.js dev server auto-picks up the Route Handler on next request
+Commit: `12937a5 First commit`
