@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ExecutionDetail } from '@flowiseai/observe'
+import { ExecutionDetail } from '@accelance/observe'
 import { Box, TextField, Typography } from '@mui/material'
 
 import { agentflowCanvasUrl, executionId as defaultExecutionId } from '../config'

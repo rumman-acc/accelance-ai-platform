@@ -1,20 +1,19 @@
 {
-    "name": "@flowiseai/agentflow",
+    "name": "@accelance/agentflow",
     "version": "0.0.0-dev.14",
     "description": "Embeddable React component for building and visualizing AI agent workflows",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/FlowiseAI/Flowise.git",
+        "url": "https://github.com/accelance/accelance-ai-platform.git",
         "directory": "packages/agentflow"
     },
-    "homepage": "https://github.com/FlowiseAI/Flowise/tree/main/packages/agentflow#readme",
+    "homepage": "https://github.com/accelance/accelance-ai-platform/tree/main/packages/agentflow#readme",
     "bugs": {
-        "url": "https://github.com/FlowiseAI/Flowise/issues"
+        "url": "https://github.com/accelance/accelance-ai-platform/issues"
     },
     "keywords": [
-        "flowise",
-        "flowiseai",
+        "accelance",
         "agentflow",
         "react",
         "llm",

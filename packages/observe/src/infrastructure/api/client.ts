@@ -3,7 +3,7 @@ import axios, { type AxiosInstance } from 'axios'
 import type { RequestInterceptor } from '@/core/types'
 
 /**
- * Creates a configured axios instance for @flowiseai/observe API calls.
+ * Creates a configured axios instance for @accelance/observe API calls.
  * All internal SDK calls (executions list, get by id, delete) use this client.
  * The HITL prediction call is intentionally NOT made here — it is delegated to
  * the consumer via the onHumanInput prop so routing can differ between OSS and DevSite.

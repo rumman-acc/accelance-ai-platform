@@ -1,5 +1,5 @@
 // ============================================================================
-// Component Props — Public API surface for @flowiseai/observe
+// Component Props — Public API surface for @accelance/observe
 // ============================================================================
 
 import type { InternalAxiosRequestConfig } from 'axios'

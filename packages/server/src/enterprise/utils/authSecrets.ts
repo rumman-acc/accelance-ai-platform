@@ -22,7 +22,7 @@ const NOT_INITIALIZED = 'Auth secrets not initialized. Call initAuthSecrets() fi
 
 /**
  * Initialize auth secrets from env (backwards compat) → AWS Secrets Manager → filesystem.
- * Each secret is generated with crypto.randomBytes(32) when created (or 'flowise' for JWT_ISSUER/JWT_AUDIENCE).
+ * Each secret is generated with crypto.randomBytes(32) when created (or 'Accelance' for JWT_ISSUER/JWT_AUDIENCE).
  * Call once after getEncryptionKey() in initDatabase().
  */
 export async function initAuthSecrets(): Promise<void> {

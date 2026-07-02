@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 
-import type { FlowData } from '@flowiseai/agentflow'
+import type { FlowData } from '@accelance/agentflow'
 
 import { apiBaseUrl, token } from './config'
 

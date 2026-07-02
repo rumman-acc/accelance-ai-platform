@@ -1,20 +1,19 @@
 {
-    "name": "@flowiseai/observe",
+    "name": "@accelance/observe",
     "version": "0.0.0-dev.1",
     "description": "Embeddable React components for observing AI agent executions, evaluations, and runtime activity",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/FlowiseAI/Flowise.git",
+        "url": "https://github.com/accelance/accelance-ai-platform.git",
         "directory": "packages/observe"
     },
-    "homepage": "https://github.com/FlowiseAI/Flowise/tree/main/packages/observe#readme",
+    "homepage": "https://github.com/accelance/accelance-ai-platform/tree/main/packages/observe#readme",
     "bugs": {
-        "url": "https://github.com/FlowiseAI/Flowise/issues"
+        "url": "https://github.com/accelance/accelance-ai-platform/issues"
     },
     "keywords": [
-        "flowise",
-        "flowiseai",
+        "accelance",
         "observe",
         "executions",
         "observability",

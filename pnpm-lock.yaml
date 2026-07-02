@@ -1002,6 +1002,12 @@ importers:
       '@types/passport-local':
         specifier: ^1.0.38
         version: 1.0.38
+      accelance-components:
+        specifier: workspace:^
+        version: link:../components
+      accelance-ui:
+        specifier: workspace:^
+        version: link:../ui
       async-mutex:
         specifier: ^0.4.0
         version: 0.4.1
@@ -1056,15 +1062,9 @@ importers:
       express-session:
         specifier: ^1.18.1
         version: 1.18.1
-      flowise-components:
-        specifier: workspace:^
-        version: link:../components
       flowise-nim-container-manager:
         specifier: ^1.0.11
         version: 1.0.11
-      flowise-ui:
-        specifier: workspace:^
-        version: link:../ui
       geoip-lite:
         specifier: ^1.4.10
         version: 1.4.10

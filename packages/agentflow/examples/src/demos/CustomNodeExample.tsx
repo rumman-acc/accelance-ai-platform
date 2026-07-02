@@ -12,8 +12,8 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
-import type { FlowData, HeaderRenderProps, InputParam } from '@flowiseai/agentflow'
-import { Agentflow, evaluateFieldVisibility, stripHiddenFieldValues } from '@flowiseai/agentflow'
+import type { FlowData, HeaderRenderProps, InputParam } from '@accelance/agentflow'
+import { Agentflow, evaluateFieldVisibility, stripHiddenFieldValues } from '@accelance/agentflow'
 
 import { apiBaseUrl, token } from '../config'
 

@@ -1,5 +1,5 @@
 import { filterNodeByClient } from './filterNodeByClient'
-import type { INode } from 'flowise-components'
+import type { INode } from 'accelance-components'
 
 const makeNode = (overrides: Partial<INode> = {}): INode =>
     ({

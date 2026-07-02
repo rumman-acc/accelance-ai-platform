@@ -1,5 +1,5 @@
 // ===========================================
-// @flowiseai/agentflow - Public API
+// @accelance/agentflow - Public API
 // ===========================================
 
 // Main component

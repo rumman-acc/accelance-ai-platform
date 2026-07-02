@@ -13,7 +13,7 @@ enum EXIT_CODE {
 export abstract class BaseCommand extends Command {
     static flags = {
         // General Settings
-        FLOWISE_FILE_SIZE_LIMIT: Flags.string(),
+        FILE_SIZE_LIMIT: Flags.string(),
         CUSTOM_MCP_TOOLS_MAX_BYTES: Flags.string(),
         CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS: Flags.string(),
         PORT: Flags.string(),
@@ -23,7 +23,7 @@ export abstract class BaseCommand extends Command {
         DEBUG: Flags.string(),
         NUMBER_OF_PROXIES: Flags.string(),
         SHOW_COMMUNITY_NODES: Flags.string(),
-        DISABLE_FLOWISE_TELEMETRY: Flags.string(),
+        DISABLE_TELEMETRY: Flags.string(),
         DISABLED_NODES: Flags.string(),
 
         // Logging
@@ -79,7 +79,7 @@ export abstract class BaseCommand extends Command {
         // Credentials / Secret Keys
         SECRETKEY_STORAGE_TYPE: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
-        FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
+        SECRETKEY_OVERWRITE: Flags.string(),
         SECRETKEY_AWS_ACCESS_KEY: Flags.string(),
         SECRETKEY_AWS_SECRET_KEY: Flags.string(),
         SECRETKEY_AWS_REGION: Flags.string(),
@@ -141,7 +141,7 @@ export abstract class BaseCommand extends Command {
 
         // Enterprise
         LICENSE_URL: Flags.string(),
-        FLOWISE_EE_LICENSE_KEY: Flags.string(),
+        ACCELANCE_EE_LICENSE_KEY: Flags.string(),
         OFFLINE: Flags.string(),
 
         // Metrics
@@ -176,13 +176,13 @@ export abstract class BaseCommand extends Command {
             try {
                 // Shut down the app after timeout if it ever stuck removing pools
                 setTimeout(async () => {
-                    logger.info('Flowise was forced to shut down after 30 secs')
+                    logger.info('Accelance was forced to shut down after 30 secs')
                     await this.failExit()
                 }, 30000)
 
                 await this.stopProcess()
             } catch (error) {
-                logger.error('There was an error shutting down Flowise...', error)
+                logger.error('There was an error shutting down Accelance...', error)
             }
         }
     }

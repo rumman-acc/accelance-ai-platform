@@ -385,8 +385,8 @@ function AgentflowCanvas({
  *
  * @example
  * ```tsx
- * import { Agentflow } from '@flowiseai/agentflow'
- * import '@flowiseai/agentflow/flowise.css'
+ * import { Agentflow } from '@accelance/agentflow'
+ * import '@accelance/agentflow/flowise.css'
  *
  * function App() {
  *   return (

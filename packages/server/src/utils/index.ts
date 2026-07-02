@@ -39,7 +39,7 @@ import {
     FlowiseMemory,
     IFileUpload,
     StorageProviderFactory
-} from 'flowise-components'
+} from 'accelance-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 
@@ -1551,8 +1551,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
  * @returns {Promise<string>}
  */
 export const getEncryptionKey = async (): Promise<string> => {
-    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+    if (process.env.SECRETKEY_OVERWRITE !== undefined && process.env.SECRETKEY_OVERWRITE !== '') {
+        return process.env.SECRETKEY_OVERWRITE
     }
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
         const secretId = process.env.SECRETKEY_AWS_NAME || 'FlowiseEncryptionKey'
@@ -1682,7 +1682,7 @@ export interface GetOrCreateStoredSecretOptions {
     envKey: string
     fileName: string
     awsSecretIdSuffix: string
-    /** When generating a new secret, use this value instead of random (e.g. 'flowise' for JWT_ISSUER/JWT_AUDIENCE) */
+    /** When generating a new secret, use this value instead of random (e.g. 'Accelance' for JWT_ISSUER/JWT_AUDIENCE) */
     defaultValueForNew?: string
     /** If env is set to this value, treat as unset (backwards compat for weak defaults) */
     weakDefault?: string

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ObserveProvider } from '@flowiseai/observe'
+import { ObserveProvider } from '@accelance/observe'
 import { Box, CssBaseline, FormControlLabel, Stack, Switch, Tab, Tabs, Typography } from '@mui/material'
 
 import ExecutionsViewerExample from './demos/ExecutionsViewerExample'
@@ -24,7 +24,7 @@ export default function App() {
             >
                 <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 2 }}>
                     <Typography variant='h4' sx={{ fontWeight: 700 }}>
-                        @flowiseai/observe — Examples
+                        @accelance/observe — Examples
                     </Typography>
                     <FormControlLabel control={<Switch checked={isDarkMode} onChange={(_, v) => setIsDarkMode(v)} />} label='Dark mode' />
                 </Stack>

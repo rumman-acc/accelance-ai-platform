@@ -9,7 +9,7 @@
 
 import { useState } from 'react'
 
-import { Agentflow } from '@flowiseai/agentflow'
+import { Agentflow } from '@accelance/agentflow'
 import { Box, Dialog, DialogContent, DialogTitle, Fab, IconButton, Typography } from '@mui/material'
 import { IconMessage, IconX } from '@tabler/icons-react'
 

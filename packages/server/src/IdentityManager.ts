@@ -7,7 +7,7 @@
  * The Open Source version is licensed under the Apache License, Version 2.0 (the "License")
  *
  * For information about licensing of the Enterprise and Cloud versions, please contact:
- * security@flowiseai.com
+ * security@accelance.io
  */
 
 import axios from 'axios'
@@ -100,19 +100,19 @@ export class IdentityManager {
     }
 
     private _validateLicenseKey = async () => {
-        // Self-hosted enterprise mode: set FLOWISE_PLATFORM=enterprise in .env to bypass license check.
-        // Enables all enterprise features (org/workspace/user/role management) without a Flowise EE license.
-        if (process.env.FLOWISE_PLATFORM?.toLowerCase() === 'enterprise') {
+        // Self-hosted enterprise mode: set ACCELANCE_PLATFORM=enterprise in .env to bypass license check.
+        // Enables all enterprise features (org/workspace/user/role management) without an Accelance EE license.
+        if (process.env.ACCELANCE_PLATFORM?.toLowerCase() === 'enterprise') {
             this.licenseValid = true
             this.currentInstancePlatform = Platform.ENTERPRISE
             return
         }
 
         const LICENSE_URL = process.env.LICENSE_URL
-        const FLOWISE_EE_LICENSE_KEY = process.env.FLOWISE_EE_LICENSE_KEY
+        const ACCELANCE_EE_LICENSE_KEY = process.env.ACCELANCE_EE_LICENSE_KEY
 
         // First check if license key is missing
-        if (!FLOWISE_EE_LICENSE_KEY) {
+        if (!ACCELANCE_EE_LICENSE_KEY) {
             this.licenseValid = false
             this.currentInstancePlatform = Platform.OPEN_SOURCE
             return
@@ -120,7 +120,7 @@ export class IdentityManager {
 
         try {
             if (process.env.OFFLINE === 'true') {
-                const decodedLicense = this._offlineVerifyLicense(FLOWISE_EE_LICENSE_KEY)
+                const decodedLicense = this._offlineVerifyLicense(ACCELANCE_EE_LICENSE_KEY)
 
                 if (!decodedLicense) {
                     this.licenseValid = false
@@ -145,7 +145,7 @@ export class IdentityManager {
                 this.currentInstancePlatform = Platform.ENTERPRISE
             } else if (LICENSE_URL) {
                 try {
-                    const response = await axios.post(`${LICENSE_URL}/enterprise/verify`, { license: FLOWISE_EE_LICENSE_KEY })
+                    const response = await axios.post(`${LICENSE_URL}/enterprise/verify`, { license: ACCELANCE_EE_LICENSE_KEY })
                     this.licenseValid = response.data?.valid
 
                     if (!LICENSE_URL.includes('api')) this.currentInstancePlatform = Platform.ENTERPRISE

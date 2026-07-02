@@ -171,7 +171,7 @@ export class App {
 
     async config() {
         // Limit is needed to allow sending/receiving base64 encoded string
-        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
+        const flowise_file_size_limit = process.env.FILE_SIZE_LIMIT || '50mb'
 
         // Preserve raw bytes before JSON parsing for webhook HMAC signature verification
         const captureRawBody = (req: Request, _res: Response, buf: Buffer) => {
@@ -354,7 +354,7 @@ export class App {
         // Serve UI static
         // ----------------------------------------
 
-        const packagePath = getNodeModulesPackagePath('flowise-ui')
+        const packagePath = getNodeModulesPackagePath('accelance-ui')
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 

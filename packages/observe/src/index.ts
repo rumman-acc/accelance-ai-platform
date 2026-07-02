@@ -1,5 +1,5 @@
 // ===========================================
-// @flowiseai/observe — Public API
+// @accelance/observe — Public API
 // ===========================================
 
 // Root provider (required — wrap your app or page with this)

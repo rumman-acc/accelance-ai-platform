@@ -1,5 +1,5 @@
 /**
- * Design Tokens for @flowiseai/observe.
+ * Design Tokens for @accelance/observe.
  *
  * Base palette and node type colors below are duplicated in
  * packages/agentflow/src/core/theme/tokens.ts — keep in sync until

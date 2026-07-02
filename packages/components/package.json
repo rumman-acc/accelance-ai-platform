@@ -1,7 +1,7 @@
 {
-    "name": "flowise-components",
+    "name": "accelance-components",
     "version": "3.1.2",
-    "description": "Flowiseai Components",
+    "description": "Accelance AI Platform Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
     "exports": {
@@ -24,10 +24,10 @@
         "test:coverage": "jest --coverage"
     },
     "keywords": [],
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://accelance.io",
     "author": {
-        "name": "Henry Heng",
-        "email": "henryheng@flowiseai.com"
+        "name": "Accelance",
+        "email": "hello@accelance.io"
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {

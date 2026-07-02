@@ -17,8 +17,8 @@ const swaggerUiOptions = {
                 url: 'https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md'
             },
             contact: {
-                name: 'FlowiseAI',
-                email: 'support@flowiseai.com'
+                name: 'Accelance',
+                email: 'support@accelance.io'
             }
         },
         servers: [
