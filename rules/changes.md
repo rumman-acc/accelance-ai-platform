@@ -4,6 +4,48 @@ All structural changes to the project are logged here in reverse chronological o
 
 ---
 
+## 2026-07-02 — Rebranding Phase 8: Docs & Legal
+
+**Goal:** Rename all Flowise references in README, docs, and legal files.
+
+**Changes:**
+
+- `README.md`: badges, image refs, Quick Start commands (`npx flowise` → `npx accelance`), Docker commands, dev setup `git clone` URL, env var table (`FLOWISE_FILE_SIZE_LIMIT` → `FILE_SIZE_LIMIT`, `FLOWISE_SECRETKEY_OVERWRITE` → `SECRETKEY_OVERWRITE`), default paths (`.flowise` → `.accelance`), docs link, self-host section, GitHub issue/discussion URLs
+- `CONTRIBUTING.md`: project name, GitHub URLs, Discord link, package filter names (`flowise-components` → `accelance-components`, `@flowiseai/agentflow` → `@accelance/agentflow`), env var table, contact email `hello@flowiseai.com` → `hello@accelance.io`
+- `CODE_OF_CONDUCT.md`: contact email → `hello@accelance.io`
+- `SECURITY.md`: all Flowise→Accelance references; contact email `security-team@flowiseai.com` → `security@accelance.io`; cloud URL → `cloud.accelance.io`
+- `LICENSE.md`: added Accelance copyright line; Flowise legal attribution lines retained (Apache License requires attribution preservation)
+- `docker/README.md`: project name, DockerHub URL, paths, docs link
+- `docker/worker/README.md`: project name, main server README link, entrypoint reference
+
+**Build result:** 7/7 tasks successful ✓
+
+---
+
+## 2026-07-02 — Rebranding Phase 7: Docker Files
+
+**Goal:** Rename all Flowise references in Dockerfiles and docker-compose files.
+
+**Changes:**
+
+- `Dockerfile` (root): comments + `WORKDIR /usr/src/flowise` → `/usr/src/accelance`
+- `docker/Dockerfile`: `npm install -g flowise` → `accelance`; `ENTRYPOINT ["flowise","start"]` → `["accelance","start"]`
+- `docker/worker/Dockerfile`: comment updated
+- `docker/docker-compose.yml`: service name `flowise` → `accelance`; image `flowiseai/flowise:latest` → `accelance/accelance:latest`; volume path `~/.flowise` → `~/.accelance`; entrypoint `flowise start` → `accelance start`
+- `docker/docker-compose-queue-prebuilt.yml`: service names, container names, images, network, volume paths, queue name defaults, entrypoints, env vars
+- `docker/docker-compose-queue-source.yml`: service names, container names, network, volume paths, queue name defaults
+- `docker/worker/docker-compose.yml`: image `flowiseai/flowise-worker:latest` → `accelance/accelance-worker:latest`; volume, env vars
+
+**Env var renames applied in docker-compose files (to match Phase 5 server code):**
+- `FLOWISE_EE_LICENSE_KEY` → `ACCELANCE_EE_LICENSE_KEY`
+- `FLOWISE_SECRETKEY_OVERWRITE` → `SECRETKEY_OVERWRITE`
+- `FLOWISE_FILE_SIZE_LIMIT` → `FILE_SIZE_LIMIT`
+- `DISABLE_FLOWISE_TELEMETRY` → `DISABLE_TELEMETRY`
+
+**Build result:** 7/7 tasks successful ✓
+
+---
+
 ## 2026-07-02 — Rebranding Phase 6: Server Internal Code
 
 **Goal:** Rename internal server error class and metrics identifiers from Flowise → Accelance.

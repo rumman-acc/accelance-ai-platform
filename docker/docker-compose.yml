@@ -1,8 +1,8 @@
-version: '3.1'
+﻿version: '3.1'
 
 services:
-    flowise:
-        image: flowiseai/flowise:latest
+    accelance:
+        image: accelance/accelance:latest
         restart: always
         environment:
             - PORT=${PORT}
@@ -21,7 +21,7 @@ services:
             # SECRET KEYS
             - SECRETKEY_STORAGE_TYPE=${SECRETKEY_STORAGE_TYPE}
             - SECRETKEY_PATH=${SECRETKEY_PATH}
-            - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
+            - SECRETKEY_OVERWRITE=${SECRETKEY_OVERWRITE}
             - SECRETKEY_AWS_ACCESS_KEY=${SECRETKEY_AWS_ACCESS_KEY}
             - SECRETKEY_AWS_SECRET_KEY=${SECRETKEY_AWS_SECRET_KEY}
             - SECRETKEY_AWS_REGION=${SECRETKEY_AWS_REGION}
@@ -63,11 +63,11 @@ services:
             - CORS_ORIGINS=${CORS_ORIGINS}
             - MCP_CORS_ORIGINS=${MCP_CORS_ORIGINS}
             - IFRAME_ORIGINS=${IFRAME_ORIGINS}
-            - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT}
+            - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT}
             - CUSTOM_MCP_TOOLS_MAX_BYTES=${CUSTOM_MCP_TOOLS_MAX_BYTES}
             - CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS=${CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS}
             - SHOW_COMMUNITY_NODES=${SHOW_COMMUNITY_NODES}
-            - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
+            - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
             - DISABLED_NODES=${DISABLED_NODES}
             - MODEL_LIST_CONFIG_JSON=${MODEL_LIST_CONFIG_JSON}
 
@@ -97,7 +97,7 @@ services:
 
             # ENTERPRISE
             - LICENSE_URL=${LICENSE_URL}
-            - FLOWISE_EE_LICENSE_KEY=${FLOWISE_EE_LICENSE_KEY}
+            - ACCELANCE_EE_LICENSE_KEY=${ACCELANCE_EE_LICENSE_KEY}
             - OFFLINE=${OFFLINE}
             - INVITE_TOKEN_EXPIRY_IN_HOURS=${INVITE_TOKEN_EXPIRY_IN_HOURS}
             - WORKSPACE_INVITE_TEMPLATE_PATH=${WORKSPACE_INVITE_TEMPLATE_PATH}
@@ -158,5 +158,5 @@ services:
             retries: 5
             start_period: 30s
         volumes:
-            - ~/.flowise:/root/.flowise
-        entrypoint: /bin/sh -c "sleep 3; flowise start"
+            - ~/.accelance:/root/.accelance
+        entrypoint: /bin/sh -c "sleep 3; accelance start"

@@ -1,1 +1,9 @@
 pnpm-lock.yaml
+
+# Don't format markdown, YAML, or Dockerfiles — prettier is slow on large md files
+*.md
+*.yml
+*.yaml
+Dockerfile
+Dockerfile.*
+**/Dockerfile

@@ -1,4 +1,4 @@
-Copyright (c) 2023-present FlowiseAI, Inc.
+﻿Copyright (c) 2023-present FlowiseAI, Inc. | Portions Copyright (c) 2024-present Accelance, Inc.
 
 Portions of this software are licensed as follows:
 
