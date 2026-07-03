@@ -407,8 +407,9 @@ export const resolveVariables = async (
                 // Clean nodeId (handle escaped underscores)
                 const cleanNodeId = nodeIdPart.replace(/\\/g, '')
 
-                // Find the last (most recent) matching node data instead of the first one
-                const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId)
+                // Find the last (most recent) matching node data — match by nodeId OR nodeLabel
+                // The variable picker generates references using the node label (e.g. "Weather Search Agent")
+                const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId || d.nodeLabel === cleanNodeId)
 
                 if (nodeData?.data?.output && outputPath.trim()) {
                     const variableValue = get(nodeData.data.output, outputPath)
@@ -1116,6 +1117,12 @@ const executeNode = async ({
 
         // Prepare node data
         let flowNodeData = cloneDeep(reactFlowNode.data)
+
+        // Always use the live node instance's input definitions so acceptVariable checks work correctly.
+        // The stored reactFlowNode.data.inputParams can be stale or missing acceptVariable flags.
+        if (newNodeInstance.inputs) {
+            flowNodeData.inputParams = newNodeInstance.inputs
+        }
 
         // Apply config overrides if needed
         if (overrideConfig && apiOverrideStatus) {

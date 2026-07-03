@@ -2277,6 +2277,11 @@ class Agent_Agentflow implements INode {
                     //@ts-ignore
                     let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
 
+                    // Normalize to string — some tools (e.g. @langchain/tavily v1.2+) return objects
+                    if (toolOutput !== null && toolOutput !== undefined && typeof toolOutput !== 'string') {
+                        toolOutput = JSON.stringify(toolOutput)
+                    }
+
                     if (options.analyticHandlers && toolIds) {
                         await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
                     }

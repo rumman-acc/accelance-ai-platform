@@ -103,6 +103,7 @@ export class AccountService {
     }
 
     private async sendInviteEmailIfAllowed(send: () => Promise<void>, context: string) {
+        console.log(`[email] sendInviteEmailIfAllowed context="${context}" canSend=${this.canSendTransactionalEmail()}`)
         if (this.canSendTransactionalEmail()) {
             await send()
         } else {

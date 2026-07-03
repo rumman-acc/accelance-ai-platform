@@ -35,6 +35,14 @@ const transporter = nodemailer.createTransport({
     tls: TLS
 })
 
+console.log('[email] SMTP config:', {
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
+    user: SMTP_USER,
+    hasPassword: !!SMTP_PASSWORD
+})
+
 const getEmailTemplate = (defaultTemplateName: string, userTemplatePath?: string) => {
     try {
         if (userTemplatePath) {
@@ -55,13 +63,20 @@ const sendWorkspaceAdd = async (email: string, workspaceName: string, dashboardL
     htmlToSend = compiledWorkspaceInviteTemplateSource({ workspaceName, dashboardLink })
     textContent = `You have been added to ${workspaceName}. Click here to visit your dashboard: ${dashboardLink}` // plain text body
 
-    await transporter.sendMail({
-        from: FROM_ADDRESS, // sender address
-        to: email,
-        subject: `You have been added to ${workspaceName}`, // Subject line
-        text: textContent, // plain text body
-        html: htmlToSend // html body
-    })
+    console.log(`[email] Sending workspace-add to [${email}] workspace="${workspaceName}"`)
+    try {
+        const info = await transporter.sendMail({
+            from: FROM_ADDRESS,
+            to: email,
+            subject: `You have been added to ${workspaceName}`,
+            text: textContent,
+            html: htmlToSend
+        })
+        console.log(`[email] Workspace-add sent OK to [${email}] messageId=${info.messageId} response=${info.response}`)
+    } catch (err: any) {
+        console.error(`[email] Failed to send workspace-add to [${email}]:`, err?.message ?? err)
+        throw err
+    }
 }
 
 const sendWorkspaceInvite = async (
@@ -88,13 +103,20 @@ const sendWorkspaceInvite = async (
     htmlToSend = compiledWorkspaceInviteTemplateSource({ workspaceName, registerLink })
     textContent = `You have been invited to ${workspaceName}. Click here to register: ${registerLink}` // plain text body
 
-    await transporter.sendMail({
-        from: FROM_ADDRESS, // sender address
-        to: email,
-        subject: `You have been invited to ${workspaceName}`, // Subject line
-        text: textContent, // plain text body
-        html: htmlToSend // html body
-    })
+    console.log(`[email] Sending workspace invite to [${email}] workspace="${workspaceName}" link="${registerLink}"`)
+    try {
+        const info = await transporter.sendMail({
+            from: FROM_ADDRESS,
+            to: email,
+            subject: `You have been invited to ${workspaceName}`,
+            text: textContent,
+            html: htmlToSend
+        })
+        console.log(`[email] Invite sent OK to [${email}] messageId=${info.messageId} response=${info.response}`)
+    } catch (err: any) {
+        console.error(`[email] Failed to send invite to [${email}]:`, err?.message ?? err)
+        throw err
+    }
 }
 
 const sendPasswordResetEmail = async (email: string, resetLink: string) => {
