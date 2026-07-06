@@ -43,6 +43,10 @@
 **/*.key
 **/api.json
 
+## local dev data (encryption key, auth secrets, sqlite db, logs, blob storage)
+.flowise/
+.accelance/
+
 ## uploads
 **/uploads
 

@@ -4,6 +4,26 @@ All structural changes to the project are logged here in reverse chronological o
 
 ---
 
+## 2026-07-06 — Fix Encryption Key Persistence (Dev Crash + Production Data-Loss Bug)
+
+**Goal:** Fix a fresh-clone startup crash and a latent production credential-loss bug, both rooted in how the AES encryption key is created/persisted. No AWS Secrets Manager — file-based key storage stays, made robust instead. See `rules/steps/03-fix-encryption-key-persistence.md`, `rules/known-issues.md` #007.
+
+**Changes:**
+
+-   `packages/server/src/utils/index.ts` — `getEncryptionKey()` now creates the parent directory (`fs.mkdirSync(recursive: true)`) before writing an auto-generated key, instead of assuming it exists.
+-   `packages/server/.env.example` — `SECRETKEY_PATH` default placeholder commented out (was a literal broken path causing fresh-clone crashes); now optional, self-heals to `~/.accelance`.
+-   `render.yaml` — fixed three env var names left over from the pre-rebrand codebase that the app no longer reads: `FLOWISE_PLATFORM`→`ACCELANCE_PLATFORM`, `DISABLE_FLOWISE_TELEMETRY`→`DISABLE_TELEMETRY`, `FLOWISE_SECRETKEY_OVERWRITE`→`SECRETKEY_OVERWRITE`. The last one meant the credential-loss-prevention override was silently inert. Also added `TOKEN_HASH_SECRET` as an explicit secret.
+-   `.gitignore` — added `.flowise/` and `.accelance/` (local encryption key, auth secrets, sqlite db, logs, blob storage — none of this should ever be tracked).
+-   Untracked `.flowise/database.sqlite` (accidentally committed leftover from before Postgres/Neon was wired up; `git rm --cached` only, file kept on disk).
+
+**Key decision:** User explicitly opted out of AWS Secrets Manager for production key storage — `SECRETKEY_OVERWRITE` (env-injected key, platform-independent) is the production path instead, now that the env var name actually matches what the code reads.
+
+**Not fixed (flagged, not touched):** `CLAUDE.md` still documents the old `FLOWISE_PLATFORM` var name — left alone since it's user-owned instructions, not code.
+
+**Build result:** `pnpm --filter accelance build` succeeded.
+
+---
+
 ## 2026-07-02 — Email Template Accelance Theme
 
 **Goal:** Replace Flowise black/white email design with Accelance blue+teal brand theme across all 8 email templates (16 files total: `.hbs` + `.html`).

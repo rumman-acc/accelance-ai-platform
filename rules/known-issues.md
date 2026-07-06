@@ -66,3 +66,19 @@
 **Root cause 2:** Neon requires direct connection URL (not pooler) for TypeORM migrations
 
 **Fix:** Confirm `DATABASE_SSL=true` in `packages/server/.env`. Use the direct host (`ep-lively-firefly-...`) not the pooler URL.
+
+---
+
+## #007 — Fresh clone crashes at boot: `ENOENT` writing encryption.key
+
+**Symptom:** New developer clones repo, copies `.env.example` → `.env`, runs `node bin/run start`, server crashes immediately with `ENOENT: no such file or directory, open '.../.accelance/encryption.key'` (or similar, depending on `SECRETKEY_PATH`).
+
+**Root cause:** `getEncryptionKey()` in `packages/server/src/utils/index.ts` auto-generates a key on first boot and writes it to `SECRETKEY_PATH/encryption.key` (or `~/.accelance/encryption.key` if unset) — but never created the parent directory first. `.env.example` used to ship `SECRETKEY_PATH=/absolute/path/to/.accelance` as a live, uncommented placeholder, so a fresh clone pointed at a directory that never existed.
+
+**Fix:** `getEncryptionKey()` now creates the parent directory (`fs.mkdirSync(dir, { recursive: true })`) before writing the key, mirroring the pattern already used by `getOrCreateStoredSecret()` for auth secrets. `.env.example`'s `SECRETKEY_PATH` is now commented out by default — it self-heals to `~/.accelance` when unset.
+
+**Related production bug found in the same pass:** `render.yaml` referenced three pre-rebrand env var names that the code no longer reads at all — `FLOWISE_PLATFORM` (code reads `ACCELANCE_PLATFORM`), `DISABLE_FLOWISE_TELEMETRY` (code reads `DISABLE_TELEMETRY`), and `FLOWISE_SECRETKEY_OVERWRITE` (code reads `SECRETKEY_OVERWRITE`). The last one is the most serious: it's the mechanism that's supposed to prevent the encryption key from being regenerated on every Render redeploy (Render's filesystem is ephemeral), but since the env var name didn't match, it silently did nothing — every redeploy would have permanently orphaned every encrypted credential in Neon. All three names fixed in `render.yaml`; also added `TOKEN_HASH_SECRET` as an explicit secret so ephemeral `/tmp` resets don't invalidate in-flight password-reset/email-verification tokens either.
+
+**Prevention:** When renaming an env var read by application code, grep for the old name across `.env.example`, `render.yaml`, `docker-compose*.yml`, and `CLAUDE.md` in the same pass — deployment config files are easy to miss since they aren't executed/type-checked locally. Note: `CLAUDE.md` itself still documents the old `FLOWISE_PLATFORM` name (line ~19) — not fixed here since it's user-owned instructions, flagged to the user separately.
+
+**Follow-up — sharing one `.env` across multiple developers (same Neon DB):** Even with the mkdir fix, `SECRETKEY_PATH` only points at a *local file* — it isn't part of `.env`'s literal content, so two developers sharing an identical `.env` would still each auto-generate a different encryption key on first boot (their `.flowise/encryption.key` never existed to begin with) and be unable to decrypt each other's already-saved credentials in the shared Neon DB. Same issue applied to `TOKEN_HASH_SECRET` (also file-backed, not previously set explicitly). Fixed by adding `SECRETKEY_OVERWRITE` and `TOKEN_HASH_SECRET` as explicit literal values in `packages/server/.env` (pulled from the existing `.flowise/encryption.key` / `token_hash_secret.key` file contents) — `SECRETKEY_OVERWRITE` is checked before any file/path logic in `getEncryptionKey()`, so every machine using this exact `.env` now decrypts identically regardless of local path differences.

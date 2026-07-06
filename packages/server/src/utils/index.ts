@@ -1587,6 +1587,10 @@ export const getEncryptionKey = async (): Promise<string> => {
         const defaultLocation = process.env.SECRETKEY_PATH
             ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
             : path.join(getUserHome(), '.accelance', 'encryption.key')
+        const defaultDir = path.dirname(defaultLocation)
+        if (!fs.existsSync(defaultDir)) {
+            fs.mkdirSync(defaultDir, { recursive: true })
+        }
         await fs.promises.writeFile(defaultLocation, encryptKey)
         return encryptKey
     }
