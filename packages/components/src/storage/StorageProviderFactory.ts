@@ -3,6 +3,7 @@ import { LocalStorageProvider } from './LocalStorageProvider'
 import { S3StorageProvider } from './S3StorageProvider'
 import { GCSStorageProvider } from './GCSStorageProvider'
 import { AzureBlobStorageProvider } from './AzureBlobStorageProvider'
+import { ImageKitStorageProvider } from './ImageKitStorageProvider'
 
 /**
  * Factory for creating and managing storage provider instances.
@@ -28,6 +29,9 @@ export class StorageProviderFactory {
                     break
                 case 'azure':
                     StorageProviderFactory.instance = new AzureBlobStorageProvider()
+                    break
+                case 'imagekit':
+                    StorageProviderFactory.instance = new ImageKitStorageProvider()
                     break
                 case 'local':
                 default:

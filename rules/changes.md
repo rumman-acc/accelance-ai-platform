@@ -4,6 +4,28 @@ All structural changes to the project are logged here in reverse chronological o
 
 ---
 
+## 2026-07-06 — Add ImageKit Storage Provider
+
+**Goal:** Let documents/attachments be stored on a free, no-card-required third-party cloud (ImageKit) instead of local disk. See `rules/steps/03-imagekit-storage-provider.md` for the full design/tradeoffs writeup.
+
+**Changes:**
+
+-   `packages/components/package.json` — added `imagekit` (^6.0.0) dependency.
+-   `packages/components/src/storage/ImageKitStorageProvider.ts` — new `IStorageProvider` implementation. Uses ImageKit's Upload/List/Delete API for file storage; hand-rolled multer storage engine (no official `multer-imagekit` package exists) and a hand-rolled Winston transport (ImageKit has no logging product — buffers log lines and periodically uploads them as dated files, best-effort only).
+-   `packages/components/src/storage/StorageProviderFactory.ts` — added `case 'imagekit'`.
+-   `packages/components/src/storage/IStorageProvider.ts` — doc comment updated to list `imagekit` as a valid storage type.
+-   `packages/server/.env.example` — documented `STORAGE_TYPE=imagekit` + `IMAGEKIT_PUBLIC_KEY` / `IMAGEKIT_PRIVATE_KEY` / `IMAGEKIT_URL_ENDPOINT`.
+
+**Known caveats (not fully verified — no ImageKit account available to runtime-test against):**
+
+-   Uploaded files are retrievable via a predictable public CDN URL unless `isPrivateFile` is set — same exposure model as an unrestricted S3 bucket, mitigated only by UUIDs in the folder path.
+-   `getStorageSize`'s recursive behavior when listing nested folders is unconfirmed against ImageKit's live API — should be fine given this repo's shallow `org/chatflow/file` path structure.
+-   User must sign up at imagekit.io, get their Public Key / Private Key / URL endpoint, set the 3 env vars, and manually smoke-test an actual upload/download before relying on this.
+
+**Build result:** `pnpm install` succeeded; `tsc --noEmit` on `packages/components` passed with zero errors.
+
+---
+
 ## 2026-07-06 — Fix Encryption Key Persistence (Dev Crash + Production Data-Loss Bug)
 
 **Goal:** Fix a fresh-clone startup crash and a latent production credential-loss bug, both rooted in how the AES encryption key is created/persisted. No AWS Secrets Manager — file-based key storage stays, made robust instead. See `rules/steps/03-fix-encryption-key-persistence.md`, `rules/known-issues.md` #007.

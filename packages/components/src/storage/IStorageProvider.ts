@@ -17,7 +17,7 @@ export interface StorageSizeResult {
 
 export interface IStorageProvider {
     /**
-     * Get the storage type (e.g., 'local', 's3', 'gcs', 'azure')
+     * Get the storage type (e.g., 'local', 's3', 'gcs', 'azure', 'imagekit')
      */
     getStorageType(): string
 
