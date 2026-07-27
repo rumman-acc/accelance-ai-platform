@@ -53,7 +53,7 @@ import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
 import { useError } from '@/store/context/ErrorContext'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
+    borderColor: theme.palette.divider,
 
     [`&.${tableCellClasses.head}`]: {
         color: theme.palette.grey[900]
@@ -226,13 +226,13 @@ const Variables = () => {
                             title='Variables'
                             description='Create and manage global variables'
                         >
-                            <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
+                            <Button variant='outlined' sx={{ height: '100%' }} onClick={() => setShowHowToDialog(true)}>
                                 How To Use
                             </Button>
                             <StyledPermissionButton
                                 permissionId={'variables:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                                 id='btn_createVariable'
@@ -253,10 +253,7 @@ const Variables = () => {
                             </Stack>
                         ) : (
                             <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
+                                <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                     <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                                         <TableHead
                                             sx={{
