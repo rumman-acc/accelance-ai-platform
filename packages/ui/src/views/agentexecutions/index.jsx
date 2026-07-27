@@ -49,7 +49,7 @@ import { ExecutionDetails } from './ExecutionDetails'
 const AgentExecutions = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
-    const borderColor = theme.palette.grey[900] + 25
+    const borderColor = theme.palette.divider
 
     const getAllExecutions = useApi(executionsApi.getAllExecutions)
     const deleteExecutionsApi = useApi(executionsApi.deleteExecutions)

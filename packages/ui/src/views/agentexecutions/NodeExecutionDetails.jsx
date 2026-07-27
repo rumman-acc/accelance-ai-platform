@@ -348,7 +348,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                 <ToggleButtonGroup
-                    sx={{ borderRadius: 2, maxHeight: 40 }}
+                    sx={{ borderRadius: 1, maxHeight: 40 }}
                     value={dataView}
                     color='primary'
                     exclusive
@@ -356,8 +356,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                 >
                     <ToggleButton
                         sx={{
-                            borderColor: theme.palette.grey[900] + 25,
-                            borderRadius: 2,
+                            borderColor: theme.palette.divider,
+                            borderRadius: 1,
                             color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                         }}
                         variant='contained'
@@ -368,8 +368,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     </ToggleButton>
                     <ToggleButton
                         sx={{
-                            borderColor: theme.palette.grey[900] + 25,
-                            borderRadius: 2,
+                            borderColor: theme.palette.divider,
+                            borderRadius: 1,
                             color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                         }}
                         variant='contained'
