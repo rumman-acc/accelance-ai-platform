@@ -373,7 +373,7 @@ const ShowStoredChunks = () => {
                                             <CardWrapper
                                                 content={false}
                                                 onClick={() => chunkSelected(row.id)}
-                                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                                sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                                             >
                                                 <Card>
                                                     <CardContent sx={{ p: 2 }}>

@@ -334,7 +334,7 @@ const Documents = () => {
                     >
                         {hasDocStores && (
                             <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
+                                sx={{ borderRadius: 1, maxHeight: 40 }}
                                 value={view}
                                 color='primary'
                                 exclusive
@@ -342,8 +342,8 @@ const Documents = () => {
                             >
                                 <ToggleButton
                                     sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
+                                        borderColor: theme.palette.divider,
+                                        borderRadius: 1,
                                         color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                                     }}
                                     variant='contained'
@@ -354,8 +354,8 @@ const Documents = () => {
                                 </ToggleButton>
                                 <ToggleButton
                                     sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
+                                        borderColor: theme.palette.divider,
+                                        borderRadius: 1,
                                         color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                                     }}
                                     variant='contained'
@@ -369,7 +369,7 @@ const Documents = () => {
                         <StyledPermissionButton
                             permissionId={'documentStores:create'}
                             variant='contained'
-                            sx={{ borderRadius: 2, height: '100%' }}
+                            sx={{ height: '100%' }}
                             onClick={addNew}
                             startIcon={<IconPlus />}
                             id='btn_createVariable'

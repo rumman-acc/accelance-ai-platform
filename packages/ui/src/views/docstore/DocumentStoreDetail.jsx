@@ -69,7 +69,7 @@ import { useError } from '@/store/context/ErrorContext'
 // ==============================|| DOCUMENTS ||============================== //
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
+    borderColor: theme.palette.divider,
     padding: '6px 16px',
 
     [`&.${tableCellClasses.head}`]: {
@@ -495,7 +495,7 @@ const DocumentStoreDetails = () => {
                             <StyledPermissionButton
                                 permissionId={'documentStores:add-loader'}
                                 variant='contained'
-                                sx={{ ml: 2, minWidth: 200, borderRadius: 2, height: '100%', color: 'white' }}
+                                sx={{ ml: 2, minWidth: 200, height: '100%', color: 'white' }}
                                 startIcon={<IconPlus />}
                                 onClick={listLoaders}
                             >
@@ -631,7 +631,7 @@ const DocumentStoreDetails = () => {
                                 <div>No Document Added Yet</div>
                                 <StyledButton
                                     variant='contained'
-                                    sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
+                                    sx={{ height: '100%', mt: 2, color: 'white' }}
                                     startIcon={<IconPlus />}
                                     onClick={listLoaders}
                                 >
@@ -639,10 +639,7 @@ const DocumentStoreDetails = () => {
                                 </StyledButton>
                             </Stack>
                         ) : (
-                            <TableContainer
-                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                component={Paper}
-                            >
+                            <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                 <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                                     <TableHead
                                         sx={{

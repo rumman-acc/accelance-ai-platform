@@ -527,7 +527,6 @@ const VectorStoreConfigure = () => {
                                             variant='outlined'
                                             color='error'
                                             sx={{
-                                                borderRadius: 2,
                                                 height: '100%'
                                             }}
                                             startIcon={<IconRefresh />}
@@ -542,7 +541,6 @@ const VectorStoreConfigure = () => {
                                             variant='outlined'
                                             color='secondary'
                                             sx={{
-                                                borderRadius: 2,
                                                 height: '100%'
                                             }}
                                             startIcon={<IconDeviceFloppy />}
@@ -556,7 +554,6 @@ const VectorStoreConfigure = () => {
                                             <Button
                                                 variant='contained'
                                                 sx={{
-                                                    borderRadius: 2,
                                                     height: '100%',
                                                     backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
                                                     '&:hover': {

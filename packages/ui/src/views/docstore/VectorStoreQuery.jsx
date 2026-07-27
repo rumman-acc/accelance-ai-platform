@@ -269,7 +269,7 @@ const VectorStoreQuery = () => {
                             permissionId={'documentStores:upsert-config'}
                             variant='outlined'
                             color='secondary'
-                            sx={{ borderRadius: 2, height: '100%' }}
+                            sx={{ height: '100%' }}
                             startIcon={<IconDeviceFloppy />}
                             onClick={saveConfig}
                         >
@@ -453,7 +453,7 @@ const VectorStoreQuery = () => {
                                                     <CardWrapper
                                                         content={false}
                                                         onClick={() => chunkSelected(row.id, row.chunkNo)}
-                                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                                        sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                                                     >
                                                         <Card>
                                                             <CardContent sx={{ p: 2 }}>

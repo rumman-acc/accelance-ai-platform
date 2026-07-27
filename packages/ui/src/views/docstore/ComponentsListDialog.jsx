@@ -138,8 +138,8 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
                             onClick={() => onSelected(loader)}
                             sx={{
                                 border: 1,
-                                borderColor: theme.palette.grey[900] + 25,
-                                borderRadius: 2,
+                                borderColor: theme.palette.divider,
+                                borderRadius: 1,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'start',
