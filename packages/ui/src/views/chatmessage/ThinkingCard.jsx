@@ -42,7 +42,7 @@ const ThinkingCard = ({ thinking, thinkingDuration, isThinking, customization })
         <Box
             sx={{
                 width: '100%',
-                borderRadius: 2,
+                borderRadius: 1,
                 border: '1px solid',
                 borderColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
                 backgroundColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.02)' : 'white'

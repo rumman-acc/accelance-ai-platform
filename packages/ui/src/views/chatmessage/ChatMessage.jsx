@@ -2381,7 +2381,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                 ? darken(theme.palette.background.paper, 0.2)
                                 : theme.palette.background.paper,
                             boxShadow: customization.isDarkMode ? '0px 0px 15px 0px rgba(255, 255, 255, 0.1)' : theme.shadows[3],
-                            borderRadius: 2,
+                            borderRadius: 1,
                             overflowY: 'auto' // Enable vertical scrolling if content overflows
                         }}
                     >

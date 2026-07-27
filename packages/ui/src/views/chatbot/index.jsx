@@ -84,7 +84,7 @@ const ChatbotFull = () => {
                                     variant='outlined'
                                     sx={{
                                         border: `1px solid ${theme.palette.error.main}`,
-                                        borderRadius: 2,
+                                        borderRadius: 1,
                                         padding: '20px',
                                         boxShadow: `0 4px 8px ${alpha(theme.palette.error.main, 0.15)}`
                                     }}
