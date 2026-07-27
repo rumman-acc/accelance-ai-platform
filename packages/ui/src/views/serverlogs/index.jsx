@@ -26,8 +26,9 @@ import LogsEmptySVG from '@/assets/images/logs_empty.svg'
 import 'react-datepicker/dist/react-datepicker.css'
 
 const DatePickerCustomInput = forwardRef(function DatePickerCustomInput({ value, onClick }, ref) {
+    const theme = useTheme()
     return (
-        <ListItemButton style={{ borderRadius: 15, border: '1px solid #e0e0e0' }} onClick={onClick} ref={ref}>
+        <ListItemButton sx={{ borderRadius: 1, border: 1, borderColor: theme.palette.divider }} onClick={onClick} ref={ref}>
             {value}
         </ListItemButton>
     )
@@ -105,7 +106,7 @@ const Logs = () => {
         '&': {
             color: '#191b1f',
             padding: '10px',
-            borderRadius: '15px'
+            borderRadius: '8px'
         },
         '.cm-placeholder': {
             color: 'rgba(120, 120, 120, 0.5)'
