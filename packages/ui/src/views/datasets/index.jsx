@@ -211,7 +211,7 @@ const EvalDatasets = () => {
                             <StyledPermissionButton
                                 permissionId={'datasets:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
@@ -231,10 +231,7 @@ const EvalDatasets = () => {
                             </Stack>
                         ) : (
                             <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
+                                <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                     <Table sx={{ minWidth: 650 }}>
                                         <TableHead
                                             sx={{

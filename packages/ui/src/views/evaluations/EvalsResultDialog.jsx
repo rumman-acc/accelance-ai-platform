@@ -110,8 +110,8 @@ const EvalsResultDialog = ({ show, dialogProps, onCancel, openDetailsDrawer }) =
                         height: 'calc(100vh - 100px)',
                         marginTop: 1,
                         border: 1,
-                        borderColor: theme.palette.grey[900] + 25,
-                        borderRadius: 2
+                        borderColor: theme.palette.divider,
+                        borderRadius: 1
                     }}
                     component={Paper}
                 >

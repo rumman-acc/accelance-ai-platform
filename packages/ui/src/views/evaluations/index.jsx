@@ -305,7 +305,7 @@ const EvalsEvaluation = () => {
                                 onChange={toggleAutoRefresh}
                                 size='small'
                                 sx={{
-                                    borderRadius: 2,
+                                    borderRadius: 1,
                                     height: '100%',
                                     backgroundColor: 'transparent',
                                     color: autoRefresh ? '#ff9800' : '#4caf50',
@@ -332,7 +332,7 @@ const EvalsEvaluation = () => {
                             </ToggleButton>
                             <IconButton
                                 sx={{
-                                    borderRadius: 2,
+                                    borderRadius: 1,
                                     height: '100%',
                                     color: theme.palette.secondary.main,
                                     '&:hover': {
@@ -347,7 +347,7 @@ const EvalsEvaluation = () => {
                             </IconButton>
                             <StyledPermissionButton
                                 permissionId={'evaluations:create'}
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={createEvaluation}
                                 startIcon={<IconPlus />}
                             >
@@ -379,10 +379,7 @@ const EvalsEvaluation = () => {
                             </Stack>
                         ) : (
                             <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
+                                <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                     <Table sx={{ minWidth: 650 }}>
                                         <TableHead
                                             sx={{
@@ -755,7 +752,7 @@ function EvaluationRunRow(props) {
                     <TableRow sx={{ '& td': { border: 0 } }}>
                         <StyledTableCell colSpan={12} sx={{ p: 2 }}>
                             <Collapse in={open} timeout='auto' unmountOnExit>
-                                <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
+                                <Box sx={{ borderRadius: 1, border: 1, borderColor: theme.palette.divider, overflow: 'hidden' }}>
                                     <Table aria-label='chatflow table'>
                                         <TableHead style={{ height: 10 }}>
                                             <TableRow>

@@ -390,19 +390,12 @@ const EvalEvaluationRows = () => {
                                 />
                             )}
                             {evaluation?.versionCount > 1 && (
-                                <Button
-                                    sx={{ borderRadius: 2 }}
-                                    startIcon={<IconClock />}
-                                    variant='outlined'
-                                    color='primary'
-                                    onClick={openVersionsDrawer}
-                                >
+                                <Button startIcon={<IconClock />} variant='outlined' color='primary' onClick={openVersionsDrawer}>
                                     Version history
                                 </Button>
                             )}
                             <PermissionButton
                                 permissionId={'evaluations:run'}
-                                sx={{ borderRadius: 2 }}
                                 startIcon={<IconRun />}
                                 variant='contained'
                                 color='primary'
@@ -656,7 +649,7 @@ const EvalEvaluationRows = () => {
                                 Expand
                             </Button>
                         </Stack>
-                        <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
+                        <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                             <Table sx={{ minWidth: 650 }}>
                                 <TableHead
                                     sx={{

@@ -189,7 +189,7 @@ const Evaluators = () => {
                         >
                             <StyledPermissionButton
                                 permissionId={'evaluators:create'}
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 variant='contained'
                                 onClick={newEvaluator}
                                 startIcon={<IconPlus />}
@@ -210,10 +210,7 @@ const Evaluators = () => {
                             </Stack>
                         ) : (
                             <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
+                                <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                     <Table sx={{ minWidth: 650 }}>
                                         <TableHead
                                             sx={{

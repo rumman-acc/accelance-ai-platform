@@ -302,7 +302,7 @@ const EvalDatasetRows = () => {
                                 permissionId={'datasets:create,datasets:update'}
                                 variant='outlined'
                                 color='secondary'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={uploadCSV}
                                 startIcon={<IconUpload />}
                             >
@@ -311,7 +311,7 @@ const EvalDatasetRows = () => {
                             <StyledPermissionButton
                                 permissionId={'datasets:create,datasets:update'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
@@ -343,7 +343,7 @@ const EvalDatasetRows = () => {
                                 <StyledPermissionButton
                                     permissionId={'datasets:create,datasets:update'}
                                     variant='contained'
-                                    sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
+                                    sx={{ height: '100%', mt: 2, color: 'white' }}
                                     startIcon={<IconPlus />}
                                     onClick={addNew}
                                 >
@@ -352,10 +352,7 @@ const EvalDatasetRows = () => {
                             </Stack>
                         ) : (
                             <React.Fragment>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
+                                <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                     <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                                         <TableHead
                                             sx={{
