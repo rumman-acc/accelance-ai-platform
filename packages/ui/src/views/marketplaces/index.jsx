@@ -132,7 +132,7 @@ const Marketplace = () => {
 
     const getSelectStyles = (borderColor, isDarkMode) => ({
         '& .MuiOutlinedInput-notchedOutline': {
-            borderRadius: 2,
+            borderRadius: 1,
             borderColor: borderColor
         },
         '& .MuiSvgIcon-root': {
@@ -477,7 +477,7 @@ const Marketplace = () => {
                                 <>
                                     <FormControl
                                         sx={{
-                                            borderRadius: 2,
+                                            borderRadius: 1,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
@@ -497,7 +497,7 @@ const Marketplace = () => {
                                             input={<OutlinedInput label='Tag' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
+                                            sx={getSelectStyles(theme.palette.divider, theme?.customization?.isDarkMode)}
                                         >
                                             {badges.map((name) => (
                                                 <MenuItem
@@ -513,7 +513,7 @@ const Marketplace = () => {
                                     </FormControl>
                                     <FormControl
                                         sx={{
-                                            borderRadius: 2,
+                                            borderRadius: 1,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
@@ -533,7 +533,7 @@ const Marketplace = () => {
                                             input={<OutlinedInput label='Type' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
+                                            sx={getSelectStyles(theme.palette.divider, theme?.customization?.isDarkMode)}
                                         >
                                             {types.map((name) => (
                                                 <MenuItem
@@ -549,7 +549,7 @@ const Marketplace = () => {
                                     </FormControl>
                                     <FormControl
                                         sx={{
-                                            borderRadius: 2,
+                                            borderRadius: 1,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
@@ -569,7 +569,7 @@ const Marketplace = () => {
                                             input={<OutlinedInput label='Framework' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
+                                            sx={getSelectStyles(theme.palette.divider, theme?.customization?.isDarkMode)}
                                         >
                                             {framework.map((name) => (
                                                 <MenuItem
@@ -592,7 +592,7 @@ const Marketplace = () => {
                             description='Explore and use pre-built templates'
                         >
                             <ToggleButtonGroup
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ borderRadius: 1, height: '100%' }}
                                 value={view}
                                 color='primary'
                                 exclusive
@@ -600,8 +600,8 @@ const Marketplace = () => {
                             >
                                 <ToggleButton
                                     sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
+                                        borderColor: theme.palette.divider,
+                                        borderRadius: 1,
                                         color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                                     }}
                                     variant='contained'
@@ -612,8 +612,8 @@ const Marketplace = () => {
                                 </ToggleButton>
                                 <ToggleButton
                                     sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
+                                        borderColor: theme.palette.divider,
+                                        borderRadius: 1,
                                         color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                                     }}
                                     variant='contained'
