@@ -53,7 +53,7 @@ import { IconChevronsDown, IconChevronsUp, IconCopy, IconEdit, IconEye, IconEyeO
 // ==============================|| APIKey ||============================== //
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
+    borderColor: theme.palette.divider,
     padding: '6px 16px',
 
     [`&.${tableCellClasses.head}`]: {
@@ -165,7 +165,7 @@ function APIKeyRow(props) {
                 <TableRow sx={{ '& td': { border: 0 } }}>
                     <StyledTableCell sx={{ p: 2 }} colSpan={7}>
                         <Collapse in={open} timeout='auto' unmountOnExit>
-                            <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
+                            <Box sx={{ borderRadius: 1, border: 1, borderColor: theme.palette.divider, overflow: 'hidden' }}>
                                 <Table aria-label='chatflow table'>
                                     <TableHead sx={{ height: 48 }}>
                                         <TableRow>
@@ -396,7 +396,7 @@ const APIKey = () => {
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                                 id='btn_createApiKey'
@@ -417,10 +417,7 @@ const APIKey = () => {
                             </Stack>
                         ) : (
                             <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
+                                <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                     <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                                         <TableHead
                                             sx={{
