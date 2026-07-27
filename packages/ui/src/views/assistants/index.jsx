@@ -84,8 +84,8 @@ const FeatureCards = () => {
                         flexDirection: 'column',
                         justifyContent: 'space-between',
                         border: 1,
-                        borderColor: theme.palette.grey[900] + 25,
-                        borderRadius: 2,
+                        borderColor: theme.palette.divider,
+                        borderRadius: 1,
                         color: customization.isDarkMode ? theme.palette.common.white : '#333333',
                         cursor: 'pointer',
                         '&:hover': {

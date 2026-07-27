@@ -970,8 +970,8 @@ const CustomAssistantConfigurePreview = () => {
                                                 mt: 1,
                                                 mb: 1,
                                                 border: 1,
-                                                borderColor: theme.palette.grey[900] + 25,
-                                                borderRadius: 2
+                                                borderColor: theme.palette.divider,
+                                                borderRadius: 1
                                             }}
                                         >
                                             <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -1007,8 +1007,8 @@ const CustomAssistantConfigurePreview = () => {
                                                 mt: 1,
                                                 mb: 1,
                                                 border: 1,
-                                                borderColor: theme.palette.grey[900] + 25,
-                                                borderRadius: 2
+                                                borderColor: theme.palette.divider,
+                                                borderRadius: 1
                                             }}
                                         >
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
@@ -1031,7 +1031,7 @@ const CustomAssistantConfigurePreview = () => {
                                                 {selectedChatModel?.name && (
                                                     <Button
                                                         title='Generate instructions using model'
-                                                        sx={{ borderRadius: 20 }}
+                                                        sx={{ borderRadius: 10 }}
                                                         size='small'
                                                         variant='text'
                                                         onClick={() => generateInstruction()}
@@ -1056,8 +1056,8 @@ const CustomAssistantConfigurePreview = () => {
                                                 mt: 1,
                                                 mb: 1,
                                                 border: 1,
-                                                borderColor: theme.palette.grey[900] + 25,
-                                                borderRadius: 2
+                                                borderColor: theme.palette.divider,
+                                                borderRadius: 1
                                             }}
                                         >
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
@@ -1118,7 +1118,7 @@ const CustomAssistantConfigurePreview = () => {
                                                             {selectedChatModel?.name && (
                                                                 <Button
                                                                     title='Generate description using model'
-                                                                    sx={{ borderRadius: 20 }}
+                                                                    sx={{ borderRadius: 10 }}
                                                                     size='small'
                                                                     variant='text'
                                                                     onClick={() => generateDocStoreToolDesc(ds.id)}
@@ -1163,8 +1163,8 @@ const CustomAssistantConfigurePreview = () => {
                                                     mt: 1,
                                                     mb: 1,
                                                     border: 1,
-                                                    borderColor: theme.palette.grey[900] + 25,
-                                                    borderRadius: 2
+                                                    borderColor: theme.palette.divider,
+                                                    borderRadius: 1
                                                 }}
                                             >
                                                 {showHideInputParams(selectedChatModel)
@@ -1185,8 +1185,8 @@ const CustomAssistantConfigurePreview = () => {
                                                 mt: 1,
                                                 mb: 1,
                                                 border: 1,
-                                                borderColor: theme.palette.grey[900] + 25,
-                                                borderRadius: 2
+                                                borderColor: theme.palette.divider,
+                                                borderRadius: 1
                                             }}
                                         >
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
@@ -1198,8 +1198,8 @@ const CustomAssistantConfigurePreview = () => {
                                                     <Box
                                                         sx={{
                                                             border: 1,
-                                                            borderColor: theme.palette.grey[900] + 25,
-                                                            borderRadius: 2,
+                                                            borderColor: theme.palette.divider,
+                                                            borderRadius: 1,
                                                             mt: 2,
                                                             mb: 2
                                                         }}
@@ -1279,7 +1279,7 @@ const CustomAssistantConfigurePreview = () => {
                                             <Button
                                                 fullWidth
                                                 title='Add Tool'
-                                                sx={{ mt: 1, mb: 1, borderRadius: 20 }}
+                                                sx={{ mt: 1, mb: 1, borderRadius: 10 }}
                                                 variant='outlined'
                                                 onClick={() => setSelectedTools([...selectedTools, {}])}
                                             >
@@ -1294,7 +1294,7 @@ const CustomAssistantConfigurePreview = () => {
                                                     sx={{
                                                         mt: 1,
                                                         mb: 1,
-                                                        borderRadius: 20,
+                                                        borderRadius: 10,
                                                         background: 'linear-gradient(45deg, #673ab7 30%, #1e88e5 90%)'
                                                     }}
                                                     variant='contained'

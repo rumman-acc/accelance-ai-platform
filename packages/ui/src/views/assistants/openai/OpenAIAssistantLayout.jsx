@@ -128,14 +128,14 @@ const OpenAIAssistantLayout = () => {
                                 variant='outlined'
                                 onClick={loadExisting}
                                 startIcon={<IconFileUpload />}
-                                sx={{ borderRadius: 2, height: 40 }}
+                                sx={{ height: 40 }}
                             >
                                 Load
                             </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'assistants:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: 40 }}
+                                sx={{ height: 40 }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >

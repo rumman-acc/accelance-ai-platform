@@ -106,7 +106,7 @@ const CustomAssistantLayout = () => {
                             <StyledPermissionButton
                                 permissionId={'assistants:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: 40 }}
+                                sx={{ height: 40 }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
