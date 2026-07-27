@@ -236,8 +236,11 @@ token name means different things depending on dark mode.
 
 **Radii (current):** Global default `12px`, stored in Redux customization state and **user-adjustable
 at runtime via a settings slider** — i.e. radius is not currently a fixed design constant, it's a
-live user preference. `MuiButton` hardcodes its own `4px` independent of that setting (inconsistency).
-Ad hoc inline radii also appear uncoordinated: `999px` pills, `theme.spacing(2)` (=16px), etc.
+live user preference. `MuiButton` hardcoded its own `4px` independent of that setting (inconsistency —
+**fixed 2026-07-27 in migration-checklist.md row 2**, now follows `theme.customization.borderRadius`
+like the rest of `compStyleOverride.js`). Ad hoc inline radii still appear uncoordinated on a
+per-component basis: `999px` pills, `theme.spacing(2)` (=16px), etc. — to be cleaned up as each
+component's own migration-checklist row comes up, not all at once.
 
 **Shadows/elevation (current):** No custom theme `shadows` array — MUI's default 25-step array is in
 effect, but `MuiPaper` is forced flat (`elevation: 0`, no background image), so cards/papers render

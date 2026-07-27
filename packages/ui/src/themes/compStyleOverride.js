@@ -38,7 +38,10 @@ export default function componentStyleOverrides(theme) {
             styleOverrides: {
                 root: {
                     fontWeight: 500,
-                    borderRadius: '4px'
+                    // Was hardcoded to '4px' independent of the customization radius — a flagged
+                    // inconsistency in DESIGN_SPEC.md Section 4. Now follows the brand's 8px radius
+                    // token like every other component in this file.
+                    borderRadius: `${theme?.customization?.borderRadius}px`
                 }
             }
         },

@@ -60,6 +60,9 @@ $grey900: #212121;
 // transparent
 $transparent: #ffffff00;
 
+// border — accelance design system color.border, wired to MUI's semantic `divider` slot (palette.js)
+$borderGray: #e2e8f0;
+
 // ==============================|| DARK THEME VARIANTS ||============================== //
 
 // paper & background
@@ -177,4 +180,7 @@ $darkTextSecondary: #8492c4;
 
     // transparent
     transparent: $transparent;
+
+    // border
+    borderGray: $borderGray;
 }

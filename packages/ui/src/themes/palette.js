@@ -78,6 +78,9 @@ export default function themePalette(theme) {
             paper: theme.paper,
             default: theme.backgroundDefault
         },
+        // color.border from design-system/tokens.json — MUI's semantic divider/border slot.
+        // Only wired for light mode for now (light-only decision, see DESIGN_SPEC.md Section 9).
+        divider: theme.customization.isDarkMode ? theme.colors?.grey900 + 25 : theme.colors?.borderGray,
         textBackground: {
             main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.grey50,
             border: theme.customization.isDarkMode ? theme.colors?.transparent : theme.colors?.grey400

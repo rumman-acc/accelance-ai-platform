@@ -49,6 +49,12 @@ export const theme = (customization) => {
     const themeOptions = {
         direction: 'ltr',
         palette: themePalette(themeOption),
+        // design-system/tokens.json radius token (8px universal) — was unset, so MUI's default (4)
+        // silently disagreed with the brand radius everywhere a numeric `sx={{ borderRadius: N }}`
+        // shorthand was used. Now derives from the same customization value as everything else.
+        shape: {
+            borderRadius: customization.borderRadius
+        },
         mixins: {
             toolbar: {
                 minHeight: '48px',

@@ -52,7 +52,7 @@ import { useError } from '@/store/context/ErrorContext'
 import ShareWithWorkspaceDialog from '@/ui-component/dialog/ShareWithWorkspaceDialog'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
+    borderColor: theme.palette.divider,
     padding: '6px 16px',
 
     [`&.${tableCellClasses.head}`]: {
@@ -252,7 +252,7 @@ const Credentials = () => {
                             <StyledPermissionButton
                                 permissionId='credentials:create'
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={listCredential}
                                 startIcon={<IconPlus />}
                             >
@@ -271,10 +271,7 @@ const Credentials = () => {
                                 <div>No Credentials Yet</div>
                             </Stack>
                         ) : (
-                            <TableContainer
-                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                component={Paper}
-                            >
+                            <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                 <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                                     <TableHead
                                         sx={{
