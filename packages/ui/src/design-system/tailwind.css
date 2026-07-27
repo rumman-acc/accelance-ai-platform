@@ -1,0 +1,8 @@
+/*
+ * Tailwind entry point for migrated (design-system) components only.
+ * Preflight is disabled (see tailwind.config.js) — MUI's CssBaseline still
+ * owns the reset for unmigrated pages during this phased migration.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

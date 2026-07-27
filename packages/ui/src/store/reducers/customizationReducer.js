@@ -10,7 +10,11 @@ export const initialState = {
     borderRadius: config.borderRadius,
     opened: true,
     isHorizontal: localStorage.getItem('isHorizontal') === 'true' ? true : false,
-    isDarkMode: localStorage.getItem('isDarkMode') === 'true' ? true : false
+    // Light-only for now: the accelance design system (design-system/tokens.json) has no dark
+    // palette. Toggle removed from Header (migration-checklist.md row 1) — forcing false here too so
+    // a stale `isDarkMode=true` in an existing user's localStorage can't strand them in dark mode with
+    // no way back. See DESIGN_SPEC.md Section 9 — logged as open, not silently dropped.
+    isDarkMode: false
 }
 
 // ==============================|| CUSTOMIZATION REDUCER ||============================== //

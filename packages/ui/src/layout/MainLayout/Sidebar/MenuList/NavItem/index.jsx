@@ -22,6 +22,11 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     const customization = useSelector((state) => state.customization)
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
 
+    // Per design-system/components/component-inventory.md (Sidebar): active item = left Accelance
+    // Blue bar + light-blue tint background. Reads the same isOpen state already used below for
+    // selection/expansion — no new logic, just a derived boolean for the new styling.
+    const isSelected = customization.isOpen.findIndex((id) => id === item?.id) > -1
+
     const Icon = item.icon
     const itemIcon = item?.icon ? (
         <Icon stroke={1.5} size='1.3rem' />
@@ -104,9 +109,14 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                 alignItems: 'flex-start',
                 backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
                 py: level > 1 ? 1 : 1.25,
-                pl: `${level * 24}px`
+                pl: `${level * 24}px`,
+                ...(isSelected &&
+                    level <= 1 && {
+                        borderLeft: `3px solid ${theme.palette.primary.main}`,
+                        backgroundColor: `${theme.palette.primary.light} !important`
+                    })
             }}
-            selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
+            selected={isSelected}
             onClick={() => itemHandler(item.id)}
         >
             {item.id === 'loadChatflow' && <input type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />}

@@ -1,45 +1,50 @@
 // paper & background
 $paper: #ffffff;
 
-// primary
-$primaryLight: #dbeafe;
-$primaryMain: #2563eb;
-$primaryDark: #1d4ed8;
-$primary200: #93c5fd;
-$primary800: #1e40af;
+// primary — accelance design system (design-system/tokens.json): color.primary / color.primaryDark / color.tint
+// primary200/800 have no direct brand-token equivalent (brand system defines only main+dark, no
+// intermediate ramp) — reusing tint/primaryDark rather than inventing new hex values (CLAUDE.md rule 2).
+// Flagged in DESIGN_SPEC.md Section 9 as a gap: a full MUI-style tonal ramp doesn't exist upstream yet.
+$primaryLight: #c8d8ec; // = color.tint
+$primaryMain: #0052cc; // = color.primary
+$primaryDark: #003a8f; // = color.primaryDark
+$primary200: #c8d8ec; // = color.tint (reused — no brand equivalent)
+$primary800: #003a8f; // = color.primaryDark (reused — no brand equivalent)
 
-// secondary
+// secondary — mapped to color.compliance (teal), the closest existing brand accent to this app's
+// previous teal-family secondary. No brand-token light/dark shades exist for it; see note above.
 $secondaryLight: #ccfbf1;
-$secondaryMain: #0d9488;
-$secondaryDark: #0f766e;
+$secondaryMain: #0891b5; // = color.compliance
+$secondaryDark: #0891b5; // no brand-token dark shade — reused main (gap, see DESIGN_SPEC.md Section 9)
 $secondary200: #5eead4;
-$secondary800: #115e59;
+$secondary800: #0891b5;
 
-// success Colors
+// success Colors — mapped to color.success
 $successLight: #cdf5d8;
 $success200: #69f0ae;
-$successMain: #00e676;
-$successDark: #00c853;
+$successMain: #1a7a4a; // = color.success
+$successDark: #1a7a4a; // no brand-token dark shade — reused main
 
-// error
+// error (kept distinct from brand "alert" orange — error/danger is a different semantic meaning
+// than the brand's business-value orange; see design-system/tokens.json color.semanticRule)
 $errorLight: #f3d2d2;
 $errorMain: #f44336;
 $errorDark: #c62828;
 
-// orange
+// orange — mapped to color.alert (business value / warnings)
 $orangeLight: #fbe9e7;
-$orangeMain: #ffab91;
-$orangeDark: #d84315;
+$orangeMain: #d5680b; // = color.alert
+$orangeDark: #d5680b;
 
 // brown
 $tealLight: #76c893;
-$tealMain: #52b69a;
-$tealDark: #34a0a4;
+$tealMain: #0891b5; // = color.compliance
+$tealDark: #0891b5;
 
 // warning
 $warningLight: #fff8e1;
-$warningMain: #ffe57f;
-$warningDark: #ffc107;
+$warningMain: #d5680b; // = color.alert
+$warningDark: #d5680b;
 
 // grey
 $grey50: #fafafa;

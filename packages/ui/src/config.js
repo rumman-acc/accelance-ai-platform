@@ -3,8 +3,10 @@ const config = {
     basename: '',
     defaultPath: '/chatflows',
     // You can specify multiple fallback fonts
-    fontFamily: `'Inter', 'Roboto', 'Arial', sans-serif`,
-    borderRadius: 12
+    // Per design-system/tokens.json (accelance design system): Inter primary, Arial corporate fallback
+    fontFamily: `'Inter', 'Arial', sans-serif`,
+    // Per design-system/tokens.json radius token (8px universal) — was a user-adjustable 12 default
+    borderRadius: 8
 }
 
 export default config
