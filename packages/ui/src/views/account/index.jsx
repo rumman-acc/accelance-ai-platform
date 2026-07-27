@@ -522,7 +522,7 @@ const AccountSettings = () => {
                                                 endIcon={!isBillingLoading && <IconExternalLink />}
                                                 disabled={!currentUser.isOrganizationAdmin || isBillingLoading}
                                                 onClick={handleBillingPortalClick}
-                                                sx={{ borderRadius: 2, height: 40 }}
+                                                sx={{ height: 40 }}
                                             >
                                                 {isBillingLoading ? (
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -633,7 +633,7 @@ const AccountSettings = () => {
                                                             setOpenRemoveSeatsDialog(true)
                                                         }}
                                                         color='error'
-                                                        sx={{ borderRadius: 2, height: 40 }}
+                                                        sx={{ height: 40 }}
                                                     >
                                                         Remove Seats
                                                     </Button>
@@ -649,7 +649,7 @@ const AccountSettings = () => {
                                                     }
                                                 }}
                                                 title='Add Seats is available only for PRO plan'
-                                                sx={{ borderRadius: 2, height: 40 }}
+                                                sx={{ height: 40 }}
                                             >
                                                 Add Seats
                                             </StyledButton>
@@ -664,7 +664,7 @@ const AccountSettings = () => {
                                             gridTemplateColumns: 'repeat(2, 1fr)'
                                         }}
                                     >
-                                        <Box sx={{ p: 2.5, borderRight: 1, borderColor: theme.palette.grey[900] + 25 }}>
+                                        <Box sx={{ p: 2.5, borderRight: 1, borderColor: theme.palette.divider }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                 <Typography variant='h3'>Predictions</Typography>
                                                 <Typography variant='body2' color='text.secondary'>
@@ -734,7 +734,7 @@ const AccountSettings = () => {
                         )}
                         <SettingsSection
                             action={
-                                <StyledButton onClick={saveProfileData} sx={{ borderRadius: 2, height: 40 }} variant='contained'>
+                                <StyledButton onClick={saveProfileData} sx={{ height: 40 }} variant='contained'>
                                     Save
                                 </StyledButton>
                             }
@@ -781,7 +781,7 @@ const AccountSettings = () => {
                                     <StyledButton
                                         disabled={!oldPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
                                         onClick={savePassword}
-                                        sx={{ borderRadius: 2, height: 40 }}
+                                        sx={{ height: 40 }}
                                         variant='contained'
                                     >
                                         Save
@@ -906,7 +906,7 @@ const AccountSettings = () => {
                                                 color='error'
                                                 onClick={() => setOpenDeleteAccountDialog(true)}
                                                 disabled={deleteAccountApi.loading}
-                                                sx={{ borderRadius: 2, height: 40 }}
+                                                sx={{ height: 40 }}
                                             >
                                                 {deleteAccountApi.loading ? (
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
