@@ -258,7 +258,7 @@ const ResetPasswordPage = () => {
                                 </Typography>
                             </Box>
 
-                            <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
+                            <StyledButton variant='contained' style={{ height: 40, marginRight: 5 }} type='submit'>
                                 Update Password
                             </StyledButton>
                         </Stack>

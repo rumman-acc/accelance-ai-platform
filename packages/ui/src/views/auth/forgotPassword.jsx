@@ -140,12 +140,7 @@ const ForgotPasswordPage = () => {
                                     </Typography>
                                 )}
                             </Box>
-                            <StyledButton
-                                variant='contained'
-                                style={{ borderRadius: 12, height: 40, marginRight: 5 }}
-                                disabled={!usernameVal}
-                                type='submit'
-                            >
+                            <StyledButton variant='contained' style={{ height: 40, marginRight: 5 }} disabled={!usernameVal} type='submit'>
                                 Send Reset Password Instructions
                             </StyledButton>
                         </Stack>

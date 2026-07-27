@@ -253,12 +253,7 @@ const SignInPage = () => {
                                     </Link>
                                 </Typography>
                             </Box>
-                            <LoadingButton
-                                loading={loading}
-                                variant='contained'
-                                style={{ borderRadius: 12, height: 40, marginRight: 5 }}
-                                type='submit'
-                            >
+                            <LoadingButton loading={loading} variant='contained' style={{ height: 40, marginRight: 5 }} type='submit'>
                                 Login
                             </LoadingButton>
                             {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
@@ -270,7 +265,7 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
@@ -289,7 +284,7 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
@@ -308,7 +303,7 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
@@ -327,7 +322,7 @@ const SignInPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>

@@ -389,7 +389,7 @@ const RegisterPage = () => {
                                     <i>Confirm your password. Must match the password typed above.</i>
                                 </Typography>
                             </Box>
-                            <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
+                            <StyledButton variant='contained' style={{ height: 40, marginRight: 5 }} type='submit'>
                                 Create Account
                             </StyledButton>
                             {configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
@@ -401,7 +401,7 @@ const RegisterPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
@@ -420,7 +420,7 @@ const RegisterPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
@@ -439,7 +439,7 @@ const RegisterPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
@@ -458,7 +458,7 @@ const RegisterPage = () => {
                                             <Button
                                                 key={ssoProvider}
                                                 variant='outlined'
-                                                style={{ borderRadius: 12, height: 45, marginRight: 5, lineHeight: 0 }}
+                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
                                                 onClick={() => signInWithSSO(ssoProvider)}
                                                 startIcon={
                                                     <Icon>
