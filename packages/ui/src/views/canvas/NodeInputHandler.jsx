@@ -1124,8 +1124,8 @@ const NodeInputHandler = ({
                                     style={{
                                         marginTop: '10px',
                                         border: '1px solid',
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: '6px',
+                                        borderColor: theme.palette.divider,
+                                        borderRadius: '8px',
                                         height: inputParam.rows ? '100px' : '200px'
                                     }}
                                 >

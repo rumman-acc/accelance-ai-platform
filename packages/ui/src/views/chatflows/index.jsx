@@ -143,7 +143,7 @@ const Chatflows = () => {
                         description='Build single-agent systems, chatbots and simple LLM flows'
                     >
                         <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
+                            sx={{ borderRadius: 1, maxHeight: 40 }}
                             value={view}
                             color='primary'
                             disabled={total === 0}
@@ -152,8 +152,8 @@ const Chatflows = () => {
                         >
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
+                                    borderColor: theme.palette.divider,
+                                    borderRadius: 1,
                                     color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
@@ -164,8 +164,8 @@ const Chatflows = () => {
                             </ToggleButton>
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
+                                    borderColor: theme.palette.divider,
+                                    borderRadius: 1,
                                     color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
@@ -180,7 +180,7 @@ const Chatflows = () => {
                             variant='contained'
                             onClick={addNew}
                             startIcon={<IconPlus />}
-                            sx={{ borderRadius: 2, height: 40 }}
+                            sx={{ height: 40 }}
                         >
                             Add New
                         </StyledPermissionButton>

@@ -67,7 +67,7 @@ const CanvasNode = ({ data }) => {
     const getBorderColor = () => {
         if (data.selected) return theme.palette.primary.main
         else if (theme?.customization?.isDarkMode) return theme.palette.grey[900] + 25
-        else return theme.palette.grey[900] + 50
+        else return theme.palette.divider
     }
 
     useEffect(() => {
