@@ -236,7 +236,7 @@ const Tools = () => {
 
     const viewToggle = (disabled) => (
         <ToggleButtonGroup
-            sx={{ borderRadius: 2, maxHeight: 40 }}
+            sx={{ borderRadius: 1, maxHeight: 40 }}
             value={view}
             color='primary'
             disabled={disabled}
@@ -245,8 +245,8 @@ const Tools = () => {
         >
             <ToggleButton
                 sx={{
-                    borderColor: theme.palette.grey[900] + 25,
-                    borderRadius: 2,
+                    borderColor: theme.palette.divider,
+                    borderRadius: 1,
                     color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                 }}
                 variant='contained'
@@ -257,8 +257,8 @@ const Tools = () => {
             </ToggleButton>
             <ToggleButton
                 sx={{
-                    borderColor: theme.palette.grey[900] + 25,
-                    borderRadius: 2,
+                    borderColor: theme.palette.divider,
+                    borderRadius: 1,
                     color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
                 }}
                 variant='contained'
@@ -279,7 +279,7 @@ const Tools = () => {
                     variant='outlined'
                     onClick={() => inputRef.current.click()}
                     startIcon={<IconFileUpload />}
-                    sx={{ borderRadius: 2, height: 40 }}
+                    sx={{ height: 40 }}
                 >
                     Load
                 </PermissionButton>
@@ -291,7 +291,7 @@ const Tools = () => {
                     variant='contained'
                     onClick={addNew}
                     startIcon={<IconPlus />}
-                    sx={{ borderRadius: 2, height: 40 }}
+                    sx={{ height: 40 }}
                 >
                     Create
                 </StyledPermissionButton>
@@ -308,7 +308,7 @@ const Tools = () => {
                     variant='contained'
                     onClick={addNewCustomMcpServer}
                     startIcon={<IconPlus />}
-                    sx={{ borderRadius: 2, height: 40 }}
+                    sx={{ height: 40 }}
                 >
                     Add Custom MCP Server
                 </StyledPermissionButton>
