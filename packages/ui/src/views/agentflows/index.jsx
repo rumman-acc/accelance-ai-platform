@@ -224,7 +224,7 @@ const Agentflows = () => {
                         description='Multi-agent systems, workflow orchestration'
                     >
                         <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
+                            sx={{ borderRadius: 1, maxHeight: 40 }}
                             value={agentflowVersion}
                             color='primary'
                             exclusive
@@ -232,8 +232,8 @@ const Agentflows = () => {
                         >
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
+                                    borderColor: theme.palette.divider,
+                                    borderRadius: 1,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
@@ -245,8 +245,8 @@ const Agentflows = () => {
                             </ToggleButton>
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
+                                    borderColor: theme.palette.divider,
+                                    borderRadius: 1,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
@@ -257,7 +257,7 @@ const Agentflows = () => {
                             </ToggleButton>
                         </ToggleButtonGroup>
                         <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
+                            sx={{ borderRadius: 1, maxHeight: 40 }}
                             value={view}
                             disabled={total === 0}
                             color='primary'
@@ -266,8 +266,8 @@ const Agentflows = () => {
                         >
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
+                                    borderColor: theme.palette.divider,
+                                    borderRadius: 1,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
@@ -278,8 +278,8 @@ const Agentflows = () => {
                             </ToggleButton>
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
+                                    borderColor: theme.palette.divider,
+                                    borderRadius: 1,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
@@ -294,7 +294,7 @@ const Agentflows = () => {
                             variant='contained'
                             onClick={addNew}
                             startIcon={<IconPlus />}
-                            sx={{ borderRadius: 2, height: 40 }}
+                            sx={{ height: 40 }}
                         >
                             Add New
                         </StyledPermissionButton>
@@ -312,7 +312,7 @@ const Agentflows = () => {
                                     : 'linear-gradient(135deg, #fff8e17a 0%, #ffcc804a 100%)',
                                 color: customization.isDarkMode ? 'white' : '#333333',
                                 fontWeight: 400,
-                                borderRadius: 2,
+                                borderRadius: 1,
                                 gap: 1.5
                             }}
                         >

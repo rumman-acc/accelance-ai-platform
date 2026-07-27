@@ -286,8 +286,8 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
                     mt: 1,
                     mb: 1,
                     border: 1,
-                    borderColor: theme.palette.grey[900] + 25,
-                    borderRadius: 2
+                    borderColor: theme.palette.divider,
+                    borderRadius: 1
                 }}
             >
                 <Accordion sx={{ background: 'transparent' }} expanded={expanded} onChange={handleAccordionChange}>
