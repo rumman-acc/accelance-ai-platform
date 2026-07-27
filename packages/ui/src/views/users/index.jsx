@@ -190,7 +190,7 @@ function ShowUserRow(props) {
                     </Typography>
                     <TableContainer
                         style={{ display: 'flex', flexDirection: 'row' }}
-                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                        sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                         component={Paper}
                     >
                         <Table aria-label='assigned roles table'>
@@ -404,7 +404,7 @@ const Users = () => {
                             <StyledPermissionButton
                                 permissionId={'workspace:add-user,users:manage'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                                 id='btn_createUser'
@@ -429,7 +429,7 @@ const Users = () => {
                                     <Box sx={{ py: 2, height: 'auto', width: '100%' }}>
                                         <TableContainer
                                             style={{ display: 'flex', flexDirection: 'row' }}
-                                            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                            sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                                             component={Paper}
                                         >
                                             <Table sx={{ minWidth: 650 }} aria-label='users table'>

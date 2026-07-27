@@ -324,7 +324,7 @@ const WorkspaceDetails = () => {
                                 <>
                                     <PermissionButton
                                         permissionId={'workspace:unlink-user'}
-                                        sx={{ borderRadius: 2, height: '100%' }}
+                                        sx={{ height: '100%' }}
                                         variant='outlined'
                                         disabled={usersSelected.length === 0}
                                         onClick={unlinkUser}
@@ -336,7 +336,7 @@ const WorkspaceDetails = () => {
                                     <StyledPermissionButton
                                         permissionId={'workspace:add-user'}
                                         variant='contained'
-                                        sx={{ borderRadius: 2, height: '100%' }}
+                                        sx={{ height: '100%' }}
                                         onClick={addUser}
                                         startIcon={<IconUserPlus />}
                                     >
@@ -358,7 +358,7 @@ const WorkspaceDetails = () => {
                                 <StyledPermissionButton
                                     permissionId={'workspace:add-user'}
                                     variant='contained'
-                                    sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
+                                    sx={{ height: '100%', mt: 2, color: 'white' }}
                                     startIcon={<IconUserPlus />}
                                     onClick={addUser}
                                 >
@@ -367,10 +367,7 @@ const WorkspaceDetails = () => {
                             </Stack>
                         ) : (
                             <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
+                                <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                     <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                                         <TableHead
                                             sx={{

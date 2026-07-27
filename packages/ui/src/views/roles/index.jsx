@@ -52,7 +52,7 @@ import roles_emptySVG from '@/assets/images/roles_empty.svg'
 import { useError } from '@/store/context/ErrorContext'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
+    borderColor: theme.palette.divider,
 
     [`&.${tableCellClasses.head}`]: {
         color: theme.palette.grey[900]
@@ -140,9 +140,9 @@ function ViewPermissionsDrawer(props) {
                             Object.keys(permissions).map((category) => (
                                 <Box
                                     key={category}
-                                    sx={{ mb: 2, border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2, padding: 2 }}
+                                    sx={{ mb: 2, border: 1, borderColor: theme.palette.divider, borderRadius: 1, padding: 2 }}
                                 >
-                                    <Box sx={{ mb: 2, borderBottom: 1, borderColor: theme.palette.grey[900] + 25 }}>
+                                    <Box sx={{ mb: 2, borderBottom: 1, borderColor: theme.palette.divider }}>
                                         <Typography sx={{ mb: 2 }} variant='h4'>
                                             {category
                                                 .replace(/([A-Z])/g, ' $1')
@@ -327,7 +327,7 @@ function ShowRoleRow(props) {
                     </Typography>
                     <TableContainer
                         style={{ display: 'flex', flexDirection: 'row' }}
-                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                        sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                         component={Paper}
                     >
                         <Table aria-label='assigned users table'>
@@ -542,7 +542,7 @@ const Roles = () => {
                             <StyledPermissionButton
                                 permissionId={'roles:manage'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                                 id='btn_createUser'
@@ -567,7 +567,7 @@ const Roles = () => {
                                     <Box sx={{ p: 2, height: 'auto', width: '100%' }}>
                                         <TableContainer
                                             style={{ display: 'flex', flexDirection: 'row' }}
-                                            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                            sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                                             component={Paper}
                                         >
                                             <Table sx={{ minWidth: 650 }} aria-label='users table'>

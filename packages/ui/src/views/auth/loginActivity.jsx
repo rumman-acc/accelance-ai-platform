@@ -67,7 +67,7 @@ const MenuProps = {
 }
 const SelectStyles = {
     '& .MuiOutlinedInput-notchedOutline': {
-        borderRadius: 2
+        borderRadius: 1
     }
 }
 
@@ -264,7 +264,7 @@ const LoginActivity = () => {
                                         <div>
                                             <FormControl
                                                 sx={{
-                                                    borderRadius: 2,
+                                                    borderRadius: 1,
                                                     display: 'flex',
                                                     flexDirection: 'column',
                                                     justifyContent: 'end',
@@ -359,7 +359,7 @@ const LoginActivity = () => {
                                 </div>
                                 <TableContainer
                                     style={{ display: 'flex', flexDirection: 'row' }}
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                    sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                                     component={Paper}
                                 >
                                     <Table sx={{ minWidth: 650 }} aria-label='users table'>

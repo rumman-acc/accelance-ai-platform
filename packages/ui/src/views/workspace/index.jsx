@@ -166,7 +166,7 @@ function ShowWorkspaceRow(props) {
                     </Typography>
                     <TableContainer
                         style={{ display: 'flex', flexDirection: 'row' }}
-                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                        sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }}
                         component={Paper}
                     >
                         <Table aria-label='workspace users table'>
@@ -413,7 +413,7 @@ const Workspaces = () => {
                             <StyledPermissionButton
                                 permissionId={'workspace:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
@@ -432,10 +432,7 @@ const Workspaces = () => {
                                 <div>No Workspaces Yet</div>
                             </Stack>
                         ) : (
-                            <TableContainer
-                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                component={Paper}
-                            >
+                            <TableContainer sx={{ border: 1, borderColor: theme.palette.divider, borderRadius: 1 }} component={Paper}>
                                 <Table sx={{ minWidth: 650 }}>
                                     <TableHead
                                         sx={{
