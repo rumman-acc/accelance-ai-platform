@@ -69,6 +69,8 @@ const SSOConfigPage = () => {
 
     const [loading, setLoading] = useState(false)
     const [authErrors, setAuthErrors] = useState([])
+    const [organizationName, setOrganizationName] = useState('')
+    const [organizationSlug, setOrganizationSlug] = useState('')
 
     const getLoginMethodsApi = useApi(loginMethodApi.getLoginMethods)
     const [tabValue, setTabValue] = useState(0)
@@ -342,6 +344,10 @@ const SSOConfigPage = () => {
     useEffect(() => {
         if (getLoginMethodsApi.data) {
             const data = getLoginMethodsApi.data
+            if (data.organization) {
+                setOrganizationName(data.organization.name || '')
+                setOrganizationSlug(data.organization.slug || '')
+            }
             const azureConfig = data.providers.find((provider) => provider.name === 'azure')
             const azureCallback = data.callbacks.find((callback) => callback.providerName === 'azure')
             if (azureCallback) {
@@ -415,6 +421,48 @@ const SSOConfigPage = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader search={false} title='Configure SSO' />
+                        {organizationName && (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                                    Organization
+                                </Typography>
+                                <Stack direction='row' alignItems='center' sx={{ gap: 1 }}>
+                                    <Typography variant='h4'>{organizationName}</Typography>
+                                    <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                                        ({organizationSlug})
+                                    </Typography>
+                                </Stack>
+                                {organizationSlug && (
+                                    <Stack direction='row' alignItems='center'>
+                                        <Typography
+                                            sx={{
+                                                p: 1,
+                                                borderRadius: 10,
+                                                backgroundColor: theme.palette.primary.light,
+                                                width: 'max-content',
+                                                height: 'max-content'
+                                            }}
+                                            variant='h5'
+                                        >
+                                            {`${window.location.origin}/o/${organizationSlug}/login`}
+                                        </Typography>
+                                        <IconButton
+                                            title='Copy Sign-In URL'
+                                            color='success'
+                                            onClick={(event) => {
+                                                navigator.clipboard.writeText(`${window.location.origin}/o/${organizationSlug}/login`)
+                                                setCopyAnchorEl(event.currentTarget)
+                                                setTimeout(() => {
+                                                    handleCloseCopyPopOver()
+                                                }, 1500)
+                                            }}
+                                        >
+                                            <IconCopy />
+                                        </IconButton>
+                                    </Stack>
+                                )}
+                            </Box>
+                        )}
                         {authErrors && authErrors.length > 0 && (
                             <div
                                 style={{

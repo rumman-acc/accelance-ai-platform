@@ -101,6 +101,7 @@ export class LoginMethodController {
             const organizationSlug = activeOrganization?.slug
 
             const loginMethodConfig = {
+                organization: activeOrganization ? { name: activeOrganization.name, slug: activeOrganization.slug } : undefined,
                 providers: [],
                 callbacks: [
                     { providerName: 'azure', callbackURL: AzureSSO.getCallbackURL(organizationSlug) },

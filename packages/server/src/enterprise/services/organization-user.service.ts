@@ -163,6 +163,7 @@ export class OrganizationUserService {
         const orgUsers = await queryRunner.manager
             .createQueryBuilder(OrganizationUser, 'organizationUser')
             .innerJoinAndSelect('organizationUser.role', 'role')
+            .innerJoinAndSelect('organizationUser.organization', 'organization')
             .where('organizationUser.userId = :userId', { userId })
             .getMany()
 
@@ -178,6 +179,9 @@ export class OrganizationUserService {
                 // get the user's name and email
                 const userDetails = await this.userService.readUserById(organizationOwner[0].userId, queryRunner)
                 if (userDetails) {
+                    delete userDetails.credential
+                    delete userDetails.tempToken
+                    delete userDetails.tokenExpiry
                     user.user = userDetails
                 }
             }

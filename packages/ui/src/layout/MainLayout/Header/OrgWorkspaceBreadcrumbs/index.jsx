@@ -223,7 +223,7 @@ const OrgWorkspaceBreadcrumbs = () => {
         if (getOrganizationsByUserIdApi.data) {
             const formattedAssignedOrgs = getOrganizationsByUserIdApi.data.map((organization) => ({
                 id: organization.organizationId,
-                name: `${organization.user.name || organization.user.email}'s Organization`
+                name: organization.organization?.name || `${organization.user.name || organization.user.email}'s Organization`
             }))
 
             const sortedOrgs = [...formattedAssignedOrgs].sort((a, b) => a.name.localeCompare(b.name))
