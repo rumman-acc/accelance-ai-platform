@@ -51,6 +51,24 @@ export class OrganizationService {
         return await queryRunner.manager.findOneBy(Organization, { name })
     }
 
+    public async readOrganizationBySlug(slug: string | undefined, queryRunner: QueryRunner) {
+        if (!slug) return null
+        return await queryRunner.manager.findOneBy(Organization, { slug })
+    }
+
+    private slugifyOrganizationName(name: string): string {
+        const base = name
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-+|-+$)/g, '')
+        return base || 'org'
+    }
+
+    private generateOrganizationSlug(name: string, id: string): string {
+        return `${this.slugifyOrganizationName(name)}-${id.split('-')[0]}`
+    }
+
     public async countOrganizations(queryRunner: QueryRunner) {
         return await queryRunner.manager.count(Organization)
     }
@@ -63,6 +81,9 @@ export class OrganizationService {
         this.validateOrganizationName(data.name, isRegister)
         data.updatedBy = data.createdBy
         data.id = generateId()
+        if (!data.slug) {
+            data.slug = this.generateOrganizationSlug(data.name || OrganizationName.DEFAULT_ORGANIZATION, data.id)
+        }
 
         return queryRunner.manager.create(Organization, data)
     }

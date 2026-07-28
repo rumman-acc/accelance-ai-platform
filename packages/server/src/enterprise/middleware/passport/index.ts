@@ -244,7 +244,11 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
             let newTokenResponse: any = {}
             if (loggedInUser && loggedInUser.ssoRefreshToken) {
                 try {
-                    newTokenResponse = await identityManager.getRefreshToken(loggedInUser.ssoProvider, loggedInUser.ssoRefreshToken)
+                    newTokenResponse = await identityManager.getRefreshToken(
+                        loggedInUser.ssoProvider,
+                        loggedInUser.ssoRefreshToken,
+                        loggedInUser.activeOrganizationId
+                    )
                     if (newTokenResponse.error) {
                         return res.status(401).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
                     }

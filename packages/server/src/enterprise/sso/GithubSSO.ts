@@ -1,8 +1,8 @@
+import express from 'express'
 import SSOBase from './SSOBase'
 import passport from 'passport'
-import { LoggedInUser } from '../Interface.Enterprise'
-import { setTokenOrCookies } from '../middleware/passport'
 import { Strategy as GitHubStrategy, Profile } from 'passport-github'
+import { orgScopedPath, registerSsoRoutes } from './ssoRouteRegistry'
 
 class GithubSSO extends SSOBase {
     static LOGIN_URI = '/api/v1/github/login'
@@ -13,9 +13,17 @@ class GithubSSO extends SSOBase {
         return 'Github SSO'
     }
 
-    static getCallbackURL(): string {
+    getStrategyKey(): string {
+        return 'github'
+    }
+
+    static getCallbackURL(organizationSlug?: string): string {
         const APP_URL = process.env.APP_URL || 'http://127.0.0.1:' + process.env.PORT
-        return APP_URL + GithubSSO.CALLBACK_URI
+        return APP_URL + orgScopedPath(GithubSSO.CALLBACK_URI, 'github', organizationSlug)
+    }
+
+    static registerRoutes(app: express.Application, providers: Map<string, SSOBase>) {
+        registerSsoRoutes(app, 'github', GithubSSO.LOGIN_URI, GithubSSO.CALLBACK_URI, providers, 'Github SSO')
     }
 
     setSSOConfig(ssoConfig: any) {
@@ -26,11 +34,12 @@ class GithubSSO extends SSOBase {
 
             // Configure Passport to use the GitHub strategy
             passport.use(
+                this.getStrategyName(),
                 new GitHubStrategy(
                     {
                         clientID: clientID,
                         clientSecret: clientSecret,
-                        callbackURL: GithubSSO.CALLBACK_URI,
+                        callbackURL: GithubSSO.getCallbackURL(this.organizationSlug),
                         scope: ['user:email']
                     },
                     async (accessToken: string, refreshToken: string, profile: Profile, done: any) => {
@@ -52,7 +61,7 @@ class GithubSSO extends SSOBase {
                 )
             )
         } else {
-            passport.unuse('github')
+            passport.unuse(this.getStrategyName())
         }
     }
 
@@ -60,43 +69,6 @@ class GithubSSO extends SSOBase {
         if (this.ssoConfig) {
             this.setSSOConfig(this.ssoConfig)
         }
-
-        this.app.get(GithubSSO.LOGIN_URI, (req, res, next?) => {
-            if (!this.getSSOConfig()) {
-                return res.status(400).json({ error: 'Github SSO is not configured.' })
-            }
-            passport.authenticate('github', async () => {
-                if (next) next()
-            })(req, res, next)
-        })
-
-        this.app.get(GithubSSO.CALLBACK_URI, (req, res, next?) => {
-            passport.authenticate('github', async (err: any, user: LoggedInUser) => {
-                try {
-                    if (err || !user) {
-                        if (err?.name == 'SSO_LOGIN_FAILED') {
-                            const error = { message: err.message }
-                            const signinUrl = `/signin?error=${encodeURIComponent(JSON.stringify(error))}`
-                            return res.redirect(signinUrl)
-                        }
-                        return next ? next(err) : res.status(401).json(err)
-                    }
-
-                    req.session.regenerate((regenerateErr) => {
-                        if (regenerateErr) {
-                            return next ? next(regenerateErr) : res.status(500).json({ message: 'Session regeneration failed' })
-                        }
-
-                        req.login(user, { session: true }, async (error) => {
-                            if (error) return next ? next(error) : res.status(401).json(error)
-                            return setTokenOrCookies(res, user, true, req, true, true)
-                        })
-                    })
-                } catch (error) {
-                    return next ? next(error) : res.status(401).json(error)
-                }
-            })(req, res, next)
-        })
     }
 
     static async testSetup(ssoConfig: any) {

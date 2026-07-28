@@ -13,6 +13,9 @@ export class Organization {
     @Column({ type: 'varchar', length: 100, default: OrganizationName.DEFAULT_ORGANIZATION })
     name: string
 
+    @Column({ type: 'varchar', length: 120, unique: true })
+    slug: string
+
     @Column({ type: 'varchar', length: 100, nullable: true })
     customerId?: string
 

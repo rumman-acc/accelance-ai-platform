@@ -59,13 +59,13 @@ export class LoginMethodController {
             if (getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD) {
                 organizationId = undefined
             } else if (getRunningExpressApp().identityManager.getPlatformType() === Platform.ENTERPRISE) {
+                const organizationSlug = req.query.organizationSlug as string | undefined
                 const organizationService = new OrganizationService()
-                const organizations = await organizationService.readOrganization(queryRunner)
-                if (organizations.length > 0) {
-                    organizationId = organizations[0].id
-                } else {
+                const organization = await organizationService.readOrganizationBySlug(organizationSlug, queryRunner)
+                if (!organization) {
                     return res.status(StatusCodes.OK).json({})
                 }
+                organizationId = organization.id
             } else {
                 return res.status(StatusCodes.OK).json({})
             }
@@ -96,14 +96,17 @@ export class LoginMethodController {
             await queryRunner.connect()
             const query = req.query as Partial<LoginMethod>
             const loginMethodService = new LoginMethodService()
+            const organizationService = new OrganizationService()
+            const activeOrganization = await organizationService.readOrganizationById(user.activeOrganizationId, queryRunner)
+            const organizationSlug = activeOrganization?.slug
 
             const loginMethodConfig = {
                 providers: [],
                 callbacks: [
-                    { providerName: 'azure', callbackURL: AzureSSO.getCallbackURL() },
-                    { providerName: 'google', callbackURL: GoogleSSO.getCallbackURL() },
-                    { providerName: 'auth0', callbackURL: Auth0SSO.getCallbackURL() },
-                    { providerName: 'github', callbackURL: GithubSSO.getCallbackURL() }
+                    { providerName: 'azure', callbackURL: AzureSSO.getCallbackURL(organizationSlug) },
+                    { providerName: 'google', callbackURL: GoogleSSO.getCallbackURL(organizationSlug) },
+                    { providerName: 'auth0', callbackURL: Auth0SSO.getCallbackURL(organizationSlug) },
+                    { providerName: 'github', callbackURL: GithubSSO.getCallbackURL(organizationSlug) }
                 ]
             }
             let loginMethod: any
@@ -135,6 +138,7 @@ export class LoginMethodController {
         }
     }
     public async update(req: Request, res: Response, next: NextFunction) {
+        let queryRunner
         try {
             this.assertEnterprisePlatform()
 
@@ -145,18 +149,30 @@ export class LoginMethodController {
             const loginMethod = await loginMethodService.createOrUpdateConfig(req.body)
             if (loginMethod?.status === 'OK' && loginMethod?.organizationId) {
                 const appServer = getRunningExpressApp()
+                queryRunner = appServer.AppDataSource.createQueryRunner()
+                await queryRunner.connect()
+                const organization = await new OrganizationService().readOrganizationById(loginMethod.organizationId, queryRunner)
+
                 let providers: any[] = req.body.providers
-                providers.map((provider: any) => {
+                for (const provider of providers) {
                     const identityManager = appServer.identityManager
                     if (provider.config.clientID) {
                         provider.config.configEnabled = provider.status === LoginMethodStatus.ENABLE
-                        identityManager.initializeSsoProvider(appServer.app, provider.providerName, provider.config)
+                        identityManager.initializeSsoProvider(
+                            appServer.app,
+                            provider.providerName,
+                            provider.config,
+                            loginMethod.organizationId,
+                            organization?.slug
+                        )
                     }
-                })
+                }
             }
             return res.status(StatusCodes.OK).json(loginMethod)
         } catch (error) {
             next(error)
+        } finally {
+            if (queryRunner) await queryRunner.release()
         }
     }
     public async testConfig(req: Request, res: Response, next: NextFunction) {

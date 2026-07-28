@@ -1,12 +1,13 @@
 // AzureSSO.ts
+import express from 'express'
 import SSOBase from './SSOBase'
 import passport from 'passport'
 import { Profile, Strategy as OpenIDConnectStrategy, VerifyCallback } from 'passport-openidconnect'
 import { Request } from 'express'
 import auditService from '../services/audit'
-import { ErrorMessage, LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
-import { setTokenOrCookies } from '../middleware/passport'
+import { ErrorMessage, LoginActivityCode } from '../Interface.Enterprise'
 import axios from 'axios'
+import { orgScopedPath, registerSsoRoutes } from './ssoRouteRegistry'
 
 class AzureSSO extends SSOBase {
     static LOGIN_URI = '/api/v1/azure/login'
@@ -17,53 +18,21 @@ class AzureSSO extends SSOBase {
         return 'Microsoft SSO'
     }
 
-    static getCallbackURL(): string {
+    getStrategyKey(): string {
+        return 'azure-ad'
+    }
+
+    static getCallbackURL(organizationSlug?: string): string {
         const APP_URL = process.env.APP_URL || 'http://127.0.0.1:' + process.env.PORT
-        return APP_URL + AzureSSO.CALLBACK_URI
+        return APP_URL + orgScopedPath(AzureSSO.CALLBACK_URI, 'azure', organizationSlug)
+    }
+
+    static registerRoutes(app: express.Application, providers: Map<string, SSOBase>) {
+        registerSsoRoutes(app, 'azure', AzureSSO.LOGIN_URI, AzureSSO.CALLBACK_URI, providers, 'Azure SSO')
     }
 
     initialize() {
         this.setSSOConfig(this.ssoConfig)
-
-        this.app.get(AzureSSO.LOGIN_URI, (req, res, next?) => {
-            if (!this.getSSOConfig()) {
-                return res.status(400).json({ error: 'Azure SSO is not configured.' })
-            }
-            passport.authenticate('azure-ad', async () => {
-                if (next) next()
-            })(req, res, next)
-        })
-
-        this.app.get(AzureSSO.CALLBACK_URI, (req, res, next?) => {
-            if (!this.getSSOConfig()) {
-                return res.status(400).json({ error: 'Azure SSO is not configured.' })
-            }
-            passport.authenticate('azure-ad', async (err: any, user: LoggedInUser) => {
-                try {
-                    if (err || !user) {
-                        if (err?.name == 'SSO_LOGIN_FAILED') {
-                            const error = { message: err.message }
-                            const signinUrl = `/signin?error=${encodeURIComponent(JSON.stringify(error))}`
-                            return res.redirect(signinUrl)
-                        }
-                        return next ? next(err) : res.status(401).json(err)
-                    }
-
-                    req.session.regenerate((regenerateErr) => {
-                        if (regenerateErr) {
-                            return next ? next(regenerateErr) : res.status(500).json({ message: 'Session regeneration failed' })
-                        }
-
-                        req.login(user, { session: true }, async (error) => {
-                            if (error) return next ? next(error) : res.status(401).json(error)
-                            return setTokenOrCookies(res, user, true, req, true, true)
-                        })
-                    })
-                } catch (error) {
-                    return next ? next(error) : res.status(401).json(error)
-                }
-            })(req, res, next)
-        })
     }
 
     setSSOConfig(ssoConfig: any) {
@@ -71,7 +40,7 @@ class AzureSSO extends SSOBase {
         if (this.ssoConfig) {
             const { tenantID, clientID, clientSecret } = this.ssoConfig
             passport.use(
-                'azure-ad',
+                this.getStrategyName(),
                 new OpenIDConnectStrategy(
                     {
                         issuer: `https://login.microsoftonline.com/${tenantID}/v2.0`,
@@ -80,7 +49,7 @@ class AzureSSO extends SSOBase {
                         userInfoURL: `https://graph.microsoft.com/oidc/userinfo`,
                         clientID: clientID || 'your_client_id',
                         clientSecret: clientSecret || 'your_client_secret',
-                        callbackURL: AzureSSO.getCallbackURL(),
+                        callbackURL: AzureSSO.getCallbackURL(this.organizationSlug),
                         scope: 'openid profile email offline_access',
                         passReqToCallback: true
                     },
@@ -109,7 +78,7 @@ class AzureSSO extends SSOBase {
                 )
             )
         } else {
-            passport.unuse('azure-ad')
+            passport.unuse(this.getStrategyName())
         }
     }
 

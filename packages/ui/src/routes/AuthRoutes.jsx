@@ -28,6 +28,10 @@ const AuthRoutes = {
             element: <SignInPage />
         },
         {
+            path: '/o/:slug/login',
+            element: <SignInPage />
+        },
+        {
             path: '/register',
             element: <RegisterPage />
         },

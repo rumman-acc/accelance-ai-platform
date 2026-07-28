@@ -1,4 +1,4 @@
-﻿// SSOBase.ts
+// SSOBase.ts
 import express from 'express'
 import passport from 'passport'
 import { IAssignedWorkspace, LoggedInUser } from '../Interface.Enterprise'
@@ -14,14 +14,19 @@ import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { StatusCodes } from 'http-status-codes'
 import { Platform } from '../../Interface'
 import { UserStatus } from '../database/entities/user.entity'
+import { ssoProviderKey } from './ssoRouteRegistry'
 
 abstract class SSOBase {
     protected app: express.Application
     protected ssoConfig: any
+    protected organizationId?: string
+    protected organizationSlug?: string
 
-    constructor(app: express.Application, ssoConfig?: any) {
+    constructor(app: express.Application, organizationId: string | undefined, ssoConfig?: any, organizationSlug?: string) {
         this.app = app
+        this.organizationId = organizationId
         this.ssoConfig = ssoConfig
+        this.organizationSlug = organizationSlug
     }
 
     setSSOConfig(ssoConfig: any) {
@@ -32,9 +37,21 @@ abstract class SSOBase {
         return this.ssoConfig
     }
 
+    getOrganizationId() {
+        return this.organizationId
+    }
+
+    /** Passport strategy name this instance registers under - org-scoped in ENTERPRISE mode, plain otherwise. */
+    getStrategyName(): string {
+        return ssoProviderKey(this.getStrategyKey(), this.organizationId)
+    }
+
     abstract getProviderName(): string
+    /** Base passport strategy key for this provider type, e.g. 'azure-ad', 'google', 'auth0', 'github'. */
+    abstract getStrategyKey(): string
     abstract initialize(): void
     abstract refreshToken(ssoRefreshToken: string): Promise<{ [key: string]: any }>
+
     async verifyAndLogin(
         app: express.Application,
         email: string,
@@ -45,6 +62,7 @@ abstract class SSOBase {
     ) {
         let queryRunner
         const ssoProviderName = this.getProviderName()
+        const organizationId = this.organizationId
         try {
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
@@ -92,8 +110,27 @@ abstract class SSOBase {
                     const newAccount = await accountService.register(data)
                     user = newAccount.user
                 }
-                let wsUserOrUsers = await workspaceUserService.readWorkspaceUserByLastLogin(user?.id, queryRunner)
-                wu = Array.isArray(wsUserOrUsers) && wsUserOrUsers.length > 0 ? wsUserOrUsers[0] : (wsUserOrUsers as WorkspaceUser)
+
+                if (organizationId) {
+                    // ENTERPRISE, slug-resolved login: the resulting session must belong to the org whose
+                    // SSO config was used, not "whichever workspace this user last logged into".
+                    const workspaceUsersInOrg = await workspaceUserService.readWorkspaceUserByOrganizationIdUserId(
+                        organizationId,
+                        user.id,
+                        queryRunner
+                    )
+                    if (!workspaceUsersInOrg || workspaceUsersInOrg.length === 0) {
+                        throw new InternalAccelanceError(StatusCodes.FORBIDDEN, UserErrorMessage.USER_NOT_FOUND)
+                    }
+                    wu = [...workspaceUsersInOrg].sort((a: any, b: any) => {
+                        const aTime = a.lastLogin ? new Date(a.lastLogin).getTime() : 0
+                        const bTime = b.lastLogin ? new Date(b.lastLogin).getTime() : 0
+                        return bTime - aTime
+                    })[0]
+                } else {
+                    let wsUserOrUsers = await workspaceUserService.readWorkspaceUserByLastLogin(user?.id, queryRunner)
+                    wu = Array.isArray(wsUserOrUsers) && wsUserOrUsers.length > 0 ? wsUserOrUsers[0] : (wsUserOrUsers as WorkspaceUser)
+                }
             }
 
             const workspaceUser = wu as WorkspaceUser

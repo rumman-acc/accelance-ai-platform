@@ -1,8 +1,3 @@
-import Auth0SSO from '../enterprise/sso/Auth0SSO'
-import AzureSSO from '../enterprise/sso/AzureSSO'
-import GithubSSO from '../enterprise/sso/GithubSSO'
-import GoogleSSO from '../enterprise/sso/GoogleSSO'
-
 export const WHITELIST_URLS = [
     '/api/v1/verify/apikey/',
     '/api/v1/chatflows/apikey/',
@@ -43,18 +38,13 @@ export const WHITELIST_URLS = [
     '/api/v1/mcp/',
     '/api/v1/text-to-speech/generate',
     '/api/v1/text-to-speech/abort',
-    AzureSSO.LOGIN_URI,
-    AzureSSO.LOGOUT_URI,
-    AzureSSO.CALLBACK_URI,
-    GoogleSSO.LOGIN_URI,
-    GoogleSSO.LOGOUT_URI,
-    GoogleSSO.CALLBACK_URI,
-    Auth0SSO.LOGIN_URI,
-    Auth0SSO.LOGOUT_URI,
-    Auth0SSO.CALLBACK_URI,
-    GithubSSO.LOGIN_URI,
-    GithubSSO.LOGOUT_URI,
-    GithubSSO.CALLBACK_URI
+    // Prefix match (not the exact LOGIN_URI/CALLBACK_URI/LOGOUT_URI strings) so ENTERPRISE mode's
+    // org-scoped SSO paths (e.g. '/api/v1/azure/acme/login') are covered too, not just the bare
+    // provider-global ones used in Cloud/OpenSource mode.
+    '/api/v1/azure/',
+    '/api/v1/google/',
+    '/api/v1/auth0/',
+    '/api/v1/github/'
 ]
 
 export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim', '/api/v1/account/delete', '/api/v1/files']

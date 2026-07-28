@@ -27,6 +27,7 @@ import AzureSSO from './enterprise/sso/AzureSSO'
 import GithubSSO from './enterprise/sso/GithubSSO'
 import GoogleSSO from './enterprise/sso/GoogleSSO'
 import SSOBase from './enterprise/sso/SSOBase'
+import { ssoProviderKey } from './enterprise/sso/ssoRouteRegistry'
 import { InternalAccelanceError } from './errors/internalAccelanceError'
 import { Platform, UserPlan } from './Interface'
 import { StripeManager } from './StripeManager'
@@ -165,24 +166,43 @@ export class IdentityManager {
     }
 
     public initializeSSO = async (app: express.Application) => {
-        if (this.getPlatformType() === Platform.CLOUD || this.getPlatformType() === Platform.ENTERPRISE) {
+        this.registerAllSsoRoutes(app)
+
+        const platformType = this.getPlatformType()
+        if (platformType === Platform.ENTERPRISE) {
             const loginMethodService = new LoginMethodService()
             let queryRunner
             try {
                 queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
                 await queryRunner.connect()
-                let organizationId = undefined
-                if (this.getPlatformType() === Platform.ENTERPRISE) {
-                    const organizationService = new OrganizationService()
-                    const organizations = await organizationService.readOrganization(queryRunner)
-                    if (organizations.length > 0) {
-                        organizationId = organizations[0].id
-                    } else {
-                        this.initializeEmptySSO(app)
-                        return
+                const organizationService = new OrganizationService()
+                const organizations = await organizationService.readOrganization(queryRunner)
+                for (const organization of organizations) {
+                    const loginMethods = await loginMethodService.readLoginMethodByOrganizationId(organization.id, queryRunner)
+                    if (loginMethods && loginMethods.length > 0) {
+                        for (let method of loginMethods) {
+                            if (method.status === LoginMethodStatus.ENABLE) {
+                                method.config = JSON.parse(await loginMethodService.decryptLoginMethodConfig(method.config))
+                                this.initializeSsoProvider(app, method.name, method.config, organization.id, organization.slug)
+                            }
+                        }
                     }
                 }
-                const loginMethods = await loginMethodService.readLoginMethodByOrganizationId(organizationId, queryRunner)
+            } finally {
+                if (queryRunner) await queryRunner.release()
+            }
+            // Enterprise providers are instantiated lazily, per (organization, provider) - no
+            // deployment-wide placeholders needed since every route resolves its org from the slug.
+            return
+        }
+
+        if (platformType === Platform.CLOUD) {
+            const loginMethodService = new LoginMethodService()
+            let queryRunner
+            try {
+                queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+                await queryRunner.connect()
+                const loginMethods = await loginMethodService.readLoginMethodByOrganizationId(undefined, queryRunner)
                 if (loginMethods && loginMethods.length > 0) {
                     for (let method of loginMethods) {
                         if (method.status === LoginMethodStatus.ENABLE) {
@@ -199,6 +219,13 @@ export class IdentityManager {
         this.initializeEmptySSO(app)
     }
 
+    private registerAllSsoRoutes(app: express.Application) {
+        AzureSSO.registerRoutes(app, this.ssoProviders)
+        GoogleSSO.registerRoutes(app, this.ssoProviders)
+        Auth0SSO.registerRoutes(app, this.ssoProviders)
+        GithubSSO.registerRoutes(app, this.ssoProviders)
+    }
+
     initializeEmptySSO(app: Application) {
         allSSOProviders.map((providerName) => {
             if (!this.ssoProviders.has(providerName)) {
@@ -207,9 +234,10 @@ export class IdentityManager {
         })
     }
 
-    initializeSsoProvider(app: Application, providerName: string, providerConfig: any) {
-        if (this.ssoProviders.has(providerName)) {
-            const provider = this.ssoProviders.get(providerName)
+    initializeSsoProvider(app: Application, providerName: string, providerConfig: any, organizationId?: string, organizationSlug?: string) {
+        const key = ssoProviderKey(providerName, organizationId)
+        if (this.ssoProviders.has(key)) {
+            const provider = this.ssoProviders.get(key)
             if (provider) {
                 if (providerConfig && providerConfig.configEnabled === true) {
                     provider.setSSOConfig(providerConfig)
@@ -222,27 +250,27 @@ export class IdentityManager {
         } else {
             switch (providerName) {
                 case 'azure': {
-                    const azureSSO = new AzureSSO(app, providerConfig)
+                    const azureSSO = new AzureSSO(app, organizationId, providerConfig, organizationSlug)
                     azureSSO.initialize()
-                    this.ssoProviders.set(providerName, azureSSO)
+                    this.ssoProviders.set(key, azureSSO)
                     break
                 }
                 case 'google': {
-                    const googleSSO = new GoogleSSO(app, providerConfig)
+                    const googleSSO = new GoogleSSO(app, organizationId, providerConfig, organizationSlug)
                     googleSSO.initialize()
-                    this.ssoProviders.set(providerName, googleSSO)
+                    this.ssoProviders.set(key, googleSSO)
                     break
                 }
                 case 'auth0': {
-                    const auth0SSO = new Auth0SSO(app, providerConfig)
+                    const auth0SSO = new Auth0SSO(app, organizationId, providerConfig, organizationSlug)
                     auth0SSO.initialize()
-                    this.ssoProviders.set(providerName, auth0SSO)
+                    this.ssoProviders.set(key, auth0SSO)
                     break
                 }
                 case 'github': {
-                    const githubSSO = new GithubSSO(app, providerConfig)
+                    const githubSSO = new GithubSSO(app, organizationId, providerConfig, organizationSlug)
                     githubSSO.initialize()
-                    this.ssoProviders.set(providerName, githubSSO)
+                    this.ssoProviders.set(key, githubSSO)
                     break
                 }
                 default:
@@ -251,11 +279,12 @@ export class IdentityManager {
         }
     }
 
-    async getRefreshToken(providerName: any, ssoRefreshToken: string) {
-        if (!this.ssoProviders.has(providerName)) {
+    async getRefreshToken(providerName: any, ssoRefreshToken: string, organizationId?: string) {
+        const key = ssoProviderKey(providerName, organizationId)
+        if (!this.ssoProviders.has(key)) {
             throw new Error(`SSO Provider ${providerName} not found`)
         }
-        return await (this.ssoProviders.get(providerName) as SSOBase).refreshToken(ssoRefreshToken)
+        return await (this.ssoProviders.get(key) as SSOBase).refreshToken(ssoRefreshToken)
     }
 
     public async getProductIdFromSubscription(subscriptionId: string) {

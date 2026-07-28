@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 // material-ui
 import { Stack, useTheme, Typography, Box, Alert, Button, Divider, Icon } from '@mui/material'
@@ -71,6 +71,7 @@ const SignInPage = () => {
     const getDefaultProvidersApi = useApi(loginMethodApi.getDefaultLoginMethods)
     const navigate = useNavigate()
     const location = useLocation()
+    const { slug: organizationSlug } = useParams()
     const resendVerificationApi = useApi(accountApi.resendVerificationEmail)
 
     const doLogin = (event) => {
@@ -99,10 +100,10 @@ const SignInPage = () => {
         store.dispatch(logoutSuccess())
         setAuthRateLimitError(null)
         if (!isOpenSource) {
-            getDefaultProvidersApi.request()
+            getDefaultProvidersApi.request(organizationSlug)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [setAuthRateLimitError, isOpenSource])
+    }, [setAuthRateLimitError, isOpenSource, organizationSlug])
 
     useEffect(() => {
         // Parse the "user" query parameter from the URL
@@ -162,7 +163,7 @@ const SignInPage = () => {
     }, [authError])
 
     const signInWithSSO = (ssoProvider) => {
-        window.location.href = `/api/v1/${ssoProvider}/login`
+        window.location.href = organizationSlug ? `/api/v1/${ssoProvider}/${organizationSlug}/login` : `/api/v1/${ssoProvider}/login`
     }
 
     const handleResendVerification = async () => {

@@ -1,11 +1,12 @@
 // GoogleSSO.ts
+import express from 'express'
 import SSOBase from './SSOBase'
 import passport from 'passport'
 import { Profile, Strategy as OpenIDConnectStrategy, VerifyCallback } from 'passport-openidconnect'
 import auditService from '../services/audit'
-import { ErrorMessage, LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
-import { setTokenOrCookies } from '../middleware/passport'
+import { ErrorMessage, LoginActivityCode } from '../Interface.Enterprise'
 import axios from 'axios'
+import { orgScopedPath, registerSsoRoutes } from './ssoRouteRegistry'
 
 class GoogleSSO extends SSOBase {
     static LOGIN_URI = '/api/v1/google/login'
@@ -16,9 +17,17 @@ class GoogleSSO extends SSOBase {
         return 'Google SSO'
     }
 
-    static getCallbackURL(): string {
+    getStrategyKey(): string {
+        return 'google'
+    }
+
+    static getCallbackURL(organizationSlug?: string): string {
         const APP_URL = process.env.APP_URL || 'http://127.0.0.1:' + process.env.PORT
-        return APP_URL + GoogleSSO.CALLBACK_URI
+        return APP_URL + orgScopedPath(GoogleSSO.CALLBACK_URI, 'google', organizationSlug)
+    }
+
+    static registerRoutes(app: express.Application, providers: Map<string, SSOBase>) {
+        registerSsoRoutes(app, 'google', GoogleSSO.LOGIN_URI, GoogleSSO.CALLBACK_URI, providers, 'Google SSO')
     }
 
     setSSOConfig(ssoConfig: any) {
@@ -28,7 +37,7 @@ class GoogleSSO extends SSOBase {
             const clientSecret = this.ssoConfig.clientSecret
 
             passport.use(
-                'google',
+                this.getStrategyName(),
                 new OpenIDConnectStrategy(
                     {
                         issuer: 'https://accounts.google.com',
@@ -37,7 +46,7 @@ class GoogleSSO extends SSOBase {
                         userInfoURL: 'https://openidconnect.googleapis.com/v1/userinfo',
                         clientID: clientID || 'your_google_client_id',
                         clientSecret: clientSecret || 'your_google_client_secret',
-                        callbackURL: GoogleSSO.getCallbackURL() || 'http://localhost:3000/auth/google/callback',
+                        callbackURL: GoogleSSO.getCallbackURL(this.organizationSlug) || 'http://localhost:3000/auth/google/callback',
                         scope: 'openid profile email'
                     },
                     async (
@@ -65,7 +74,7 @@ class GoogleSSO extends SSOBase {
                 )
             )
         } else {
-            passport.unuse('google')
+            passport.unuse(this.getStrategyName())
         }
     }
 
@@ -73,46 +82,6 @@ class GoogleSSO extends SSOBase {
         if (this.ssoConfig) {
             this.setSSOConfig(this.ssoConfig)
         }
-
-        this.app.get(GoogleSSO.LOGIN_URI, (req, res, next?) => {
-            if (!this.getSSOConfig()) {
-                return res.status(400).json({ error: 'Google SSO is not configured.' })
-            }
-            passport.authenticate('google', async () => {
-                if (next) next()
-            })(req, res, next)
-        })
-
-        this.app.get(GoogleSSO.CALLBACK_URI, (req, res, next?) => {
-            if (!this.getSSOConfig()) {
-                return res.status(400).json({ error: 'Google SSO is not configured.' })
-            }
-            passport.authenticate('google', async (err: any, user: LoggedInUser) => {
-                try {
-                    if (err || !user) {
-                        if (err?.name == 'SSO_LOGIN_FAILED') {
-                            const error = { message: err.message }
-                            const signinUrl = `/signin?error=${encodeURIComponent(JSON.stringify(error))}`
-                            return res.redirect(signinUrl)
-                        }
-                        return next ? next(err) : res.status(401).json(err)
-                    }
-
-                    req.session.regenerate((regenerateErr) => {
-                        if (regenerateErr) {
-                            return next ? next(regenerateErr) : res.status(500).json({ message: 'Session regeneration failed' })
-                        }
-
-                        req.login(user, { session: true }, async (error) => {
-                            if (error) return next ? next(error) : res.status(401).json(error)
-                            return setTokenOrCookies(res, user, true, req, true, true)
-                        })
-                    })
-                } catch (error) {
-                    return next ? next(error) : res.status(401).json(error)
-                }
-            })(req, res, next)
-        })
     }
 
     static async testSetup(ssoConfig: any) {
