@@ -194,7 +194,7 @@ class ExecuteFlow_Agentflow implements INode {
             }
             if (chatflowApiKey) headers = { ...headers, Authorization: `Bearer ${chatflowApiKey}` }
 
-            const finalUrl = `${baseURL}/api/v1/prediction/${selectedFlowId}`
+            const finalUrl = `${baseURL}/api/prediction/${selectedFlowId}`
             const requestConfig: AxiosRequestConfig = {
                 method: 'POST',
                 url: finalUrl,

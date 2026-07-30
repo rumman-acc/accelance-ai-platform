@@ -386,7 +386,7 @@ const AgentFlowNode = ({ data }) => {
                                 >
                                     <img
                                         style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                        src={`${baseURL}/api/v1/node-icon/${data.name}`}
+                                        src={`${baseURL}/api/node-icon/${data.name}`}
                                         alt={data.name}
                                     />
                                 </div>
@@ -467,7 +467,7 @@ const AgentFlowNode = ({ data }) => {
                                             >
                                                 <img
                                                     style={{ width: 20, height: 20, objectFit: 'contain' }}
-                                                    src={`${baseURL}/api/v1/node-icon/${item.model}`}
+                                                    src={`${baseURL}/api/node-icon/${item.model}`}
                                                     alt={item.model}
                                                 />
                                                 <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>
@@ -540,7 +540,7 @@ const AgentFlowNode = ({ data }) => {
                                                                 <Box
                                                                     key={`tool-${configIndex}-${toolIndex}-${propIndex}`}
                                                                     component='img'
-                                                                    src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                                    src={`${baseURL}/api/node-icon/${toolName}`}
                                                                     alt={toolName}
                                                                     sx={{
                                                                         width: 20,
@@ -638,7 +638,7 @@ const AgentFlowNode = ({ data }) => {
                                                         <Box
                                                             key={`tool-${configIndex}-${toolIndex}`}
                                                             component='img'
-                                                            src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                            src={`${baseURL}/api/node-icon/${toolName}`}
                                                             alt={toolName}
                                                             sx={{
                                                                 width: 20,

@@ -888,7 +888,7 @@ const exportChatflowMessages = async (
                     artifacts.forEach((artifact: any) => {
                         if (artifact.type === 'png' || artifact.type === 'jpeg') {
                             const baseURL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`
-                            artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
+                            artifact.data = `${baseURL}/api/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
                                 chatmsg.chatId
                             }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
                         }

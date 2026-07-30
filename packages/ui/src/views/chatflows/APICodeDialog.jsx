@@ -306,7 +306,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const getWebhookCode = (codeLang, apiKey) => {
-        const url = `${baseURL}/api/v1/webhook/${dialogProps.chatflowid}`
+        const url = `${baseURL}/api/webhook/${dialogProps.chatflowid}`
         const sendsBody = webhookMethod !== 'GET' && webhookMethod !== 'DELETE'
         const isJson = webhookContentType === 'application/json'
         const sampleBodyJs = isJson ? '{ example: "value" }' : '"example=value"'
@@ -356,7 +356,7 @@ console.log(result);
         if (codeLang === 'Python') {
             return `import requests
 
-API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/prediction/${dialogProps.chatflowid}"
 
 def query(payload):
     response = requests.post(API_URL, json=payload)
@@ -369,7 +369,7 @@ output = query({
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
-        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        "${baseURL}/api/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
             headers: {
@@ -387,7 +387,7 @@ query({"question": "Hey, how are you?"}).then((response) => {
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
      -H "Content-Type: application/json"`
@@ -400,7 +400,7 @@ query({"question": "Hey, how are you?"}).then((response) => {
         if (codeLang === 'Python') {
             return `import requests
 
-API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/prediction/${dialogProps.chatflowid}"
 headers = {"Authorization": "Bearer ${selectedApiKey?.apiKey}"}
 
 def query(payload):
@@ -414,7 +414,7 @@ output = query({
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
-        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        "${baseURL}/api/prediction/${dialogProps.chatflowid}",
         {
             headers: {
                 Authorization: "Bearer ${selectedApiKey?.apiKey}",
@@ -433,7 +433,7 @@ query({"question": "Hey, how are you?"}).then((response) => {
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
      -H "Content-Type: application/json" \\
@@ -479,7 +479,7 @@ query({"question": "Hey, how are you?"}).then((response) => {
             if (fileType.includes(',')) fileType = fileType.split(',')[0]
             return `import requests
 
-API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/prediction/${dialogProps.chatflowid}"
 
 # use form data to upload files
 form_data = {
@@ -499,7 +499,7 @@ let formData = new FormData();
 ${getConfigExamplesForJS(configData, 'formData')}
 async function query(formData) {
     const response = await fetch(
-        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        "${baseURL}/api/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
             body: formData
@@ -514,7 +514,7 @@ query(formData).then((response) => {
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/prediction/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
      -H "Content-Type: multipart/form-data"`
         }
@@ -530,7 +530,7 @@ query(formData).then((response) => {
             if (fileType.includes(',')) fileType = fileType.split(',')[0]
             return `import requests
 
-API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/prediction/${dialogProps.chatflowid}"
 headers = {"Authorization": "Bearer ${selectedApiKey?.apiKey}"}
 
 # use form data to upload files
@@ -551,7 +551,7 @@ let formData = new FormData();
 ${getConfigExamplesForJS(configData, 'formData')}
 async function query(formData) {
     const response = await fetch(
-        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        "${baseURL}/api/prediction/${dialogProps.chatflowid}",
         {
             headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
             method: "POST",
@@ -567,7 +567,7 @@ query(formData).then((response) => {
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/prediction/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
      -H "Content-Type: multipart/form-data" \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
@@ -581,7 +581,7 @@ query(formData).then((response) => {
         if (codeLang === 'Python') {
             return `import requests
 
-API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/prediction/${dialogProps.chatflowid}"
 
 def query(payload):
     response = requests.post(API_URL, json=payload)
@@ -596,7 +596,7 @@ output = query({
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
-        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        "${baseURL}/api/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
             headers: {
@@ -618,7 +618,7 @@ query({
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
      -H "Content-Type: application/json"`
@@ -632,7 +632,7 @@ query({
         if (codeLang === 'Python') {
             return `import requests
 
-API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/prediction/${dialogProps.chatflowid}"
 headers = {"Authorization": "Bearer ${selectedApiKey?.apiKey}"}
 
 def query(payload):
@@ -648,7 +648,7 @@ output = query({
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
-        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        "${baseURL}/api/prediction/${dialogProps.chatflowid}",
         {
             headers: {
                 Authorization: "Bearer ${selectedApiKey?.apiKey}",
@@ -671,7 +671,7 @@ query({
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
      -H "Content-Type: application/json" \\
@@ -816,7 +816,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                     <IconBulb size={28} color='#2d6a4f' />
                                     <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
                                         This flow is configured as a <b>Webhook Trigger</b>. Send <b>{webhookMethod}</b> requests to{' '}
-                                        <code>/api/v1/webhook/{dialogProps.chatflowid}</code> with Content-Type{' '}
+                                        <code>/api/webhook/{dialogProps.chatflowid}</code> with Content-Type{' '}
                                         <code>{webhookContentType}</code>.
                                         {webhookEnableAuth && (
                                             <>

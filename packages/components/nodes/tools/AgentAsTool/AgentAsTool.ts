@@ -365,7 +365,7 @@ try {
         const additionalSandbox: ICommonObject = {
             $callOptions: options,
             $callBody: body,
-            $apiURL: `${this.baseURL}/api/v1/prediction/${this.agentflowid}`
+            $apiURL: `${this.baseURL}/api/prediction/${this.agentflowid}`
         }
 
         const sandbox = createCodeExecutionSandbox('', [], {}, additionalSandbox)

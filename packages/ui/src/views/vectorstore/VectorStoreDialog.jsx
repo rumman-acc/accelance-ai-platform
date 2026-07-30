@@ -105,7 +105,7 @@ const VectorStoreDialog = ({ show, dialogProps, onCancel, onIndexResult }) => {
         if (codeLang === 'Python') {
             return `import requests
 
-API_URL = "${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/vector/upsert/${dialogProps.chatflowid}"
 
 def query(payload):
     response = requests.post(API_URL, json=payload)
@@ -124,7 +124,7 @@ output = query({
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
-        "${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid}",
+        "${baseURL}/api/vector/upsert/${dialogProps.chatflowid}",
         {
             method: "POST",
             headers: {
@@ -150,7 +150,7 @@ query({
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/vector/upsert/${dialogProps.chatflowid} \\
       -X POST \\
       ${
           isMultiple
@@ -174,7 +174,7 @@ query({
             if (fileType.includes(',')) fileType = fileType.split(',')[0]
             return `import requests
 
-API_URL = "${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid}"
+API_URL = "${baseURL}/api/vector/upsert/${dialogProps.chatflowid}"
 
 # use form data to upload files
 form_data = {
@@ -194,7 +194,7 @@ let formData = new FormData();
 ${getConfigExamplesForJS(configData, 'formData', isMultiple, vectorNodeId)}
 async function query(formData) {
     const response = await fetch(
-        "${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid}",
+        "${baseURL}/api/vector/upsert/${dialogProps.chatflowid}",
         {
             method: "POST",
             body: formData
@@ -209,7 +209,7 @@ query(formData).then((response) => {
 });
 `
         } else if (codeLang === 'cURL') {
-            return `curl ${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/vector/upsert/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData', isMultiple, vectorNodeId)} \\
      -H "Content-Type: multipart/form-data"`
         }
@@ -455,7 +455,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                                         objectFit: 'contain'
                                                                     }}
                                                                     alt={node.data.name}
-                                                                    src={`${baseURL}/api/v1/node-icon/${node.data.name}`}
+                                                                    src={`${baseURL}/api/node-icon/${node.data.name}`}
                                                                 />
                                                             </div>
                                                             <Typography variant='h5'>{node.data.label}</Typography>

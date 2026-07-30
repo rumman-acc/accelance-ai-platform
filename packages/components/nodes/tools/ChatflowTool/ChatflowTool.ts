@@ -373,7 +373,7 @@ try {
         const additionalSandbox: ICommonObject = {
             $callOptions: options,
             $callBody: body,
-            $apiURL: `${this.baseURL}/api/v1/prediction/${this.chatflowid}`
+            $apiURL: `${this.baseURL}/api/prediction/${this.chatflowid}`
         }
 
         const sandbox = createCodeExecutionSandbox('', [], {}, additionalSandbox)

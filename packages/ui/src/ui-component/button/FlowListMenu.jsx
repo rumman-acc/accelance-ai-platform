@@ -74,7 +74,7 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi, currentPage, pageLimit }) {
+export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi, currentPage, pageLimit }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -108,10 +108,9 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 page: currentPage,
                 limit: pageLimit
             }
-            if (isAgentCanvas && isAgentflowV2) {
-                await updateFlowsApi.request('AGENTFLOW', params)
-            } else if (isAgentCanvas) {
-                await updateFlowsApi.request('MULTIAGENT', params)
+            if (isAgentCanvas) {
+                // Agentflows list shows both v2 (AGENTFLOW) and legacy v1 (MULTIAGENT) rows together
+                await updateFlowsApi.request('AGENTFLOW,MULTIAGENT', params)
             } else {
                 await updateFlowsApi.request(params)
             }
@@ -188,10 +187,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 page: currentPage,
                 limit: pageLimit
             }
-            if (isAgentCanvas && isAgentflowV2) {
-                await updateFlowsApi.request('AGENTFLOW', params)
-            } else if (isAgentCanvas) {
-                await updateFlowsApi.request('MULTIAGENT', params)
+            if (isAgentCanvas) {
+                await updateFlowsApi.request('AGENTFLOW,MULTIAGENT', params)
             } else {
                 await updateFlowsApi.request(params)
             }
@@ -238,7 +235,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 limit: pageLimit
             }
             if (isAgentCanvas) {
-                await updateFlowsApi.request('AGENTFLOW', params)
+                await updateFlowsApi.request('AGENTFLOW,MULTIAGENT', params)
             } else {
                 await updateFlowsApi.request(params)
             }
@@ -277,10 +274,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                     page: currentPage,
                     limit: pageLimit
                 }
-                if (isAgentCanvas && isAgentflowV2) {
-                    await updateFlowsApi.request('AGENTFLOW', params)
-                } else if (isAgentCanvas) {
-                    await updateFlowsApi.request('MULTIAGENT', params)
+                if (isAgentCanvas) {
+                    await updateFlowsApi.request('AGENTFLOW,MULTIAGENT', params)
                 } else {
                     await updateFlowsApi.request(params)
                 }
@@ -305,9 +300,27 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
 
     const handleDuplicate = () => {
         setAnchorEl(null)
+        // V1 Agentflows (MULTIAGENT) can no longer be duplicated - that would create a new V1
+        // flow, which is no longer supported. Existing V1 flows remain viewable/editable/runnable.
+        if (isAgentCanvas && chatflow.type === 'MULTIAGENT') {
+            enqueueSnackbar({
+                message: 'Duplicating V1 Agentflows is no longer supported. Please rebuild this flow using the current Agentflow builder.',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            return
+        }
         try {
             localStorage.setItem('duplicatedFlowData', chatflow.flowData)
-            if (isAgentflowV2) {
+            if (chatflow.type === 'AGENTFLOW') {
                 window.open(`${uiBaseURL}/v2/agentcanvas`, '_blank')
             } else if (isAgentCanvas) {
                 window.open(`${uiBaseURL}/agentcanvas`, '_blank')
@@ -494,7 +507,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
 FlowListMenu.propTypes = {
     chatflow: PropTypes.object,
     isAgentCanvas: PropTypes.bool,
-    isAgentflowV2: PropTypes.bool,
     setError: PropTypes.func,
     updateFlowsApi: PropTypes.object,
     currentPage: PropTypes.number,

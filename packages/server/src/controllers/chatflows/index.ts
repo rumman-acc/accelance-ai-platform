@@ -4,7 +4,6 @@ import { QueryRunner } from 'typeorm'
 import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../../enterprise/services/workspace-user.service'
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
-import { ChatflowType } from '../../Interface'
 import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import apiKeyService from '../../services/apikey'
 import chatflowsService from '../../services/chatflows'
@@ -96,7 +95,7 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
         const { page, limit } = getPageAndLimitParams(req)
 
         const apiResponse = await chatflowsService.getAllChatflows(
-            req.query?.type as ChatflowType,
+            req.query?.type as string | undefined,
             req.user?.activeWorkspaceId,
             page,
             limit
@@ -173,6 +172,13 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
+
+        if (body.type === 'MULTIAGENT') {
+            throw new InternalAccelanceError(
+                StatusCodes.BAD_REQUEST,
+                'Error: chatflowsController.saveChatflow - creating new V1 Agentflows (MULTIAGENT) is no longer supported, use AGENTFLOW instead'
+            )
+        }
 
         const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization(body.type, orgId)
         const newChatflowCount = 1

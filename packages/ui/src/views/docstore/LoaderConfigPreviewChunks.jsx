@@ -425,7 +425,7 @@ const LoaderConfigPreviewChunks = () => {
                                                     objectFit: 'contain'
                                                 }}
                                                 alt={selectedDocumentLoader?.name ?? 'docloader'}
-                                                src={`${baseURL}/api/v1/node-icon/${selectedDocumentLoader?.name}`}
+                                                src={`${baseURL}/api/node-icon/${selectedDocumentLoader?.name}`}
                                             />
                                         ) : (
                                             <IconBook color='black' />
@@ -510,7 +510,7 @@ const LoaderConfigPreviewChunks = () => {
                                                                     objectFit: 'contain'
                                                                 }}
                                                                 alt={selectedTextSplitter?.name ?? 'textsplitter'}
-                                                                src={`${baseURL}/api/v1/node-icon/${selectedTextSplitter?.name}`}
+                                                                src={`${baseURL}/api/node-icon/${selectedTextSplitter?.name}`}
                                                             />
                                                         ) : (
                                                             <IconScissors color='black' />

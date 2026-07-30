@@ -1,9 +1,9 @@
 import axios from 'axios'
-import { baseURL, ErrorMessage } from '@/store/constant'
+import { API_BASE_PATH, baseURL, ErrorMessage } from '@/store/constant'
 import AuthUtils from '@/utils/authUtils'
 
 const apiClient = axios.create({
-    baseURL: `${baseURL}/api/v1`,
+    baseURL: `${baseURL}${API_BASE_PATH}`,
     headers: {
         'Content-type': 'application/json',
         'x-request-from': 'internal'
@@ -21,7 +21,7 @@ apiClient.interceptors.response.use(
             if (error.response.data.message === ErrorMessage.TOKEN_EXPIRED && error.response.data.retry === true) {
                 const originalRequest = error.config
                 // call api to get new token
-                const response = await axios.post(`${baseURL}/api/v1/auth/refreshToken`, {}, { withCredentials: true })
+                const response = await axios.post(`${baseURL}${API_BASE_PATH}/auth/refreshToken`, {}, { withCredentials: true })
                 if (response.data.id) {
                     // retry the original request
                     return apiClient.request(originalRequest)

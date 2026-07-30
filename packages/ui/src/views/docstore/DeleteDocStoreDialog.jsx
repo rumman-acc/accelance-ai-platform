@@ -264,7 +264,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                                                                                     objectFit: 'contain'
                                                                                 }}
                                                                                 alt={node.name}
-                                                                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                                                                                src={`${baseURL}/api/node-icon/${node.name}`}
                                                                             />
                                                                         </div>
                                                                         <Typography variant='h5'>{node.label}</Typography>

@@ -240,7 +240,7 @@ class ExecuteFlow_SeqAgents implements INode {
             const additionalSandbox: ICommonObject = {
                 $callOptions: callOptions,
                 $callBody: body,
-                $apiURL: `${baseURL}/api/v1/prediction/${selectedFlowId}`
+                $apiURL: `${baseURL}/api/prediction/${selectedFlowId}`
             }
 
             const sandbox = createCodeExecutionSandbox(flowInput, variables, flow, additionalSandbox)

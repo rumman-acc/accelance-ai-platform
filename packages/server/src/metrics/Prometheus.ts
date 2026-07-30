@@ -117,7 +117,7 @@ export class Prometheus implements IMetricsProvider {
 
     async setupMetricsEndpoint() {
         // Add Prometheus middleware to the app
-        this.app.use('/api/v1/metrics', async (req, res) => {
+        this.app.use('/api/metrics', async (req, res) => {
             res.set('Content-Type', this.register.contentType)
             const currentMetrics = await this.register.metrics()
             res.send(currentMetrics).end()

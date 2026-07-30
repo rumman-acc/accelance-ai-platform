@@ -65,7 +65,7 @@ const CustomAssistantLayout = () => {
         const images = []
         if (details && details.chatModel && details.chatModel.name) {
             images.push({
-                imageSrc: `${baseURL}/api/v1/node-icon/${details.chatModel.name}`
+                imageSrc: `${baseURL}/api/node-icon/${details.chatModel.name}`
             })
         }
         return images

@@ -293,7 +293,7 @@ const Documents = () => {
                     let totalChars = 0
                     loaderImages[data[i].id] = []
                     for (let j = 0; j < loaders.length; j += 1) {
-                        const imageSrc = `${baseURL}/api/v1/node-icon/${loaders[j].loaderId}`
+                        const imageSrc = `${baseURL}/api/node-icon/${loaders[j].loaderId}`
                         if (!loaderImages[data[i].id].includes(imageSrc)) {
                             loaderImages[data[i].id].push(imageSrc)
                         }

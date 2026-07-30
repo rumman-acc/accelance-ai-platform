@@ -45,7 +45,7 @@ const McpServer = ({ dialogProps, onStatusChange }) => {
     const [toolNameError, setToolNameError] = useState('')
 
     const chatflowId = dialogProps?.chatflow?.id
-    const endpointUrl = chatflowId ? `${window.location.origin}/api/v1/mcp/${chatflowId}` : ''
+    const endpointUrl = chatflowId ? `${window.location.origin}/api/mcp/${chatflowId}` : ''
 
     const validateToolName = (name) => {
         if (!name) return 'Tool name is required'

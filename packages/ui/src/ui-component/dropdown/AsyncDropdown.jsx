@@ -47,7 +47,7 @@ const fetchList = async ({ name, nodeData, previousNodes, currentNode }) => {
 
     let lists = await axios
         .post(
-            `${baseURL}/api/v1/node-load-method/${nodeData.name}`,
+            `${baseURL}/api/node-load-method/${nodeData.name}`,
             { ...nodeData, loadMethod, previousNodes, currentNode, credential: credentialId },
             config
         )
@@ -161,7 +161,7 @@ export const AsyncDropdown = ({
                 }
                 for (let j = 0; j < response.length; j += 1) {
                     if (response[j].imageSrc) {
-                        const imageSrc = `${baseURL}/api/v1/node-icon/${response[j].name}`
+                        const imageSrc = `${baseURL}/api/node-icon/${response[j].name}`
                         response[j].imageSrc = imageSrc
                     }
                 }

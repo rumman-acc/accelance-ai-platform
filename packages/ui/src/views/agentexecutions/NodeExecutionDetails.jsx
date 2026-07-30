@@ -180,7 +180,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
     const downloadFile = async (fileAnnotation) => {
         try {
             const response = await axios.post(
-                `${baseURL}/api/v1/openai-assistants-file/download`,
+                `${baseURL}/api/openai-assistants-file/download`,
                 { fileName: fileAnnotation.fileName, chatflowId: metadata?.agentflowId, chatId: metadata?.sessionId },
                 { responseType: 'blob' }
             )
@@ -295,7 +295,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 >
                                     <img
                                         style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                        src={`${baseURL}/api/v1/node-icon/${nodeName}`}
+                                        src={`${baseURL}/api/node-icon/${nodeName}`}
                                         alt={nodeName}
                                     />
                                 </div>
@@ -441,10 +441,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                     (t) => t.name === tool.name
                                                                 )
                                                                 if (matchingTool && matchingTool.toolNode && matchingTool.toolNode.name) {
-                                                                    return `${baseURL}/api/v1/node-icon/${matchingTool.toolNode.name}`
+                                                                    return `${baseURL}/api/node-icon/${matchingTool.toolNode.name}`
                                                                 }
                                                             }
-                                                            return `${baseURL}/api/v1/node-icon/${tool.name}`
+                                                            return `${baseURL}/api/node-icon/${tool.name}`
                                                         })()}
                                                         alt={tool.name}
                                                         onError={(e) => {
@@ -599,10 +599,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                             matchingTool.toolNode &&
                                                                             matchingTool.toolNode.name
                                                                         ) {
-                                                                            return `${baseURL}/api/v1/node-icon/${matchingTool.toolNode.name}`
+                                                                            return `${baseURL}/api/node-icon/${matchingTool.toolNode.name}`
                                                                         }
                                                                     }
-                                                                    return `${baseURL}/api/v1/node-icon/${toolCall.name}`
+                                                                    return `${baseURL}/api/node-icon/${toolCall.name}`
                                                                 })()}
                                                                 alt={toolCall.name}
                                                                 onError={(e) => {
@@ -672,10 +672,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                     ) {
                                                         const matchingTool = data.output.availableTools.find((t) => t.name === message.name)
                                                         if (matchingTool && matchingTool.toolNode && matchingTool.toolNode.name) {
-                                                            return `${baseURL}/api/v1/node-icon/${matchingTool.toolNode.name}`
+                                                            return `${baseURL}/api/node-icon/${matchingTool.toolNode.name}`
                                                         }
                                                     }
-                                                    return `${baseURL}/api/v1/node-icon/${message.name}`
+                                                    return `${baseURL}/api/node-icon/${message.name}`
                                                 })()}
                                                 alt={message.name}
                                                 onError={(e) => {
@@ -769,7 +769,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                 component='img'
                                                                 image={
                                                                     artifact.data.startsWith('FILE-STORAGE::')
-                                                                        ? `${baseURL}/api/v1/get-upload-file?chatflowId=${
+                                                                        ? `${baseURL}/api/get-upload-file?chatflowId=${
                                                                               metadata?.agentflowId
                                                                           }&chatId=${metadata?.sessionId}&fileName=${artifact.data.replace(
                                                                               'FILE-STORAGE::',
@@ -843,7 +843,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                     component='img'
                                                     image={
                                                         content.type === 'stored-file'
-                                                            ? `${baseURL}/api/v1/get-upload-file?chatflowId=${metadata?.agentflowId}&chatId=${metadata?.sessionId}&fileName=${content.name}`
+                                                            ? `${baseURL}/api/get-upload-file?chatflowId=${metadata?.agentflowId}&chatId=${metadata?.sessionId}&fileName=${content.name}`
                                                             : content.name
                                                     }
                                                     onError={(e) => {
@@ -1030,7 +1030,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                             component='img'
                                                             image={
                                                                 artifact.data.startsWith('FILE-STORAGE::')
-                                                                    ? `${baseURL}/api/v1/get-upload-file?chatflowId=${
+                                                                    ? `${baseURL}/api/get-upload-file?chatflowId=${
                                                                           metadata?.agentflowId
                                                                       }&chatId=${metadata?.sessionId}&fileName=${artifact.data.replace(
                                                                           'FILE-STORAGE::',

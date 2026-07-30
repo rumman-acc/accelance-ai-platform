@@ -197,7 +197,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         )
     )
 
-    app.post('/api/v1/auth/resolve', async (req, res) => {
+    app.post('/api/auth/resolve', async (req, res) => {
         // check for the organization, if empty redirect to the organization setup page for OpenSource and Enterprise Versions
         // for Cloud (Horizontal) version, redirect to the signin page
         const expressApp = getRunningExpressApp()
@@ -232,7 +232,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         }
     })
 
-    app.post('/api/v1/auth/refreshToken', async (req, res) => {
+    app.post('/api/auth/refreshToken', async (req, res) => {
         const refreshToken = req.cookies.refreshToken
         if (!refreshToken) return res.sendStatus(401)
 
@@ -273,7 +273,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         })
     })
 
-    app.post('/api/v1/auth/login', (req, res, next?) => {
+    app.post('/api/auth/login', (req, res, next?) => {
         passport.authenticate('login', async (err: any, user: LoggedInUser) => {
             try {
                 if (err || !user) {

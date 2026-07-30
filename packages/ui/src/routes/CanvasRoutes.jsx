@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { Navigate } from 'react-router'
 
 // project imports
 import Loadable from '@/ui-component/loading/Loadable'
@@ -34,12 +35,10 @@ const CanvasRoutes = {
             )
         },
         {
+            // Creating a NEW V1 Agentflow is no longer supported - redirect to the V2 canvas.
+            // Existing V1 flows are still reachable/editable at /agentcanvas/:id below.
             path: '/agentcanvas',
-            element: (
-                <RequireAuth permission={'agentflows:view'}>
-                    <Canvas />
-                </RequireAuth>
-            )
+            element: <Navigate to='/v2/agentcanvas' replace />
         },
         {
             path: '/agentcanvas/:id',

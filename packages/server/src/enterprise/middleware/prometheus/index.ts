@@ -19,7 +19,7 @@ export const initializePrometheus = (app: express.Application) => {
         labelNames: ['method', 'path', 'status']
     })
 
-    app.use('/api/v1/prediction', async (req, res) => {
+    app.use('/api/prediction', async (req, res) => {
         res.on('finish', async () => {
             requestCounter.labels(req?.method, req?.path, res.statusCode.toString()).inc()
             predictionsTotal.labels('success').inc()
@@ -33,7 +33,7 @@ export const initializePrometheus = (app: express.Application) => {
     register.registerMetric(predictionsTotal)
 
     // Add Prometheus middleware to the app
-    app.use('/api/v1/metrics', async (req, res) => {
+    app.use('/api/metrics', async (req, res) => {
         res.set('Content-Type', register.contentType)
         const currentMetrics = await register.metrics()
         res.send(currentMetrics)

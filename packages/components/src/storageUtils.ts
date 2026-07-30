@@ -58,6 +58,19 @@ export const getStoragePath = (): string => {
 }
 
 /**
+ * Path to the locally-cached, periodically-refreshed model list (see refreshModelList job in
+ * packages/server). Independent of getStoragePath() since it's server-local metadata, not
+ * user-uploaded content, and must exist regardless of STORAGE_TYPE (local vs cloud).
+ */
+export const getModelsCachePath = (): string => {
+    const cacheDir = process.env.MODEL_CACHE_DIR ? path.join(process.env.MODEL_CACHE_DIR) : path.join(getUserHome(), '.flowise')
+    if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true })
+    }
+    return path.join(cacheDir, 'models-cache.json')
+}
+
+/**
  * Get the storage type - local or cloud
  */
 export const getStorageType = (): string => {

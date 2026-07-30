@@ -169,7 +169,7 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
                                         objectFit: 'contain'
                                     }}
                                     alt={documentLoader.name}
-                                    src={`${baseURL}/api/v1/node-icon/${documentLoader.name}`}
+                                    src={`${baseURL}/api/node-icon/${documentLoader.name}`}
                                 />
                             </div>
                             <Typography>{documentLoader.label}</Typography>

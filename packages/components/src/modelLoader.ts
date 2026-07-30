@@ -2,6 +2,7 @@ import axios from 'axios'
 import * as fs from 'fs'
 import * as path from 'path'
 import { INodeOptionsValue } from './Interface'
+import { getModelsCachePath } from './storageUtils'
 
 export enum MODEL_TYPE {
     CHAT = 'chat',
@@ -9,7 +10,7 @@ export enum MODEL_TYPE {
     EMBEDDING = 'embedding'
 }
 
-const getModelsJSONPath = (): string => {
+export const getModelsJSONPath = (): string => {
     const checkModelsPaths = [path.join(__dirname, '..', 'models.json'), path.join(__dirname, '..', '..', 'models.json')]
     for (const checkPath of checkModelsPaths) {
         if (fs.existsSync(checkPath)) {
@@ -30,12 +31,13 @@ const isValidUrl = (urlString: string) => {
 }
 
 /**
- * Load the raw model file from either a URL or a local file
- * If any of the loading fails, fallback to the default models.json file on disk
+ * Load the raw model file from either a URL or a local file.
+ * Resolution order: an explicit MODEL_LIST_CONFIG_JSON override, then the locally-cached list
+ * kept fresh by the daily refreshModelList job (packages/server), then the bundled models.json.
+ * If any of the loading fails, fallback to the bundled models.json file on disk.
  */
 const getRawModelFile = async () => {
-    const modelFile =
-        process.env.MODEL_LIST_CONFIG_JSON ?? 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/packages/components/models.json'
+    const modelFile = process.env.MODEL_LIST_CONFIG_JSON ?? getModelsCachePath()
     try {
         if (isValidUrl(modelFile)) {
             const resp = await axios.get(modelFile)

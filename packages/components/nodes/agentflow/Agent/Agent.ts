@@ -2895,7 +2895,7 @@ class Agent_Agentflow implements INode {
                 const fileName = sanitizeFileName(filePath)
 
                 // Replace sandbox link with proper download URL
-                const downloadUrl = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowId}&chatId=${chatId}&fileName=${fileName}&download=true`
+                const downloadUrl = `${baseURL}/api/get-upload-file?chatflowId=${chatflowId}&chatId=${chatId}&fileName=${fileName}&download=true`
                 const newLink = `[${linkText}](${downloadUrl})`
 
                 processedResponse = processedResponse.replace(fullMatch, newLink)

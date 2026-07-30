@@ -700,7 +700,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                                                                     objectFit: 'contain'
                                                                                                 }}
                                                                                                 alt={node.name}
-                                                                                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                                                                                                src={`${baseURL}/api/node-icon/${node.name}`}
                                                                                             />
                                                                                         </div>
                                                                                     </ListItemAvatar>

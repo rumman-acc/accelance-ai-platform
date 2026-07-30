@@ -40,11 +40,14 @@ export function getAllowedAuthCorsOrigins(): string[] {
     }
 }
 
-// Endpoints that issue or refresh session tokens — must not accept wildcard origins
+// Endpoints that issue or refresh session tokens — must not accept wildcard origins.
+// The SSO callback endpoints stay on the literal /api/v1 path (excluded from the
+// /api/v1 -> /api rewrite in index.ts, see comment there) since that's the exact URL
+// registered as an allowed callback in each org's external IdP app config.
 const SESSION_ENDPOINTS = [
-    '/api/v1/auth/login',
-    '/api/v1/auth/refreshtoken',
-    '/api/v1/account/register',
+    '/api/auth/login',
+    '/api/auth/refreshtoken',
+    '/api/account/register',
     '/api/v1/azure/callback',
     '/api/v1/google/callback',
     '/api/v1/auth0/callback',

@@ -169,7 +169,7 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
                                         objectFit: 'contain'
                                     }}
                                     alt={loader.name}
-                                    src={`${baseURL}/api/v1/node-icon/${loader.name}`}
+                                    src={`${baseURL}/api/node-icon/${loader.name}`}
                                 />
                             </div>
                             <Typography>{loader.label}</Typography>

@@ -251,7 +251,7 @@ const TextToSpeech = ({ dialogProps }) => {
                 model: providerConfig.model
             }
 
-            const response = await fetch('/api/v1/text-to-speech/generate', {
+            const response = await fetch('/api/text-to-speech/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

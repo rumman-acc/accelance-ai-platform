@@ -61,7 +61,6 @@ export const FlowListTable = ({
     updateFlowsApi,
     setError,
     isAgentCanvas,
-    isAgentflowV2,
     currentPage,
     pageLimit
 }) => {
@@ -91,7 +90,7 @@ export const FlowListTable = ({
         if (!isAgentCanvas) {
             return `/canvas/${row.id}`
         } else {
-            return isAgentflowV2 ? `/v2/agentcanvas/${row.id}` : `/agentcanvas/${row.id}`
+            return row.type === 'AGENTFLOW' ? `/v2/agentcanvas/${row.id}` : `/agentcanvas/${row.id}`
         }
     }
 
@@ -335,7 +334,6 @@ export const FlowListTable = ({
                                                 >
                                                     <FlowListMenu
                                                         isAgentCanvas={isAgentCanvas}
-                                                        isAgentflowV2={isAgentflowV2}
                                                         chatflow={row}
                                                         setError={setError}
                                                         updateFlowsApi={updateFlowsApi}
@@ -366,7 +364,6 @@ FlowListTable.propTypes = {
     updateFlowsApi: PropTypes.object,
     setError: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
-    isAgentflowV2: PropTypes.bool,
     currentPage: PropTypes.number,
     pageLimit: PropTypes.number
 }

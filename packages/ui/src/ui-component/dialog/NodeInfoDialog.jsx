@@ -97,7 +97,7 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                         objectFit: 'contain'
                                     }}
                                     alt={dialogProps.data.name}
-                                    src={`${baseURL}/api/v1/node-icon/${dialogProps.data.name}`}
+                                    src={`${baseURL}/api/node-icon/${dialogProps.data.name}`}
                                 />
                             </div>
                         )}

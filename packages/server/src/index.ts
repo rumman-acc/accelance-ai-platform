@@ -25,6 +25,7 @@ import { NodesPool } from './NodesPool'
 import { QueueManager } from './queue/QueueManager'
 import { ScheduleBeat } from './schedule/ScheduleBeat'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
+import { registerModelRefreshJob, stopModelRefreshJob } from './jobs/refreshModelList'
 import { initWebhookListenerRegistry } from './services/webhook-listener'
 import flowiseApiV1Router from './routes'
 import { UsageCacheManager } from './UsageCacheManager'
@@ -163,6 +164,8 @@ export class App {
             await ScheduleBeat.getInstance().init()
             logger.info('⏰ [server]: ScheduleBeat initialized successfully')
 
+            registerModelRefreshJob()
+
             logger.info('🎉 [server]: All initialization steps completed successfully!')
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
@@ -170,6 +173,27 @@ export class App {
     }
 
     async config() {
+        // Legacy alias: rewrite /api/v1/* to /api/* so external callers on the old prefix
+        // (published SDK, existing API docs/snippets) keep working against the single
+        // canonical /api mount below. Case-sensitive on purpose - the auth gate further down
+        // deliberately rejects case-varied paths like /API/v1/..., and a case-insensitive
+        // rewrite here would silently defeat that check.
+        //
+        // SSO login/callback/logout paths are excluded and stay on /api/v1 permanently: their
+        // exact URL is independently registered as an "allowed callback URL" inside each
+        // organization's external IdP (Auth0/Google/Azure/GitHub) app config, which our server
+        // has no way to update. Rewriting the incoming request wouldn't help - the IdP itself
+        // would reject the redirect before it ever reaches us.
+        const SSO_PROVIDER_PATH_SEGMENTS = ['/api/v1/azure/', '/api/v1/google/', '/api/v1/auth0/', '/api/v1/github/']
+        this.app.use((req, _res, next) => {
+            const isLegacyV1 = req.url === '/api/v1' || req.url.startsWith('/api/v1/')
+            const isSsoProviderPath = SSO_PROVIDER_PATH_SEGMENTS.some((prefix) => req.url.startsWith(prefix))
+            if (isLegacyV1 && !isSsoProviderPath) {
+                req.url = '/api' + req.url.slice('/api/v1'.length)
+            }
+            next()
+        })
+
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FILE_SIZE_LIMIT || '50mb'
 
@@ -222,13 +246,13 @@ export class App {
 
         const denylistURLs = process.env.DENYLIST_URLS ? process.env.DENYLIST_URLS.split(',') : []
         const whitelistURLs = WHITELIST_URLS.filter((url) => !denylistURLs.includes(url))
-        const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
-        const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
+        const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\//i
+        const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\//
 
         await initializeJwtCookieMiddleware(this.app, this.identityManager)
 
         this.app.use(async (req, res, next) => {
-            // Step 1: Check if the req path contains /api/v1 regardless of case
+            // Step 1: Check if the req path contains /api regardless of case
             if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
                 // Step 2: Check if the req path is casesensitive
                 if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
@@ -294,7 +318,7 @@ export class App {
                     return res.status(401).json({ error: 'Unauthorized Access' })
                 }
             } else {
-                // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
+                // If the req path does not contain /api, then allow the request to pass through, example: /assets, /canvas
                 next()
             }
         })
@@ -324,12 +348,12 @@ export class App {
             }
         }
 
-        this.app.use('/api/v1', flowiseApiV1Router)
+        this.app.use('/api', flowiseApiV1Router)
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment
         // ----------------------------------------
-        this.app.get('/api/v1/ip', (request, response) => {
+        this.app.get('/api/ip', (request, response) => {
             response.send({
                 ip: request.ip,
                 msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Accelance until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
@@ -372,6 +396,7 @@ export class App {
     async stopApp() {
         try {
             this.sseStreamer.stopHeartbeat()
+            stopModelRefreshJob()
             const removePromises: any[] = []
             removePromises.push(this.telemetry.flush())
             if (this.queueManager) {

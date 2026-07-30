@@ -365,7 +365,7 @@ const Credentials = () => {
                                                                             objectFit: 'contain'
                                                                         }}
                                                                         alt={credential.credentialName}
-                                                                        src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
+                                                                        src={`${baseURL}/api/components-credentials-icon/${credential.credentialName}`}
                                                                         onError={(e) => {
                                                                             e.target.onerror = null
                                                                             e.target.style.padding = '5px'

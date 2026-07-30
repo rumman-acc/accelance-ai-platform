@@ -384,7 +384,7 @@ const Marketplace = () => {
                             if (foundIcon) {
                                 icons[flows[i].id].push(foundIcon)
                             } else {
-                                const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                                const imageSrc = `${baseURL}/api/node-icon/${nodes[j].data.name}`
                                 if (!images[flows[i].id].some((img) => img.imageSrc === imageSrc)) {
                                     images[flows[i].id].push({
                                         imageSrc,
@@ -439,7 +439,7 @@ const Marketplace = () => {
                             if (foundIcon) {
                                 tIcons[flows[i].id].push(foundIcon)
                             } else {
-                                const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                                const imageSrc = `${baseURL}/api/node-icon/${nodes[j].data.name}`
                                 if (!tImages[flows[i].id].includes(imageSrc)) {
                                     tImages[flows[i].id].push(imageSrc)
                                 }

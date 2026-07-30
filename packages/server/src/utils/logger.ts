@@ -90,9 +90,9 @@ function sanitizeObject(obj: any): any {
 }
 
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
-    const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
+    const unwantedLogURLs = ['/api/node-icon/', '/api/components-credentials-icon/', '/api/ping']
 
-    if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
+    if (/\/api\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
         const isDebugLevel = logger.level === 'debug' || process.env.DEBUG === 'true'
 
         const requestMetadata: any = {

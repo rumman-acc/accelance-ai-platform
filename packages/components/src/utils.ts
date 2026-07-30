@@ -1470,7 +1470,7 @@ export const refreshOAuth2Token = async (
 
                 // Call the refresh API endpoint
                 const refreshResponse = await fetch(
-                    `${options.baseURL || 'http://localhost:3000'}/api/v1/oauth2-credential/refresh/${credentialId}`,
+                    `${options.baseURL || 'http://localhost:3000'}/api/oauth2-credential/refresh/${credentialId}`,
                     {
                         method: 'POST',
                         headers: {

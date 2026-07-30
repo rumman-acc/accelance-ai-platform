@@ -337,7 +337,7 @@ const WebhookListenerDrawer = ({ open, chatflowid, onClose, onStatusChange }) =>
         // This is best-effort — the user can always override by sending whatever the Start node accepts.
         return 'POST'
     }, [])
-    const webhookUrl = chatflowid ? `${baseURL}/api/v1/webhook/${chatflowid}` : ''
+    const webhookUrl = chatflowid ? `${baseURL}/api/webhook/${chatflowid}` : ''
 
     // ── Reset visible run state but keep the connection open and listening
     const resetRun = useCallback(() => {
@@ -372,7 +372,7 @@ const WebhookListenerDrawer = ({ open, chatflowid, onClose, onStatusChange }) =>
             abortRef.current = ctrl
 
             try {
-                await fetchEventSource(`${baseURL}/api/v1/webhook-listener/${chatflowid}/stream/${id}`, {
+                await fetchEventSource(`${baseURL}/api/webhook-listener/${chatflowid}/stream/${id}`, {
                     openWhenHidden: true,
                     signal: ctrl.signal,
                     headers: { 'x-request-from': 'internal' },

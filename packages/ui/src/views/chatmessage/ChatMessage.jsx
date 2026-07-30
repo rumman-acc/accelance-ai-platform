@@ -716,7 +716,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const updateLastMessageArtifacts = (artifacts) => {
         artifacts.forEach((artifact) => {
             if (artifact.type === 'png' || artifact.type === 'jpeg') {
-                artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${artifact.data.replace(
+                artifact.data = `${baseURL}/api/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${artifact.data.replace(
                     'FILE-STORAGE::',
                     ''
                 )}`
@@ -1121,7 +1121,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         const chatId = params.chatId
         const input = params.question
         params.streaming = true
-        await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
+        await fetchEventSource(`${baseURL}/api/internal-prediction/${chatflowid}`, {
             openWhenHidden: true,
             method: 'POST',
             body: JSON.stringify(params),
@@ -1282,7 +1282,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const downloadFile = async (fileAnnotation) => {
         try {
             const response = await axios.post(
-                `${baseURL}/api/v1/openai-assistants-file/download`,
+                `${baseURL}/api/openai-assistants-file/download`,
                 { fileName: fileAnnotation.fileName, chatflowId: chatflowid, chatId: chatId },
                 { responseType: 'blob' }
             )
@@ -1301,7 +1301,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
     const getAgentIcon = (nodeName, instructions) => {
         if (nodeName) {
-            return `${baseURL}/api/v1/node-icon/${nodeName}`
+            return `${baseURL}/api/node-icon/${nodeName}`
         } else if (instructions) {
             return multiagent_supervisorPNG
         } else {
@@ -1335,7 +1335,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     obj.artifacts = message.artifacts
                     obj.artifacts.forEach((artifact) => {
                         if (artifact.type === 'png' || artifact.type === 'jpeg') {
-                            artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${artifact.data.replace(
+                            artifact.data = `${baseURL}/api/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${artifact.data.replace(
                                 'FILE-STORAGE::',
                                 ''
                             )}`
@@ -1346,7 +1346,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     obj.fileUploads = message.fileUploads
                     obj.fileUploads.forEach((file) => {
                         if (file.type === 'stored-file') {
-                            file.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${file.name}`
+                            file.data = `${baseURL}/api/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${file.name}`
                         }
                     })
                 }
@@ -1787,7 +1787,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             const abortController = new AbortController()
             setTtsStreamingState((prev) => ({ ...prev, abortController }))
 
-            const response = await fetch('/api/v1/text-to-speech/generate', {
+            const response = await fetch('/api/text-to-speech/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2273,7 +2273,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             const artifact = newArtifacts[i]
             if (artifact && (artifact.type === 'png' || artifact.type === 'jpeg')) {
                 const data = artifact.data
-                newArtifacts[i].data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${data.replace(
+                newArtifacts[i].data = `${baseURL}/api/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${data.replace(
                     'FILE-STORAGE::',
                     ''
                 )}`

@@ -404,7 +404,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                                     objectFit: 'contain'
                                 }}
                                 alt={componentCredential.name}
-                                src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
+                                src={`${baseURL}/api/components-credentials-icon/${componentCredential.name}`}
                                 onError={(e) => {
                                     e.target.onerror = null
                                     e.target.style.padding = '5px'

@@ -10,7 +10,7 @@ import logger from './logger'
 const ALLOWED_SLUGS = ['/prediction/', '/public-chatbotConfig/', '/chatflows-streaming/']
 
 // The TTS generate endpoint passes chatflowId in the request body, not the URL path
-const TTS_GENERATE_PATH = '/api/v1/text-to-speech/generate'
+const TTS_GENERATE_PATH = '/api/text-to-speech/generate'
 
 /**
  * Validates if the origin is allowed for a specific chatflow

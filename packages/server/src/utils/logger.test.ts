@@ -60,13 +60,13 @@ describe('logger.ts', () => {
         const next = jest.fn()
 
         it('calls next()', () => {
-            const req = { url: '/api/v1/chatflows', method: 'GET', params: {} } as any
+            const req = { url: '/api/chatflows', method: 'GET', params: {} } as any
             expressRequestLogger(req, {} as any, next)
             expect(next).toHaveBeenCalled()
         })
 
         it('does not log when URL is in unwantedLogURLs (ping)', () => {
-            const req = { url: '/api/v1/ping', method: 'GET', params: {} } as any
+            const req = { url: '/api/ping', method: 'GET', params: {} } as any
             const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
             expressRequestLogger(req, {} as any, next)
             expect(next).toHaveBeenCalled()
@@ -75,7 +75,7 @@ describe('logger.ts', () => {
         })
 
         it('does not log when URL is in unwantedLogURLs (node-icon)', () => {
-            const req = { url: '/api/v1/node-icon/xyz', method: 'GET', params: {} } as any
+            const req = { url: '/api/node-icon/xyz', method: 'GET', params: {} } as any
             const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
             expressRequestLogger(req, {} as any, next)
             expect(next).toHaveBeenCalled()
@@ -83,7 +83,7 @@ describe('logger.ts', () => {
             infoSpy.mockRestore()
         })
 
-        it('does not log when URL does not match /api/v1/', () => {
+        it('does not log when URL does not match /api/', () => {
             const req = { url: '/health', method: 'GET', params: {} } as any
             const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
             expressRequestLogger(req, {} as any, next)
@@ -93,13 +93,13 @@ describe('logger.ts', () => {
         })
 
         it('logs GET request (requestLogger.http path)', () => {
-            const req = { url: '/api/v1/chatflows', method: 'GET', params: {} } as any
+            const req = { url: '/api/chatflows', method: 'GET', params: {} } as any
             expressRequestLogger(req, {} as any, next)
             expect(next).toHaveBeenCalled()
         })
 
         it('logs POST request (requestLogger.info + logger.info path)', () => {
-            const req = { url: '/api/v1/chatflows', method: 'POST', params: {} } as any
+            const req = { url: '/api/chatflows', method: 'POST', params: {} } as any
             const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
             expressRequestLogger(req, {} as any, next)
             expect(next).toHaveBeenCalled()
@@ -108,7 +108,7 @@ describe('logger.ts', () => {
         })
 
         it('logs PUT request', () => {
-            const req = { url: '/api/v1/chatflows/1', method: 'PUT', params: {} } as any
+            const req = { url: '/api/chatflows/1', method: 'PUT', params: {} } as any
             const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
             expressRequestLogger(req, {} as any, next)
             expect(infoSpy).toHaveBeenCalled()
@@ -116,7 +116,7 @@ describe('logger.ts', () => {
         })
 
         it('logs DELETE request', () => {
-            const req = { url: '/api/v1/chatflows/1', method: 'DELETE', params: {} } as any
+            const req = { url: '/api/chatflows/1', method: 'DELETE', params: {} } as any
             const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
             expressRequestLogger(req, {} as any, next)
             expect(infoSpy).toHaveBeenCalled()
@@ -129,7 +129,7 @@ describe('logger.ts', () => {
             process.env.LOG_SANITIZE_HEADER_FIELDS = 'authorization'
 
             const req = {
-                url: '/api/v1/chatflows',
+                url: '/api/chatflows',
                 method: 'POST',
                 params: {},
                 body: { password: 'mypass', user: 'john@example.com' },
@@ -148,7 +148,7 @@ describe('logger.ts', () => {
             delete process.env.LOG_SANITIZE_HEADER_FIELDS
 
             const req = {
-                url: '/api/v1/chatflows',
+                url: '/api/chatflows',
                 method: 'POST',
                 params: {},
                 body: { foo: 1 },

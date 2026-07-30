@@ -170,7 +170,9 @@ const deleteChatflow = async (
     }
 }
 
-const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: number = -1, limit: number = -1) => {
+// Accepts either a single type ('AGENTFLOW') or a comma-separated list ('AGENTFLOW,MULTIAGENT') -
+// the latter is used by the Agentflows list page to show both v2 and legacy v1 flows together.
+const getAllChatflows = async (type?: ChatflowType | string, workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -182,13 +184,21 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
         }
-        if (type === 'MULTIAGENT') {
+        const types = type
+            ? type
+                  .split(',')
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+            : []
+        if (types.length > 1) {
+            queryBuilder.andWhere('chat_flow.type IN (:...types)', { types })
+        } else if (types[0] === 'MULTIAGENT') {
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'MULTIAGENT' })
-        } else if (type === 'AGENTFLOW') {
+        } else if (types[0] === 'AGENTFLOW') {
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'AGENTFLOW' })
-        } else if (type === 'ASSISTANT') {
+        } else if (types[0] === 'ASSISTANT') {
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'ASSISTANT' })
-        } else if (type === 'CHATFLOW') {
+        } else if (types[0] === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'CHATFLOW' })
         }

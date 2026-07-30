@@ -196,7 +196,7 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                                                     objectFit: 'contain'
                                                                 }}
                                                                 alt={node.data.name}
-                                                                src={`${baseURL}/api/v1/node-icon/${node.data.name}`}
+                                                                src={`${baseURL}/api/node-icon/${node.data.name}`}
                                                             />
                                                         </div>
                                                     </ListItemAvatar>

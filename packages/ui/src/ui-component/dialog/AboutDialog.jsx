@@ -14,7 +14,7 @@ const AboutDialog = ({ show, onCancel }) => {
     useEffect(() => {
         if (show) {
             const latestReleaseReq = axios.get('https://api.github.com/repos/accelance/accelance-ai-platform/releases/latest')
-            const currentVersionReq = axios.get(`${baseURL}/api/v1/version`, {
+            const currentVersionReq = axios.get(`${baseURL}/api/version`, {
                 withCredentials: true,
                 headers: { 'Content-type': 'application/json', 'x-request-from': 'internal' }
             })

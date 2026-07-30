@@ -350,7 +350,7 @@ const VectorStoreQuery = () => {
                                                                         objectFit: 'contain'
                                                                     }}
                                                                     alt={selectedVectorStoreProvider.label ?? 'embeddings'}
-                                                                    src={`${baseURL}/api/v1/node-icon/${selectedVectorStoreProvider?.name}`}
+                                                                    src={`${baseURL}/api/node-icon/${selectedVectorStoreProvider?.name}`}
                                                                 />
                                                             ) : (
                                                                 <Embeddings color='black' />

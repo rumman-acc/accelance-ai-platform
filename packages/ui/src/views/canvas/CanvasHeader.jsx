@@ -226,6 +226,25 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             })
             setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
+            // V1 Agentflows can no longer be duplicated - that would create a new V1 flow,
+            // which is no longer supported. The flow being viewed keeps working as-is.
+            if (isAgentCanvas && !isAgentflowV2) {
+                enqueueSnackbar({
+                    message:
+                        'Duplicating V1 Agentflows is no longer supported. Please rebuild this flow using the current Agentflow builder.',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
             try {
                 let flowData = chatflow.flowData
                 const parsedFlowData = JSON.parse(flowData)

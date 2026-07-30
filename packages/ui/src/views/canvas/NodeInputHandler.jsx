@@ -613,7 +613,7 @@ const NodeInputHandler = ({
                     name: model.name,
                     label: model.label,
                     description: model.description,
-                    imageSrc: `${baseURL}/api/v1/node-icon/${model.name}`
+                    imageSrc: `${baseURL}/api/node-icon/${model.name}`
                 }))
                 setAvailableChatModels(chatModels)
                 setAvailableChatModelsOptions(chatModelsOptions)
@@ -840,7 +840,7 @@ const NodeInputHandler = ({
     }, [data.id, position, updateNodeInternals])
 
     const webhookMethod = data.inputs?.webhookMethod ?? 'POST'
-    const webhookUrlBase = chatflowId ? `${baseURL}/api/v1/webhook/${chatflowId}` : null
+    const webhookUrlBase = chatflowId ? `${baseURL}/api/webhook/${chatflowId}` : null
     const webhookUrl = webhookUrlBase ? `${webhookMethod} ${webhookUrlBase}` : 'Save the flow first to generate the webhook URL'
 
     return (

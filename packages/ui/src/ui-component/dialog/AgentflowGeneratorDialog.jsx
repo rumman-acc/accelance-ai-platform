@@ -143,7 +143,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             const options = getChatModelsApi.data.map((chatModel) => ({
                 label: chatModel.label,
                 name: chatModel.name,
-                imageSrc: `${baseURL}/api/v1/node-icon/${chatModel.name}`
+                imageSrc: `${baseURL}/api/node-icon/${chatModel.name}`
             }))
             setChatModelsOptions(options)
         }
