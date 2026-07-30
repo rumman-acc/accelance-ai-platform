@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, CircularProgress, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -179,10 +179,8 @@ const Chatflows = () => {
                     </ViewHeader>
 
                     {isLoading && (
-                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
+                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 10 }}>
+                            <CircularProgress />
                         </Box>
                     )}
                     {!isLoading && total > 0 && (

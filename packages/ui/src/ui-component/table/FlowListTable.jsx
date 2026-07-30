@@ -6,8 +6,8 @@ import { styled } from '@mui/material/styles'
 import {
     Box,
     Chip,
+    CircularProgress,
     Paper,
-    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -147,46 +147,13 @@ export const FlowListTable = ({
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
-                            <>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    {isActionsAvailable && (
-                                        <StyledTableCell>
-                                            <Skeleton variant='text' />
-                                        </StyledTableCell>
-                                    )}
-                                </StyledTableRow>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    {isActionsAvailable && (
-                                        <StyledTableCell>
-                                            <Skeleton variant='text' />
-                                        </StyledTableCell>
-                                    )}
-                                </StyledTableRow>
-                            </>
+                            <StyledTableRow>
+                                <StyledTableCell colSpan={isActionsAvailable ? 5 : 4} sx={{ border: 0 }}>
+                                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                        <CircularProgress />
+                                    </Box>
+                                </StyledTableCell>
+                            </StyledTableRow>
                         ) : (
                             <>
                                 {sortedData.filter(filterFunction).map((row, index) => (
