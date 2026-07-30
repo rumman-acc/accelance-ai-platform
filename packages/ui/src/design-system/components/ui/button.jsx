@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 // Variants/tokens per design-system/components/component-inventory.md (Button).
 // Do not add a fourth variant — see CLAUDE.md hard rule 4 / component-inventory.md "Don't".
 const buttonVariants = cva(
-    'inline-flex items-center justify-center gap-2 rounded font-sans text-button transition-colors duration-300 disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex items-center justify-center gap-2 rounded font-sans text-button no-underline transition-colors duration-300 hover:no-underline disabled:pointer-events-none disabled:opacity-50',
     {
         variants: {
             variant: {

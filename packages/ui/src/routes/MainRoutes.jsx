@@ -1,11 +1,11 @@
 import { lazy } from 'react'
 
 // project imports
-import MainLayout from '@/layout/MainLayout'
 import Loadable from '@/ui-component/loading/Loadable'
 
 import { DefaultRedirect } from '@/routes/DefaultRedirect'
 import { RequireAuth } from '@/routes/RequireAuth'
+import RootGate from '@/routes/RootGate'
 
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
@@ -74,7 +74,7 @@ const SSOSuccess = Loadable(lazy(() => import('@/views/auth/ssoSuccess')))
 
 const MainRoutes = {
     path: '/',
-    element: <MainLayout />,
+    element: <RootGate />,
     children: [
         {
             path: '/',

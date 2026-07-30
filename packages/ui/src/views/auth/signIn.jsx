@@ -19,7 +19,7 @@ import { useError } from '@/store/context/ErrorContext'
 // API
 import authApi from '@/api/auth'
 import accountApi from '@/api/account.api'
-import loginMethodApi from '@/api/loginmethod'
+import loginMethodApi from '@/api/loginMethod'
 import ssoApi from '@/api/sso'
 
 // utils

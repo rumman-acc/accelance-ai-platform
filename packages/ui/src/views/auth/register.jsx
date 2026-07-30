@@ -12,7 +12,7 @@ import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // API
 import accountApi from '@/api/account.api'
-import loginMethodApi from '@/api/loginmethod'
+import loginMethodApi from '@/api/loginMethod'
 import ssoApi from '@/api/sso'
 
 // Hooks

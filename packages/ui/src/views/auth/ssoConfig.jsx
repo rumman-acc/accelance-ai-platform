@@ -16,7 +16,7 @@ import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/
 import { TabPanel } from '@/ui-component/tabs/TabPanel'
 
 // API
-import loginMethodApi from '@/api/loginmethod'
+import loginMethodApi from '@/api/loginMethod'
 import useApi from '@/hooks/useApi'
 
 // utils

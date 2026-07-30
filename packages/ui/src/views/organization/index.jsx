@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { z } from 'zod/v3'
 
 // material-ui
@@ -13,7 +13,7 @@ import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 // API
 import accountApi from '@/api/account.api'
 import authApi from '@/api/auth'
-import loginMethodApi from '@/api/loginmethod'
+import loginMethodApi from '@/api/loginMethod'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -90,7 +90,8 @@ const OrganizationSetupPage = () => {
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [username, setUsername] = useState('')
-    const [orgName, setOrgName] = useState('')
+    const location = useLocation()
+    const [orgName, setOrgName] = useState(location.state?.orgName || '')
 
     const [loading, setLoading] = useState(false)
     const [authError, setAuthError] = useState('')
