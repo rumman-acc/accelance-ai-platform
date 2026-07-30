@@ -8,6 +8,7 @@ import auditService from '../services/audit'
 import { ErrorMessage, LoginActivityCode } from '../Interface.Enterprise'
 import axios from 'axios'
 import { orgScopedPath, registerSsoRoutes } from './ssoRouteRegistry'
+import logger from '../../utils/logger'
 
 const PROVIDER_NAME_AUTH0_SSO = 'Auth0 SSO'
 
@@ -112,12 +113,33 @@ class Auth0SSO extends SSOBase {
 
         const validatedDomain = validateAuth0Domain(domain)
         if (!validatedDomain) {
-            const errorMessage = 'Auth0 Configuration test failed. Invalid Auth0 domain.'
-            return { error: errorMessage }
+            return { error: 'Auth0 Configuration test failed. Invalid Auth0 domain.' }
         }
 
+        if (!clientID || !clientSecret) {
+            return { error: 'Auth0 Configuration test failed. Client ID and Client Secret are required.' }
+        }
+
+        // Confirms the domain is a live Auth0 tenant - this is what the actual
+        // Authorization Code login flow depends on, unlike the client_credentials
+        // check below which only applies to Management-API-authorized apps.
         try {
-            const tokenResponse = await axios.post(
+            const discoveryResponse = await axios.get(`https://${validatedDomain}/.well-known/openid-configuration`)
+            if (!discoveryResponse.data?.issuer) {
+                return { error: 'Auth0 Configuration test failed. Domain did not return valid Auth0 metadata.' }
+            }
+        } catch (error: any) {
+            const detail = error.response?.data?.error_description || error.message
+            logger.error(`[Auth0SSO.testSetup] OIDC discovery failed for domain ${validatedDomain}: ${detail}`)
+            return { error: `Auth0 Configuration test failed. Could not reach Auth0 domain: ${detail}` }
+        }
+
+        // A regular login application (used for Authorization Code SSO login) is
+        // normally never granted Management API / client_credentials access, so
+        // "unauthorized_client" / "access_denied" here is expected and does NOT mean
+        // the clientID/clientSecret are wrong - only invalid_client does.
+        try {
+            await axios.post(
                 `https://${validatedDomain}/oauth/token`,
                 {
                     client_id: clientID,
@@ -125,15 +147,23 @@ class Auth0SSO extends SSOBase {
                     audience: `https://${validatedDomain}/api/v2/`,
                     grant_type: 'client_credentials'
                 },
-                {
-                    headers: { 'Content-Type': 'application/json' }
-                }
+                { headers: { 'Content-Type': 'application/json' } }
             )
-            return { message: tokenResponse.status }
-        } catch (error) {
-            const errorMessage = 'Auth0 Configuration test failed. Please check your credentials and domain.'
-            return { error: errorMessage }
+        } catch (error: any) {
+            const auth0Error = error.response?.data?.error
+            const detail = error.response?.data?.error_description || auth0Error || error.message
+
+            if (auth0Error === 'invalid_client') {
+                logger.error(`[Auth0SSO.testSetup] Invalid client credentials for domain ${validatedDomain}: ${detail}`)
+                return { error: `Auth0 Configuration test failed. Invalid Client ID or Client Secret: ${detail}` }
+            }
+
+            logger.info(
+                `[Auth0SSO.testSetup] Client credentials check for domain ${validatedDomain} returned expected non-M2M error: ${detail}`
+            )
         }
+
+        return { message: 'Auth0 configuration verified successfully.' }
     }
 
     async refreshToken(ssoRefreshToken: string) {
