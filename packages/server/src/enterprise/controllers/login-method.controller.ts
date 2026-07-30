@@ -154,7 +154,7 @@ export class LoginMethodController {
                 await queryRunner.connect()
                 const organization = await new OrganizationService().readOrganizationById(loginMethod.organizationId, queryRunner)
 
-                let providers: any[] = req.body.providers
+                let providers: any[] = loginMethod.providers ?? []
                 for (const provider of providers) {
                     const identityManager = appServer.identityManager
                     if (provider.config.clientID) {

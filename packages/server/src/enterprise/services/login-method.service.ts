@@ -135,6 +135,8 @@ export class LoginMethodService {
         let providers: any[] = body.providers
         let userId: string = body.userId
 
+        const resolvedProviders: { providerName: string; status: string; config: Record<string, unknown> }[] = []
+
         let queryRunner
         try {
             queryRunner = this.dataSource.createQueryRunner()
@@ -172,6 +174,7 @@ export class LoginMethodService {
                     })
                     await this.saveLoginMethod(newLoginMethod, queryRunner)
                 }
+                resolvedProviders.push({ providerName: name, status: provider.status, config: configToSave })
             }
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -180,7 +183,7 @@ export class LoginMethodService {
         } finally {
             if (queryRunner) await queryRunner.release()
         }
-        return { status: 'OK', organizationId: organizationId }
+        return { status: 'OK', organizationId: organizationId, providers: resolvedProviders }
     }
 
     public async updateLoginMethod(newLoginMethod: Partial<LoginMethod>) {
