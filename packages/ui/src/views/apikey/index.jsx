@@ -9,11 +9,11 @@ import {
     Box,
     Button,
     Chip,
+    CircularProgress,
     Collapse,
     IconButton,
     Paper,
     Popover,
-    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -443,54 +443,13 @@ const APIKey = () => {
                                         </TableHead>
                                         <TableBody>
                                             {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'apikeys:update,apikeys:create'}>
-                                                            <StyledTableCell> </StyledTableCell>
-                                                        </Available>
-                                                        <Available permission={'apikeys:delete'}>
-                                                            <StyledTableCell> </StyledTableCell>
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'apikeys:update,apikeys:create'}>
-                                                            <StyledTableCell> </StyledTableCell>
-                                                        </Available>
-                                                        <Available permission={'apikeys:delete'}>
-                                                            <StyledTableCell> </StyledTableCell>
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                </>
+                                                <StyledTableRow>
+                                                    <StyledTableCell colSpan={7} sx={{ border: 0 }}>
+                                                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                            <CircularProgress />
+                                                        </Box>
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
                                             ) : (
                                                 <>
                                                     {apiKeys?.filter(filterKeys).map((key, index) => (

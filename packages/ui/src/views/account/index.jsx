@@ -17,7 +17,6 @@ import {
     DialogTitle,
     LinearProgress,
     OutlinedInput,
-    Skeleton,
     Stack,
     TextField,
     Typography
@@ -452,20 +451,8 @@ const AccountSettings = () => {
             <Stack flexDirection='column' sx={{ gap: 4 }}>
                 <ViewHeader title='Account Settings' />
                 {isLoading && !getUserByIdApi.data ? (
-                    <Box display='flex' flexDirection='column' gap={gridSpacing}>
-                        <Skeleton width='25%' height={32} />
-                        <Box display='flex' flexDirection='column' gap={2}>
-                            <Skeleton width='20%' />
-                            <Skeleton variant='rounded' height={56} />
-                        </Box>
-                        <Box display='flex' flexDirection='column' gap={2}>
-                            <Skeleton width='20%' />
-                            <Skeleton variant='rounded' height={56} />
-                        </Box>
-                        <Box display='flex' flexDirection='column' gap={2}>
-                            <Skeleton width='20%' />
-                            <Skeleton variant='rounded' height={56} />
-                        </Box>
+                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 10 }}>
+                        <CircularProgress />
                     </Box>
                 ) : (
                     <>

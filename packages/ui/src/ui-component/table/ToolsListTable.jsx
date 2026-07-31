@@ -3,9 +3,10 @@ import { useSelector } from 'react-redux'
 import { styled } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
 import {
+    Box,
     Button,
+    CircularProgress,
     Paper,
-    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -61,30 +62,13 @@ export const ToolsTable = ({ data, isLoading, onSelect }) => {
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
-                            <>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                            </>
+                            <StyledTableRow>
+                                <StyledTableCell colSpan={3} sx={{ border: 0 }}>
+                                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                        <CircularProgress />
+                                    </Box>
+                                </StyledTableCell>
+                            </StyledTableRow>
                         ) : (
                             <>
                                 {data?.map((row, index) => (

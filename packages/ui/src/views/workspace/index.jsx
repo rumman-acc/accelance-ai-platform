@@ -12,7 +12,6 @@ import {
     Drawer,
     IconButton,
     Paper,
-    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -452,42 +451,13 @@ const Workspaces = () => {
                                     </TableHead>
                                     <TableBody>
                                         {isLoading ? (
-                                            <>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                </StyledTableRow>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                </StyledTableRow>
-                                            </>
+                                            <StyledTableRow>
+                                                <StyledTableCell colSpan={5} sx={{ border: 0 }}>
+                                                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                        <CircularProgress />
+                                                    </Box>
+                                                </StyledTableCell>
+                                            </StyledTableRow>
                                         ) : (
                                             <>
                                                 {workspaces.filter(filterWorkspaces).map((ds, index) => (

@@ -5,8 +5,8 @@ import moment from 'moment'
 import { styled } from '@mui/material/styles'
 import {
     Box,
+    CircularProgress,
     Paper,
-    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -202,48 +202,13 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
-                            <>
-                                <StyledTableRow>
-                                    <StyledTableCell padding='checkbox'>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                                <StyledTableRow>
-                                    <StyledTableCell padding='checkbox'>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                            </>
+                            <StyledTableRow>
+                                <StyledTableCell colSpan={6} sx={{ border: 0 }}>
+                                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                        <CircularProgress />
+                                    </Box>
+                                </StyledTableCell>
+                            </StyledTableRow>
                         ) : (
                             <>
                                 {sortedData.map((row, index) => {

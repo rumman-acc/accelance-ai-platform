@@ -9,7 +9,7 @@ import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Button,
     Box,
-    Skeleton,
+    CircularProgress,
     Stack,
     Table,
     TableBody,
@@ -279,62 +279,13 @@ const Variables = () => {
                                         </TableHead>
                                         <TableBody>
                                             {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'variables:create,variables:update'}>
-                                                            <StyledTableCell>
-                                                                <Skeleton variant='text' />
-                                                            </StyledTableCell>
-                                                        </Available>
-                                                        <Available permission={'variables:delete'}>
-                                                            <StyledTableCell>
-                                                                <Skeleton variant='text' />
-                                                            </StyledTableCell>
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'variables:create,variables:update'}>
-                                                            <StyledTableCell>
-                                                                <Skeleton variant='text' />
-                                                            </StyledTableCell>
-                                                        </Available>
-                                                        <Available permission={'variables:delete'}>
-                                                            <StyledTableCell>
-                                                                <Skeleton variant='text' />
-                                                            </StyledTableCell>
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                </>
+                                                <StyledTableRow>
+                                                    <StyledTableCell colSpan={7} sx={{ border: 0 }}>
+                                                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                            <CircularProgress />
+                                                        </Box>
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
                                             ) : (
                                                 <>
                                                     {variables.filter(filterVariables).map((variable, index) => (

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 
 // material-ui
-import { Box, Stack, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton, Tabs, Tab } from '@mui/material'
+import { Box, Stack, ButtonGroup, CircularProgress, ToggleButtonGroup, ToggleButton, Tabs, Tab } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -319,10 +319,8 @@ const Tools = () => {
     const renderCustomToolsTab = () => (
         <>
             {isLoading && (
-                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
+                <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 10 }}>
+                    <CircularProgress />
                 </Box>
             )}
             {!isLoading && total > 0 && (
@@ -354,10 +352,8 @@ const Tools = () => {
     const renderMcpServersTab = () => (
         <>
             {mcpLoading && (
-                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
+                <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 10 }}>
+                    <CircularProgress />
                 </Box>
             )}
             {!mcpLoading && mcpTotal > 0 && (
