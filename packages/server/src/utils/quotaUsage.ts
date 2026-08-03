@@ -14,7 +14,6 @@ export const ENTERPRISE_FEATURE_FLAGS = [
     'feat:login-activity',
     'feat:users',
     'feat:workspaces',
-    'feat:logs',
     'feat:roles',
     'feat:sso-config'
 ]

@@ -55,9 +55,6 @@ const Account = Loadable(lazy(() => import('@/views/account')))
 // files routing
 const Files = Loadable(lazy(() => import('@/views/files')))
 
-// logs routing
-const Logs = Loadable(lazy(() => import('@/views/serverlogs')))
-
 // executions routing
 const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
 
@@ -269,14 +266,6 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'evaluators:view'} display={'feat:evaluators'}>
                     <Evaluators />
-                </RequireAuth>
-            )
-        },
-        {
-            path: '/logs',
-            element: (
-                <RequireAuth permission={'logs:view'} display={'feat:logs'}>
-                    <Logs />
                 </RequireAuth>
             )
         },

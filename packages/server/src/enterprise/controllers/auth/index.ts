@@ -16,7 +16,6 @@ const getAllPermissions = async (req: Request, res: Response, next: NextFunction
         // Mapping of feature flags to permission prefixes
         const featureToPermissionMap: { [key: string]: string[] } = {
             'feat:login-activity': ['loginActivity:'],
-            'feat:logs': ['logs:'],
             'feat:roles': ['roles:'],
             'feat:share': ['credentials:share', 'templates:custom-share'],
             'feat:sso-config': ['sso:'],

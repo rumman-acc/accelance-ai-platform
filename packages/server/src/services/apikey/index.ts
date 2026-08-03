@@ -51,7 +51,6 @@ function validatePermissions(user: LoggedInUser, requestedPermissions: string[],
 
         const featureToPermissionMap: { [key: string]: string[] } = {
             'feat:login-activity': ['loginActivity:'],
-            'feat:logs': ['logs:'],
             'feat:roles': ['roles:'],
             'feat:share': ['credentials:share', 'templates:custom-share'],
             'feat:sso-config': ['sso:'],

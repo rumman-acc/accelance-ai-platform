@@ -257,16 +257,6 @@ const dashboard = {
             title: 'Others',
             type: 'group',
             children: [
-                {
-                    id: 'logs',
-                    title: 'Logs',
-                    type: 'item',
-                    url: '/logs',
-                    icon: icons.IconList,
-                    breadcrumbs: true,
-                    display: 'feat:logs',
-                    permission: 'logs:view'
-                },
                 // {
                 //     id: 'files',
                 //     title: 'Files',

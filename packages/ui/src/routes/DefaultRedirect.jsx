@@ -20,7 +20,6 @@ import EvalEvaluation from '@/views/evaluations/index'
 import Evaluators from '@/views/evaluators'
 import Marketplaces from '@/views/marketplaces'
 import RolesPage from '@/views/roles'
-import Logs from '@/views/serverlogs'
 import Tools from '@/views/tools'
 import UsersPage from '@/views/users'
 import Variables from '@/views/variables'
@@ -59,7 +58,6 @@ export const DefaultRedirect = () => {
         { component: Workspaces, permission: 'workspace:view', display: 'feat:workspaces' },
         { component: LoginActivityPage, permission: 'loginActivity:view', display: 'feat:login-activity' },
         // Other routes
-        { component: Logs, permission: 'logs:view', display: 'feat:logs' },
         { component: Account, display: 'feat:account' }
     ]
 

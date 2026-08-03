@@ -133,10 +133,6 @@ export class Permissions {
         adminCategory.addPermission(new Permission('sso:manage', 'Manage SSO', false, true, false))
         this.categories.push(adminCategory)
 
-        const logsCategory = new PermissionCategory('logs')
-        logsCategory.addPermission(new Permission('logs:view', 'View Logs', false, true, false))
-        this.categories.push(logsCategory)
-
         const loginActivityCategory = new PermissionCategory('loginActivity')
         loginActivityCategory.addPermission(new Permission('loginActivity:view', 'View Login Activity', false, true, false))
         this.categories.push(loginActivityCategory)
