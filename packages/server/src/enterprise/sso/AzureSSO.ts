@@ -69,7 +69,8 @@ class AzureSSO extends SSOBase {
                                 '<empty>',
                                 LoginActivityCode.UNKNOWN_USER,
                                 ErrorMessage.UNKNOWN_USER,
-                                this.getProviderName()
+                                this.getProviderName(),
+                                this.organizationId
                             )
                             return done({ name: 'SSO_LOGIN_FAILED', message: ErrorMessage.UNKNOWN_USER }, undefined)
                         }

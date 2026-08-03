@@ -56,6 +56,7 @@ import { LinkWorkspaceId1729130948686 } from '../../../enterprise/database/migra
 import { LinkOrganizationId1729133111652 } from '../../../enterprise/database/migrations/postgres/1729133111652-LinkOrganizationId'
 import { AddSSOColumns1730519457880 } from '../../../enterprise/database/migrations/postgres/1730519457880-AddSSOColumns'
 import { AddOrganizationSlug1776300000000 } from '../../../enterprise/database/migrations/postgres/1776300000000-AddOrganizationSlug'
+import { AddOrganizationIdToLoginActivity1777000000000 } from '../../../enterprise/database/migrations/postgres/1777000000000-AddOrganizationIdToLoginActivity'
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/postgres/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/postgres/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/postgres/1746862866554-ExecutionLinkWorkspaceId'
@@ -120,5 +121,6 @@ export const postgresMigrations = [
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000,
-    AddOrganizationSlug1776300000000
+    AddOrganizationSlug1776300000000,
+    AddOrganizationIdToLoginActivity1777000000000
 ]

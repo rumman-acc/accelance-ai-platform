@@ -24,7 +24,7 @@ const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end'
     return date
 }
 
-const fetchLoginActivity = async (body: any) => {
+const fetchLoginActivity = async (body: any, organizationId: string) => {
     try {
         const page = body.pageNo ? parseInt(body.pageNo) : 1
         const skip = (page - 1) * PAGE_SIZE
@@ -37,7 +37,10 @@ const fetchLoginActivity = async (body: any) => {
         let toDate
         if (body.endDate) toDate = setDateToStartOrEndOfDay(body.endDate, 'end')
 
+        // Always scoped to the caller's own organization, derived server-side from their
+        // session — never trust a client-supplied organizationId for this filter.
         const whereCondition: any = {
+            organizationId,
             attemptedDateTime: Between(fromDate ?? aMonthAgo(), toDate ?? new Date())
         }
         if (body.activityCodes && body.activityCodes?.length > 0) {
@@ -68,7 +71,13 @@ const fetchLoginActivity = async (body: any) => {
     }
 }
 
-const recordLoginActivity = async (username: string, activityCode: LoginActivityCode, message: string, ssoProvider?: string) => {
+const recordLoginActivity = async (
+    username: string,
+    activityCode: LoginActivityCode,
+    message: string,
+    ssoProvider?: string,
+    organizationId?: string
+) => {
     try {
         const appServer = getRunningExpressApp()
         const platform = appServer.identityManager.getPlatformType()
@@ -80,7 +89,8 @@ const recordLoginActivity = async (username: string, activityCode: LoginActivity
             username,
             activityCode,
             message,
-            loginMode
+            loginMode,
+            organizationId
         })
         const result = await appServer.AppDataSource.getRepository(LoginActivity).save(loginActivity)
         return result

@@ -176,6 +176,15 @@ const OrganizationSetupPage = () => {
             setPassword('')
             setUsername('')
             setEmail('')
+            // Matches the backend's UserStatus.UNVERIFIED value. Enterprise org creation now
+            // requires email verification when SMTP is configured (Open Source stays instant-active,
+            // untouched) — an unverified account can't log in yet, so don't attempt the auto-login
+            // below or it'll silently fail against the USER_EMAIL_UNVERIFIED check.
+            if (registerAccountApi.data.user?.status === 'unverified') {
+                setLoading(false)
+                setSuccessMsg('To complete your registration, please click the verification link we sent to your email address.')
+                return
+            }
             setSuccessMsg(registerAccountApi.data.message)
             setTimeout(() => {
                 const body = {
@@ -199,6 +208,13 @@ const OrganizationSetupPage = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loginApi.data])
+
+    useEffect(() => {
+        if (loginApi.error) {
+            setLoading(false)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loginApi.error])
 
     const signInWithSSO = (ssoProvider) => {
         window.location.href = `/api/v1/${ssoProvider}/login`
@@ -239,9 +255,15 @@ const OrganizationSetupPage = () => {
                     <Stack sx={{ gap: 1 }}>
                         <Typography variant='h1'>Setup Account</Typography>
                     </Stack>
-                    {(isOpenSource || isEnterpriseLicensed) && (
+                    {isOpenSource && (
                         <Typography variant='caption'>
                             Account setup does not make any external connections, your data stays securely on your locally hosted server.
+                        </Typography>
+                    )}
+                    {isEnterpriseLicensed && (
+                        <Typography variant='caption'>
+                            You may be asked to verify your email address before you can sign in, depending on how this deployment is
+                            configured.
                         </Typography>
                     )}
                     <form onSubmit={register}>

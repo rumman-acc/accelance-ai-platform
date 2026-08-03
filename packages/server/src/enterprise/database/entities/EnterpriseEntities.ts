@@ -59,4 +59,7 @@ export class LoginActivity implements ILoginActivity {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     attemptedDateTime: Date
+
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 }

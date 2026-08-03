@@ -270,8 +270,28 @@ export class AccountService {
                     data.organizationUser.role = await this.roleService.readGeneralRoleByName(GeneralRole.OWNER, queryRunner)
                     data.workspace.name = WorkspaceName.DEFAULT_WORKSPACE
                     data.workspaceUser.role = data.organizationUser.role
-                    data.user.status = UserStatus.ACTIVE
+                    // Require email verification before a brand-new Enterprise org's owner can log
+                    // in, mirroring the Cloud self-serve flow above — only when SMTP is actually
+                    // configured, since an Enterprise deployment without it can't send the email at
+                    // all. Open Source (the OPEN_SOURCE case above) is untouched by this branch and
+                    // keeps its "no external connections" guarantee.
+                    if (this.canSendTransactionalEmail()) {
+                        data.user.status = UserStatus.UNVERIFIED
+                        data.user.tempToken = generateTempToken()
+                        const tokenExpiry = new Date()
+                        const expiryInHours = process.env.INVITE_TOKEN_EXPIRY_IN_HOURS
+                            ? parseInt(process.env.INVITE_TOKEN_EXPIRY_IN_HOURS)
+                            : 24
+                        tokenExpiry.setHours(tokenExpiry.getHours() + expiryInHours)
+                        data.user.tokenExpiry = tokenExpiry
+                    } else {
+                        data.user.status = UserStatus.ACTIVE
+                    }
                     data.user = await this.userService.createNewUser(data.user, queryRunner)
+                    if (data.user.status === UserStatus.UNVERIFIED) {
+                        const verificationLink = getSecureTokenLink('/verify', data.user.tempToken!)
+                        await sendVerificationEmailForCloud(data.user.email!, verificationLink)
+                    }
                 }
                 break
             }
@@ -577,7 +597,13 @@ export class AccountService {
                 }
             }
             if (platform === Platform.ENTERPRISE) {
-                await auditService.recordLoginActivity(user.email, LoginActivityCode.LOGIN_SUCCESS, 'Login Success')
+                await auditService.recordLoginActivity(
+                    user.email,
+                    LoginActivityCode.LOGIN_SUCCESS,
+                    'Login Success',
+                    undefined,
+                    (wsUserOrUsers as { workspace?: { organizationId?: string } })?.workspace?.organizationId
+                )
             }
 
             const sanitizedUser = sanitizeUser(user)
@@ -705,7 +731,8 @@ export class AccountService {
                 user.email,
                 LoginActivityCode.LOGOUT_SUCCESS,
                 'Logout Success',
-                user.ssoToken ? 'SSO' : 'Email/Password'
+                user.ssoToken ? 'SSO' : 'Email/Password',
+                user.activeOrganizationId
             )
         }
     }

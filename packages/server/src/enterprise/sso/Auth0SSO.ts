@@ -91,7 +91,8 @@ class Auth0SSO extends SSOBase {
                                 '<empty>',
                                 LoginActivityCode.UNKNOWN_USER,
                                 ErrorMessage.UNKNOWN_USER,
-                                PROVIDER_NAME_AUTH0_SSO
+                                PROVIDER_NAME_AUTH0_SSO,
+                                this.organizationId
                             )
                             return done({ name: 'SSO_LOGIN_FAILED', message: ErrorMessage.UNKNOWN_USER }, undefined)
                         }

@@ -44,6 +44,7 @@ export interface ILoginActivity {
     message: string
     loginMode: string
     attemptedDateTime: Date
+    organizationId?: string
 }
 
 export enum LoginActivityCode {
