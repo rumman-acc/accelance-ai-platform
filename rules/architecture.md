@@ -1,42 +1,138 @@
-# Architecture
+# Accelance AI Platform — Architecture
 
-## Current State (as of 2026-06-30)
+**Current state (as of 2026-07-22):** a single-service application — a Flowise 3.1.2 fork,
+running in enterprise mode, on PostgreSQL (Neon). This document describes what actually
+runs today, structured so a designer can turn it directly into a diagram for a senior
+audience. It is not a proposal — nothing here should change without a separate decision.
 
-Single-service architecture — Flowise 3.1.2 with enterprise auth enabled via env bypass.
+For the full feature-by-feature build status and effort estimates, see
+[`rules/epics-feature-status.md`](epics-feature-status.md). For a box-by-box comparison
+against an external reference architecture, see
+[`rules/architecture-reference-vs-accelance.md`](architecture-reference-vs-accelance.md).
+This file is the standalone, presentation-ready version of "what we have," on its own.
 
-## Service
+---
 
-| Service           | Type       | Port | Description                                  |
-| ----------------- | ---------- | ---- | -------------------------------------------- |
-| `packages/server` | Express.js | 3002 | Flowise backend + enterprise auth + React UI |
+## 1. Repository structure
 
-## Database
+One PNPM monorepo. One deployed service (`packages/server`) does everything — it serves
+the built frontend, the REST API, and executes every agent flow in-process. Three other
+packages are standalone, independently publishable libraries, not part of the running
+service.
 
-| DB         | Provider     | Purpose            |
-| ---------- | ------------ | ------------------ |
-| PostgreSQL | Neon (cloud) | Primary — all data |
+```
+AI-Platform-Internal/                  # PNPM workspace
+└── packages/
+    ├── server/                        # Express + TypeORM — the one deployed service
+    │   ├── src/routes/                # REST API: predictions, chatflows, admin, auth
+    │   ├── src/services/               # Business logic (chatflows, credentials, evaluations...)
+    │   ├── src/enterprise/            # Org/workspace/RBAC/SSO — enterprise auth layer
+    │   ├── src/database/entities/     # TypeORM entities (ChatFlow, Credential, ApiKey...)
+    │   └── src/utils/index.ts         # Flow-execution engine (buildFlow)
+    │
+    ├── ui/                            # React 18 + Vite — served BY packages/server, not standalone
+    │   └── src/                       # Canvas, chat, marketplace, admin screens
+    │
+    ├── components/                    # 200+ node integrations (LLMs, tools, vector stores...)
+    │   └── nodes/                     # Dynamically loaded by the execution engine at runtime
+    │
+    ├── shared/                        # TypeScript types only — no runtime code
+    │
+    ├── agentflow/                     # Standalone embeddable React lib — agent-graph editor
+    │                                  # published independently, not imported by packages/ui
+    ├── observe/                       # Standalone embeddable React lib — execution-trace viewer
+    │                                  # published independently, not imported by packages/ui
+    └── api-documentation/             # Standalone Swagger/OpenAPI docs service — separate process
+```
 
-Env vars: `DATABASE_TYPE=postgres`, `DATABASE_HOST=...` (see `packages/server/.env`)
+---
 
-## Platform Mode: ENTERPRISE
+## 2. Services
 
-Set via `FLOWISE_PLATFORM=enterprise` in `packages/server/.env`.
+| Service | Tech | Port | Role |
+| --- | --- | --- | --- |
+| **`packages/server`** | Express.js + TypeORM | 3002 | The application. Serves the built React UI, the full REST API, enterprise auth (org/workspace/RBAC), and executes every flow by dynamically loading node implementations from `packages/components`. |
+| `packages/api-documentation` | Express + Swagger UI | 6655 | Standalone OpenAPI docs viewer — informational only, not on the request path. |
+| `packages/agentflow` (published npm lib) | React 18 | n/a | Embeddable agent-graph editor for use in external apps — not currently embedded anywhere in `packages/ui`. |
+| `packages/observe` (published npm lib) | React 18 | n/a | Embeddable execution-trace viewer for use in external apps — not currently embedded anywhere in `packages/ui`. |
 
-Bypasses Flowise's license check → forces `Platform.ENTERPRISE` in `IdentityManager`.
+There is no separate frontend service, API gateway, or worker service today — one Node
+process is the entire application.
 
-Patch location: `packages/server/src/IdentityManager.ts` → `_validateLicenseKey()`
+---
 
-ENTERPRISE mode unlocks:
+## 3. Architecture layers
 
--   `/register` page for first-time org + admin user creation
--   `/signin` login page
--   `/api/v1/workspace` — workspace CRUD
--   `/api/v1/account/invite` — user invites with email
--   `/api/v1/workspaceuser` — user role management
--   `/api/v1/role` — custom role management
--   All enterprise feature flags enabled
+```
+ ┌────────────────────────────────────────────────────────────┐
+ │  Internet                                                   │
+ │  Browser / API caller                                       │
+ └───────────────────────────┬──────────────────────────────────┘
+                              │  HTTPS
+ ┌───────────────────────────▼──────────────────────────────────┐
+ │  Application  ·  packages/server (Express)  ·  :3000 · Oracle Cloud VM │
+ │  ── serves built React UI (static assets)                     │
+ │  ── REST API: /api/v1/{predictions,chatflows,workspace,...}   │
+ │  ── enterprise auth: JWT + session, org/workspace/RBAC         │
+ └───────────────────────────┬──────────────────────────────────┘
+                              │  in-process call
+ ┌───────────────────────────▼──────────────────────────────────┐
+ │  Execution Engine  ·  packages/server/src/utils/buildFlow      │
+ │  ── walks the flow graph node-by-node                         │
+ │  ── dynamically loads node implementations from                │
+ │     packages/components (200+ integrations)                   │
+ │  ── streams results back over SSE                              │
+ └───────────────────────────┬──────────────────────────────────┘
+                              │
+ ┌───────────────────────────▼──────────────────────────────────┐
+ │  Data                                                          │
+ │  PostgreSQL (Neon, managed) — system of record, always on      │
+ │  Qdrant (vector) — optional, per-flow, when RAG is configured  │
+ │  Neo4j (graph) — optional, per-flow, when graph memory is used │
+ └────────────────────────────────────────────────────────────────┘
+```
 
-## Auth Flow
+**Coupling rule:** everything above the Data layer runs in one process. There is no
+service-to-service HTTP call anywhere in the request path — the UI, the API, and the
+execution engine share the same Node runtime and memory space. The only external network
+calls a request makes are to the LLM provider, and — only if a flow is configured to use
+them — Qdrant or Neo4j.
+
+---
+
+## 4. Platform features
+
+### Core AI — from the Flowise OSS foundation (Apache 2.0, no build cost)
+
+- Visual chatflow + agentflow builder (drag-and-drop canvas)
+- Multi-agent orchestration: supervisor/worker pattern, sequential state-machine agents, Agentflow V2 (conditions, loops, human-input checkpoints)
+- 200+ LangChain-based node integrations — chat models (29 providers, including self-hosted Ollama/LocalAI), embeddings, vector stores, document loaders, tools
+- Flow execution engine with SSE streaming
+- Document Store + vector search (RAG pipeline)
+- Encrypted credential store + OAuth2 for tool auth
+- Evaluations framework (LLM-as-judge, datasets, cost tracking)
+- Marketplace: global templates + live "Save As Template" per-workspace
+- Public prediction API, API keys, embeddable chat widget (`flowise-embed`)
+
+### Platform features — built by Accelance on top
+
+- Multi-tenant org → workspace hierarchy with RBAC and custom roles
+- Enterprise auth: registration, login, invites, password reset (JWT + session)
+- Encryption-key persistence and credential-loss prevention (self-healing key storage)
+- Brand theme (colors, email templates) and rebrand of internal error/metric identifiers
+- Pluggable storage provider (local / S3 / GCS / Azure / ImageKit)
+
+### Not yet built or not yet configured
+
+Tracked in full, with effort estimates, in
+[`rules/epics-feature-status.md`](epics-feature-status.md) — highlights: Langfuse/metrics
+tracing (built, not switched on), SSO (built, not configured), a centralized tool-call
+governance layer, an admin/governance dashboard, audit logging, and true multi-org SaaS
+mode (also built, gated behind a platform-mode switch).
+
+---
+
+## 5. Auth flow
 
 ```
 First time:
@@ -52,42 +148,60 @@ Ongoing:
   Admin can promote to OWNER via workspace user settings
 ```
 
-## Key Files
+### Roles
 
-| File                                                                | Purpose                                           |
-| ------------------------------------------------------------------- | ------------------------------------------------- |
-| `packages/server/src/IdentityManager.ts`                            | Platform detection — patched for FLOWISE_PLATFORM |
-| `packages/server/src/enterprise/services/account.service.ts`        | Registration, invite, login                       |
-| `packages/server/src/enterprise/services/organization.service.ts`   | Org management                                    |
-| `packages/server/src/enterprise/services/workspace.service.ts`      | Workspace management                              |
-| `packages/server/src/enterprise/services/workspace-user.service.ts` | User↔workspace roles                              |
-| `packages/server/src/enterprise/database/migrations/postgres/`      | All DB schema migrations                          |
-| `packages/server/src/database/migrations/postgres/index.ts`         | Migration import + order                          |
-| `packages/server/.env`                                              | Local config (gitignored)                         |
-| `packages/server/src/DataSource.ts`                                 | TypeORM connection config                         |
+| Role | Name in DB | Capabilities |
+| --- | --- | --- |
+| OWNER | `owner` | Full org + workspace control, user management |
+| MEMBER | `member` | Limited org access |
+| PERSONAL_WORKSPACE | `personal workspace` | Access to own personal workspace only |
 
-## Roles
+### Platform mode
 
-| Role               | Name in DB           | Capabilities                                  |
-| ------------------ | -------------------- | --------------------------------------------- |
-| OWNER              | `owner`              | Full org + workspace control, user management |
-| MEMBER             | `member`             | Limited org access                            |
-| PERSONAL_WORKSPACE | `personal workspace` | Access to own personal workspace only         |
+Set via `ACCELANCE_PLATFORM=enterprise` in `packages/server/.env`. Bypasses Flowise's
+license check → forces `Platform.ENTERPRISE` in `IdentityManager`
+(`packages/server/src/IdentityManager.ts` → `_validateLicenseKey()`). Unlocks `/register`,
+`/signin`, workspace CRUD, user invites, custom roles.
 
-## Constraints
+**Constraint:** ENTERPRISE mode allows only **one organization per deployment**
+(`ensureOneOrganizationOnly()`). This is correct for the current single-customer setup — one
+Accelance instance = one org with multiple workspaces. True multi-org SaaS requires
+switching to `Platform.CLOUD` (Stripe billing scaffolding already exists in the codebase,
+unused — see `rules/epics-feature-status.md` for the full breakdown).
 
--   ENTERPRISE mode allows only **one organization** per deployment (`ensureOneOrganizationOnly()`)
--   This is correct — one Accelance Platform instance = one org with multiple workspaces
--   If multi-org (SaaS) is needed → switch to CLOUD platform (requires Stripe integration)
+---
 
-## Future Architecture (planned, not started)
+## 6. Key files
 
-Original 5-service plan:
+| File | Purpose |
+| --- | --- |
+| `packages/server/src/IdentityManager.ts` | Platform detection — patched for `ACCELANCE_PLATFORM` |
+| `packages/server/src/enterprise/services/account.service.ts` | Registration, invite, login |
+| `packages/server/src/enterprise/services/organization.service.ts` | Org management |
+| `packages/server/src/enterprise/services/workspace.service.ts` | Workspace management |
+| `packages/server/src/enterprise/services/workspace-user.service.ts` | User↔workspace roles |
+| `packages/server/src/utils/index.ts` | Flow-execution engine (`buildFlow`) |
+| `packages/server/src/utils/buildChatflow.ts` | Prediction request orchestration |
+| `packages/server/src/enterprise/database/migrations/postgres/` | All DB schema migrations |
+| `packages/server/.env` | Local config (gitignored) |
+| `packages/server/src/DataSource.ts` | TypeORM connection config |
 
-1. `apps/api` — NestJS auth gateway
-2. `apps/engine` — Flowise as engine (port 3002)
-3. `apps/web` — Next.js frontend
-4. Redis — queue/cache
-5. PostgreSQL — shared DB
+---
 
-Current decision: single service is sufficient. Expand only when specific requirements demand it.
+## 7. Deployment
+
+| Environment | How | Notes |
+| --- | --- | --- |
+| Production (current) | `DEPLOY_ORACLE.md` — Oracle Cloud Always Free ARM VM, Docker Compose | Runs `docker compose up --build -d`; single container, Neon-hosted Postgres |
+| Docker (alternative) | Root `Dockerfile`, `node:24-alpine` | Single image containing server + UI + components |
+| Optional queue mode | `docker/docker-compose-queue-*.yml` | BullMQ + Redis worker pool for parallel execution — opt-in, not the default path |
+| CI/CD | `.github/workflows/` — 8 pipelines | Lint/build/test/Cypress e2e, Docker image build+push (Docker Hub, AWS ECR), publish pipelines for `packages/agentflow`/`packages/observe` |
+
+---
+
+## Open item: no user-journey document exists yet
+
+There is currently no written user-journey flow for the Accelance platform itself anywhere
+in this repo (`rules/` was checked in full). If one is wanted for the same senior
+presentation this file is meant to support, that would be new documentation to write, not
+something to locate.
