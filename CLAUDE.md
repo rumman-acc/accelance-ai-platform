@@ -1,4 +1,4 @@
-# Accelance AI Platform — Claude Instructions
+<!-- # Accelance AI Platform — Claude Instructions
 
 ## Read This First
 
@@ -57,4 +57,55 @@ For Neon DB: sign up at neon.tech → create project → Connection Details → 
 -   Shared TypeScript types live in `packages/shared` only
 -   **After every step or change: run build + test and record the result**
 -   **Save the full step plan to `rules/steps/` before touching any code**
--   **When you alter any entity/table, immediately check `rules/shared-database-entities.md`**
+-   **When you alter any entity/table, immediately check `rules/shared-database-entities.md`** -->
+# CLAUDE.md — implementation rules
+
+## Role
+
+You are implementing UI changes based on `DESIGN_SPEC.md` and `design-system/tokens.json`.
+You are NOT the designer. Do not make aesthetic judgment calls that contradict the spec.
+If the spec doesn't cover something you need, stop and flag it — see "Gap protocol" below.
+
+## Hard rules
+
+1. Do not change business logic, API contracts, or data flow. Presentation only.
+2. Do not introduce new colors, spacing, radii, shadows, or font sizes outside
+   `design-system/tokens.json`. No hardcoded hex values or arbitrary Tailwind values
+   (e.g. no `mt-[13px]` — use the scale).
+3. Use `shadcn/ui` components as the base layer wherever the spec's component maps to one.
+   Compose from `design-system/components/` for anything more specific
+   (NodeCard, WorkflowToolbar, PropertiesPanel, etc.).
+4. Never build a new component if an equivalent already exists in
+   `design-system/components/component-inventory.md`. Check first.
+5. One page/feature at a time, per `migration-checklist.md`. Do not touch other pages
+   in the same pass, even if you notice inconsistencies there — log them instead.
+6. Commit after each completed page with a message referencing the checklist row,
+   e.g. `feat(ui): migrate chatflow canvas toolbar to design system`.
+7. Preserve all existing functionality and tests. If a test breaks because a DOM
+   structure changed, update the test's selectors, not its assertions about behavior.
+
+## Gap protocol (when the spec or design system doesn't cover something)
+
+1. Check if it can be composed from existing components/tokens instead of a new one.
+2. If a genuinely new component is needed, build it matching the naming/variant
+   conventions of the closest existing component, using only existing tokens.
+3. Add it to `design-system/components/component-inventory.md` marked
+   `status: draft — pending design review`.
+4. Add a line to `DESIGN_SPEC.md` Section 9 (Open questions / gaps) describing what
+   you built and why. Do not silently treat it as final.
+5. Do not proceed to style five more screens using an unreviewed draft component —
+   surface it and wait for a review pass after 1–2 uses.
+
+## Before each page
+
+- Re-read the relevant section of `DESIGN_SPEC.md` and the current row in
+  `migration-checklist.md`.
+- Re-check `design-system/tokens.json` and `component-inventory.md` for anything
+  that's changed since your last pass (design conversation may have updated it).
+
+## After each page
+
+- Run `npm run lint:design-tokens` (or equivalent) and fix violations.
+- Take before/after screenshots if the visual-review script is set up.
+- Update `migration-checklist.md` status for that row to `done` and note any
+  drafted components in the "notes" column.

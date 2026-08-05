@@ -49,6 +49,26 @@ type GoogleGenerativeAIPart = Part & {
 // Utility Functions for Message Conversion
 // ============================================================================
 
+// Keywords Gemini's function-calling schema validator rejects outright (400,
+// "Unknown name ... Cannot find field") even though they're standard JSON
+// Schema and every other supported provider accepts them.
+const GEMINI_UNSUPPORTED_SCHEMA_KEYS = new Set(['exclusiveMinimum', 'exclusiveMaximum', '$schema'])
+
+export function sanitizeSchemaForGemini(schema: unknown): unknown {
+    if (Array.isArray(schema)) {
+        return schema.map((item) => sanitizeSchemaForGemini(item))
+    }
+    if (schema && typeof schema === 'object') {
+        const result: Record<string, unknown> = {}
+        for (const [key, value] of Object.entries(schema as Record<string, unknown>)) {
+            if (GEMINI_UNSUPPORTED_SCHEMA_KEYS.has(key)) continue
+            result[key] = sanitizeSchemaForGemini(value)
+        }
+        return result
+    }
+    return schema
+}
+
 export function getMessageAuthor(message: BaseMessage) {
     if (ChatMessage.isInstance(message)) {
         return message.role
@@ -777,6 +797,27 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
         this.id = id
         this.configuredModel = fields?.model ?? ''
         this.configuredMaxToken = fields?.maxOutputTokens
+    }
+
+    /**
+     * Override bindTools to sanitize each tool's JSON schema before Gemini's
+     * function-calling API sees it. Gemini's schema validator is a stricter
+     * subset of standard JSON Schema — it rejects keywords other providers
+     * (OpenAI, Anthropic) accept without issue, notably `exclusiveMinimum`/
+     * `exclusiveMaximum` (which Zod's `.positive()`/`.negative()` compile to)
+     * and the `$schema` metadata key, failing the whole tool-bound request
+     * with a 400 rather than just ignoring the unknown field. This affects
+     * any MCP or other externally-defined tool schema, not just one flow, so
+     * fixing it once here benefits every agent that binds tools to Gemini.
+     */
+    bindTools(tools: any[], kwargs?: Record<string, any>): ReturnType<LangchainChatGoogleGenerativeAI['bindTools']> {
+        const sanitizedTools = tools.map((tool) => {
+            if (tool && typeof tool === 'object' && tool.schema && typeof tool.schema === 'object') {
+                return { ...tool, schema: sanitizeSchemaForGemini(tool.schema) }
+            }
+            return tool
+        })
+        return super.bindTools(sanitizedTools, kwargs)
     }
 
     /**
