@@ -1,7 +1,7 @@
 {
     "name": "accelance-components",
     "version": "3.1.2",
-    "description": "Accelance AI Platform Components",
+    "description": "Envoy Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
     "exports": {

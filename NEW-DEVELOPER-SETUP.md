@@ -1,4 +1,4 @@
-# New Developer Setup — Accelance AI Platform
+# New Developer Setup — Envoy
 
 ## What you're running
 
@@ -111,7 +111,7 @@ The `/` route shows a login page — this is expected. You need to register firs
 
 1. Go to `http://localhost:3002/register`
 2. Fill in:
-    - **Organisation Name:** Accelance AI Platform
+    - **Organisation Name:** Envoy
     - **Your Name:** your name
     - **Email:** your work email
     - **Password:** strong password

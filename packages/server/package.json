@@ -1,7 +1,7 @@
 {
     "name": "accelance",
     "version": "3.1.2",
-    "description": "Accelance AI Platform Server",
+    "description": "Envoy Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
     "bin": {

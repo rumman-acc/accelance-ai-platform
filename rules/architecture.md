@@ -1,4 +1,4 @@
-# Accelance AI Platform — Architecture
+# Envoy — Architecture
 
 **Current state (as of 2026-07-22):** a single-service application — a Flowise 3.1.2 fork,
 running in enterprise mode, on PostgreSQL (Neon). This document describes what actually

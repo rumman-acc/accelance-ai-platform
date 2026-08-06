@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { ClickAwayListener, Paper, Popper, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconMessage, IconX, IconEraser, IconArrowsMaximize } from '@tabler/icons-react'
+import { IconMessage, IconX, IconEraser } from '@tabler/icons-react'
 
 // project import
 import { StyledFab } from '@/ui-component/button/StyledFab'
@@ -37,6 +37,70 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    // ── Agent canvas: single resizable docked panel, no separate "expand" step ──
+    // `everOpened` is sticky (false -> true only, never back) so ChatMessage
+    // stays mounted — and its live SSE connection stays open — for the whole
+    // life of this component, regardless of how many times the panel is
+    // hidden/shown. `panelVisible` is the free-toggling show/hide.
+    const [everOpened, setEverOpened] = useState(false)
+    const [panelVisible, setPanelVisible] = useState(false)
+    const [resetSignal, setResetSignal] = useState(0)
+    const [previewsAgentCanvas, setPreviewsAgentCanvas] = useState([])
+
+    const toggleAgentCanvasPanel = () => {
+        const next = !panelVisible
+        setPanelVisible(next)
+        if (next) setEverOpened(true)
+        if (onOpenChange) onOpenChange(next)
+    }
+
+    const clearChatAgentCanvas = async () => {
+        const confirmPayload = {
+            title: `Clear Chat History`,
+            description: `Are you sure you want to clear all chat history?`,
+            confirmButtonName: 'Clear',
+            cancelButtonName: 'Cancel'
+        }
+        const isConfirmed = await confirm(confirmPayload)
+        if (!isConfirmed) return
+
+        try {
+            const objChatDetails = getLocalStorageChatflow(chatflowid)
+            if (!objChatDetails.chatId) return
+            await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' })
+            removeLocalStorageChatHistory(chatflowid)
+            clearAgentflowNodeStatus()
+            setResetSignal((prev) => prev + 1)
+            enqueueSnackbar({
+                message: 'Successfully cleared all chat history',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } catch (error) {
+            enqueueSnackbar({
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
+
+    // ── Classic (non-agent) canvas: original small popover + on-demand dialog ──
     const [open, setOpen] = useState(false)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
@@ -140,6 +204,35 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, chatflowid])
 
+    if (isAgentCanvas) {
+        return (
+            <>
+                <StyledFab
+                    sx={{ position: 'absolute', right: 20, top: 20 }}
+                    ref={anchorRef}
+                    size='small'
+                    color='secondary'
+                    aria-label='chat'
+                    title='Chat'
+                    onClick={toggleAgentCanvasPanel}
+                >
+                    {panelVisible ? <IconX /> : <IconMessage />}
+                </StyledFab>
+                <ChatExpandDialog
+                    mounted={everOpened}
+                    visible={panelVisible}
+                    dialogProps={{ open: true, chatflowid, title: 'Chat' }}
+                    isAgentCanvas={isAgentCanvas}
+                    onClear={clearChatAgentCanvas}
+                    onCancel={toggleAgentCanvasPanel}
+                    previews={previewsAgentCanvas}
+                    setPreviews={setPreviewsAgentCanvas}
+                    resetSignal={resetSignal}
+                />
+            </>
+        )
+    }
+
     return (
         <>
             <StyledFab
@@ -175,7 +268,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                     aria-label='expand'
                     title='Expand Chat'
                 >
-                    <IconArrowsMaximize />
+                    <IconMessage />
                 </StyledFab>
             )}
             <Popper
@@ -223,7 +316,8 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 )}
             </Popper>
             <ChatExpandDialog
-                show={showExpandDialog}
+                mounted={showExpandDialog}
+                visible={showExpandDialog && expandDialogProps.open !== false}
                 dialogProps={expandDialogProps}
                 isAgentCanvas={isAgentCanvas}
                 onClear={clearChat}

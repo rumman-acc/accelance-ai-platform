@@ -48,7 +48,7 @@ Key settings:
 2. Migrations run automatically (creates all enterprise tables in Neon)
 3. Browse to: http://localhost:3002/register
 4. Fill in:
-   - Organisation Name: Accelance AI Platform
+   - Organisation Name: Envoy
    - Your Name: <your name>
    - Email: <your email>
    - Password: <strong password>

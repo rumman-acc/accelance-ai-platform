@@ -101,6 +101,7 @@ field)
 | Real execution checkpoint — pause/resume with proceed/reject decision | 🟡 Built, not used in any flow | `nodes/agentflow/HumanInput` | HIL control & feedback checkpoint — one of the most emphasized capabilities across enterprise agent platforms |
 | HIL policy (which actions require approval vs. run autonomously) | 🔴 To build | none — the mechanism exists, no policy has been defined | A named gate matrix (which action types always pause: external writes, comms, irreversible actions) |
 | Approver inbox / review UI | 🔴 To build | none | Dedicated HIL inbox screen |
+| Node-level retry/resume after a genuine execution error (tool/schema failure, not a HumanInput pause) | 🔴 To build | none — confirmed empirically: a failed tool call lands the execution on `FINISHED`/`ERROR` with the failure embedded in that node's data; `ExecutionDetails.jsx` has no retry action for this case, only the Proceed/Reject path for `STOPPED` HumanInput pauses | Partial-run resume from the last successful node — most agent platforms distinguish "paused for a human" from "failed mid-run" and support resuming both |
 
 ## 9. Guardrails & Safety
 

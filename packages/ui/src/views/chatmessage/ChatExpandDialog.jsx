@@ -1,61 +1,122 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
-import { Dialog, DialogContent, DialogTitle, Drawer, Button, IconButton, Tooltip } from '@mui/material'
+import { Drawer, IconButton, Tooltip } from '@mui/material'
 import ChatMessage from './ChatMessage'
-import { StyledButton } from '@/ui-component/button/StyledButton'
-import { IconEraser, IconLayoutSidebarRightExpand, IconArrowsMaximize, IconX } from '@tabler/icons-react'
+import { IconEraser, IconX } from '@tabler/icons-react'
 
-const DOCK_WIDTH = 420
+const DEFAULT_DOCK_WIDTH = 420
+const MIN_DOCK_WIDTH = 320
+const MAX_DOCK_WIDTH = 960
+const DOCK_WIDTH_STORAGE_KEY = 'chatDockWidth'
+const RESIZE_KEY_STEP = 20
 
-const ChatExpandDialog = ({ show, dialogProps, isAgentCanvas, onClear, onCancel, previews, setPreviews }) => {
+// A single resizable side panel — no separate "expanded" mode to toggle
+// between. `mounted` is sticky: once true it stays true for the lifetime of
+// this component instance, so `ChatMessage` (and the live SSE connection an
+// in-progress or paused agent run depends on) is never torn down just
+// because the panel is visually hidden. `visible` is the actual show/hide
+// toggle and is free to flip back and forth — it only controls the
+// Drawer's slide-in/out, not whether anything underneath exists.
+const ChatExpandDialog = ({ mounted, visible, dialogProps, isAgentCanvas, onClear, onCancel, previews, setPreviews, resetSignal }) => {
     const portalElement = document.getElementById('portal')
     const customization = useSelector((state) => state.customization)
-    // Docking swaps the surrounding container (Dialog <-> Drawer) but keeps
-    // `show`/`open` true the whole time — minimizing to the side is not the
-    // same as closing, so the running conversation keeps streaming and the
-    // panel just repositions rather than tearing down and losing progress.
-    const [docked, setDocked] = useState(false)
 
-    const clearChatButton = customization.isDarkMode ? (
-        <StyledButton variant='outlined' color='error' title='Clear Conversation' onClick={onClear} startIcon={<IconEraser />}>
-            Clear Chat
-        </StyledButton>
-    ) : (
-        <Button variant='outlined' color='error' title='Clear Conversation' onClick={onClear} startIcon={<IconEraser />}>
-            Clear Chat
-        </Button>
-    )
+    const [dockWidth, setDockWidth] = useState(() => {
+        const saved = Number(window.localStorage.getItem(DOCK_WIDTH_STORAGE_KEY))
+        return saved >= MIN_DOCK_WIDTH && saved <= MAX_DOCK_WIDTH ? saved : DEFAULT_DOCK_WIDTH
+    })
+    const isResizingRef = useRef(false)
 
-    const chatMessageEl = (
-        <ChatMessage
-            isDialog={true}
-            open={dialogProps.open}
-            isAgentCanvas={isAgentCanvas}
-            chatflowid={dialogProps.chatflowid}
-            previews={previews}
-            setPreviews={setPreviews}
-        />
-    )
+    const handleResizeMouseDown = useCallback((e) => {
+        e.preventDefault()
+        isResizingRef.current = true
+        document.body.style.cursor = 'col-resize'
+        document.body.style.userSelect = 'none'
+    }, [])
 
-    if (!show) {
+    const handleResizeKeyDown = useCallback((e) => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+        e.preventDefault()
+        // Anchored right: ArrowLeft grows the panel, ArrowRight shrinks it
+        const delta = e.key === 'ArrowLeft' ? RESIZE_KEY_STEP : -RESIZE_KEY_STEP
+        setDockWidth((current) => {
+            const next = Math.min(MAX_DOCK_WIDTH, Math.max(MIN_DOCK_WIDTH, current + delta))
+            window.localStorage.setItem(DOCK_WIDTH_STORAGE_KEY, String(next))
+            return next
+        })
+    }, [])
+
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (!isResizingRef.current) return
+            // Anchored right: dragging left (smaller clientX) grows the panel
+            const newWidth = window.innerWidth - e.clientX
+            setDockWidth(Math.min(MAX_DOCK_WIDTH, Math.max(MIN_DOCK_WIDTH, newWidth)))
+        }
+        const handleMouseUp = () => {
+            if (!isResizingRef.current) return
+            isResizingRef.current = false
+            document.body.style.cursor = ''
+            document.body.style.userSelect = ''
+            setDockWidth((current) => {
+                window.localStorage.setItem(DOCK_WIDTH_STORAGE_KEY, String(current))
+                return current
+            })
+        }
+        window.addEventListener('mousemove', handleMouseMove)
+        window.addEventListener('mouseup', handleMouseUp)
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove)
+            window.removeEventListener('mouseup', handleMouseUp)
+        }
+    }, [])
+
+    if (!mounted) {
         return null
     }
 
-    const component = docked ? (
+    const component = (
         <Drawer
             anchor='right'
             variant='temporary'
-            open={show}
+            open={visible}
             hideBackdrop
             disableEnforceFocus
             disableScrollLock
             ModalProps={{ keepMounted: true }}
-            PaperProps={{ sx: { width: DOCK_WIDTH, display: 'flex', flexDirection: 'column' } }}
+            PaperProps={{ sx: { width: dockWidth, display: 'flex', flexDirection: 'column', overflow: 'visible' } }}
             sx={{ '& .MuiModal-root': { pointerEvents: 'none' }, '& .MuiDrawer-paper': { pointerEvents: 'auto' } }}
         >
+            {/* Drag handle on the left edge — anchor="right" means dragging left grows the panel.
+                This is WAI-ARIA's "focusable separator" pattern (a resizable-splitter affordance);
+                eslint-plugin-jsx-a11y's role map doesn't recognize role="separator" as interactive
+                even when focusable, so its no-noninteractive-* rules false-positive here. */}
+            {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
+            <div
+                role='separator'
+                aria-orientation='vertical'
+                aria-label='Resize chat panel'
+                aria-valuenow={dockWidth}
+                aria-valuemin={MIN_DOCK_WIDTH}
+                aria-valuemax={MAX_DOCK_WIDTH}
+                tabIndex={0}
+                onMouseDown={handleResizeMouseDown}
+                onKeyDown={handleResizeKeyDown}
+                title='Drag to resize (or use arrow keys when focused)'
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    left: -4,
+                    width: 8,
+                    cursor: 'col-resize',
+                    zIndex: 1
+                }}
+            />
+            {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
             <div
                 style={{
                     display: 'flex',
@@ -72,48 +133,28 @@ const ChatExpandDialog = ({ show, dialogProps, isAgentCanvas, onClear, onCancel,
                         <IconEraser size={18} />
                     </IconButton>
                 </Tooltip>
-                <Tooltip title='Expand'>
-                    <IconButton size='small' onClick={() => setDocked(false)}>
-                        <IconArrowsMaximize size={18} />
-                    </IconButton>
-                </Tooltip>
                 <Tooltip title='Close'>
                     <IconButton size='small' onClick={onCancel}>
                         <IconX size={18} />
                     </IconButton>
                 </Tooltip>
             </div>
-            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>{chatMessageEl}</div>
+            <div className='cloud-dialog-wrapper' style={{ width: '100%', height: 'calc(100vh - 53px)' }}>
+                {/* `open` fixed at true for the life of this mount — this is what the
+                    chat history fetch-on-open effect keys off; it must not flip when
+                    the panel is only being visually hidden, or an in-progress/paused
+                    execution's live connection gets torn down along with it. */}
+                <ChatMessage
+                    isDialog={true}
+                    open={true}
+                    isAgentCanvas={isAgentCanvas}
+                    chatflowid={dialogProps.chatflowid}
+                    previews={previews}
+                    setPreviews={setPreviews}
+                    resetSignal={resetSignal}
+                />
+            </div>
         </Drawer>
-    ) : (
-        <Dialog
-            open={show}
-            fullWidth
-            maxWidth='md'
-            onClose={onCancel}
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-            sx={{ overflow: 'visible' }}
-        >
-            <DialogTitle sx={{ fontSize: '1rem', p: 1.5 }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    {dialogProps.title}
-                    <div style={{ flex: 1 }}></div>
-                    <Tooltip title='Minimize to side'>
-                        <IconButton size='small' onClick={() => setDocked(true)} sx={{ mr: 1 }}>
-                            <IconLayoutSidebarRightExpand size={20} />
-                        </IconButton>
-                    </Tooltip>
-                    {clearChatButton}
-                </div>
-            </DialogTitle>
-            <DialogContent
-                className='cloud-dialog-wrapper'
-                sx={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'column', p: 0 }}
-            >
-                {chatMessageEl}
-            </DialogContent>
-        </Dialog>
     )
 
     return createPortal(component, portalElement)
@@ -125,13 +166,15 @@ function theme_borderColor(customization) {
 }
 
 ChatExpandDialog.propTypes = {
-    show: PropTypes.bool,
+    mounted: PropTypes.bool,
+    visible: PropTypes.bool,
     dialogProps: PropTypes.object,
     isAgentCanvas: PropTypes.bool,
     onClear: PropTypes.func,
     onCancel: PropTypes.func,
     previews: PropTypes.array,
-    setPreviews: PropTypes.func
+    setPreviews: PropTypes.func,
+    resetSignal: PropTypes.number
 }
 
 export default ChatExpandDialog

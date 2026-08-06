@@ -185,7 +185,7 @@ CardWithDeleteOverlay.propTypes = {
     onDelete: PropTypes.func
 }
 
-const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
+const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews, resetSignal }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -1572,7 +1572,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, chatflowid])
+    }, [open, chatflowid, resetSignal])
 
     useEffect(() => {
         // wait for audio recording to load and then send
@@ -3239,7 +3239,12 @@ ChatMessage.propTypes = {
     isAgentCanvas: PropTypes.bool,
     isDialog: PropTypes.bool,
     previews: PropTypes.array,
-    setPreviews: PropTypes.func
+    setPreviews: PropTypes.func,
+    // Bumping this (e.g. after clearing chat history) re-runs the fetch/reset
+    // effect without needing to toggle `open` — `open` is intentionally kept
+    // stable for the life of a mounted panel so hiding/showing it never tears
+    // down an in-progress or paused agent run's live connection.
+    resetSignal: PropTypes.number
 }
 
 export default memo(ChatMessage)
