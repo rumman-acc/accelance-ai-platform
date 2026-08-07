@@ -1,23 +1,24 @@
 // paper & background
 $paper: #ffffff;
 
-// primary — accelance design system (design-system/tokens.json): color.primary / color.primaryDark / color.tint
-// primary200/800 have no direct brand-token equivalent (brand system defines only main+dark, no
-// intermediate ramp) — reusing tint/primaryDark rather than inventing new hex values (CLAUDE.md rule 2).
-// Flagged in DESIGN_SPEC.md Section 9 as a gap: a full MUI-style tonal ramp doesn't exist upstream yet.
-$primaryLight: #c8d8ec; // = color.tint
-$primaryMain: #0052cc; // = color.primary
-$primaryDark: #003a8f; // = color.primaryDark
-$primary200: #c8d8ec; // = color.tint (reused — no brand equivalent)
-$primary800: #003a8f; // = color.primaryDark (reused — no brand equivalent)
+// primary — Envoy brand (Claude Design "accelance design system" tokens/colors.css): Azure Blue ramp.
+// azure-400 (#0F74BD) is the confirmed brand primary; deepblue-600 (#062667) is the dark end used in
+// the logo gradient and hero panels. Previous values (#0052cc etc.) predate this brand handoff and
+// didn't match colors.css — that mismatch was the root cause of sidebar-hover/header-icon colors
+// looking off-brand.
+$primaryLight: #d5e4fe; // = azure-100
+$primaryMain: #0f74bd; // = azure-400
+$primaryDark: #062667; // = deepblue-600
+$primary200: #d5e4fe; // = azure-100 (reused — no intermediate ramp needed yet)
+$primary800: #062667; // = deepblue-600 (reused)
 
-// secondary — mapped to color.compliance (teal), the closest existing brand accent to this app's
-// previous teal-family secondary. No brand-token light/dark shades exist for it; see note above.
-$secondaryLight: #ccfbf1;
-$secondaryMain: #0891b5; // = color.compliance
-$secondaryDark: #0891b5; // no brand-token dark shade — reused main (gap, see DESIGN_SPEC.md Section 9)
-$secondary200: #5eead4;
-$secondary800: #0891b5;
+// secondary — Envoy brand Vivid Green ramp, labelled "secondary / positive" in colors.css itself.
+// Previous teal (#0891b5) has no place in the actual brand palette (blue/deepblue/green/amber/charcoal).
+$secondaryLight: #c1ffc5; // = green-100
+$secondaryMain: #13ba2f; // = green-300
+$secondaryDark: #0c8f22; // = green-400
+$secondary200: #1be63d; // = green-200
+$secondary800: #02410a; // = green-600
 
 // success Colors — mapped to color.success
 $successLight: #cdf5d8;

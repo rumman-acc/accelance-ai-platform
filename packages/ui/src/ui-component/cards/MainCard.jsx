@@ -41,7 +41,10 @@ const MainCard = forwardRef(function MainCard(
                 ':hover': {
                     boxShadow: boxShadow ? shadow || '0 2px 14px 0 rgb(32 40 45 / 8%)' : 'inherit'
                 },
-                maxWidth: maxWidth === 'sm' ? '800px' : maxWidth === 'md' ? '960px' : '1280px',
+                // 'full' means full-width — it used to silently cap at 1280px, which on any laptop/
+                // desktop wider than that left large unused margins on every list/table page.
+                maxWidth: maxWidth === 'sm' ? '800px' : maxWidth === 'md' ? '960px' : '100%',
+                width: '100%',
                 mx: 'auto',
                 ...sx
             }}

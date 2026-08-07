@@ -52,6 +52,16 @@ export default function componentStyleOverrides(theme) {
                 }
             }
         },
+        // MUI's default skeleton color is a low-opacity tint of the text color (~0.11 alpha black
+        // in light mode) — nearly invisible against this app's light card backgrounds. Use a real,
+        // visible grey instead so loading states are actually legible.
+        MuiSkeleton: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: theme?.customization?.isDarkMode ? 'rgba(255, 255, 255, 0.16)' : theme.colors?.grey300
+                }
+            }
+        },
         MuiPaper: {
             defaultProps: {
                 elevation: 0
