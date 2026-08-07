@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { omit } from 'lodash'
+import { useNavigate } from 'react-router-dom'
 
 // material-ui
 import { Box, Grid, Paper, Stack, Tab, Tabs, Typography, useTheme } from '@mui/material'
@@ -23,12 +24,15 @@ import execution_empty from '@/assets/images/executions_empty.svg'
 
 // ==============================|| CONTROL TOWER ||============================== //
 
+// `filterStatus` is the value sent to /control-tower/agent-ids and appended to the Agents page
+// link as ?health=<status> — null means "no filter" (Agents Built) / "switch tab in place" (Awaiting
+// Approval, which is an execution-level bucket already exposed via this page's own tabs below).
 const STAT_TILES = [
-    { key: 'totalAgents', label: 'Agents Built', icon: IconRobot, color: '#7c4dff' },
-    { key: 'healthy', label: 'Healthy', icon: IconHeartbeat, color: '#2e7d32' },
-    { key: 'runningNow', label: 'Running Now', icon: IconPlayerPlay, color: '#1565c0' },
-    { key: 'awaitingApproval', label: 'Awaiting Approval', icon: IconHourglass, color: '#ed6c02' },
-    { key: 'needsAttention', label: 'Needs Attention', icon: IconAlertTriangle, color: '#c62828' }
+    { key: 'totalAgents', label: 'Agents Built', icon: IconRobot, color: '#7c4dff', filterStatus: null },
+    { key: 'healthy', label: 'Healthy Agents', icon: IconHeartbeat, color: '#2e7d32', filterStatus: 'healthy' },
+    { key: 'runningNow', label: 'Agents Running Now', icon: IconPlayerPlay, color: '#1565c0', filterStatus: 'runningNow' },
+    { key: 'awaitingApproval', label: 'Awaiting Approval', icon: IconHourglass, color: '#ed6c02', filterStatus: undefined },
+    { key: 'needsAttention', label: 'Needs Attention Agents', icon: IconAlertTriangle, color: '#c62828', filterStatus: 'needsAttention' }
 ]
 
 // Each tab is just a fixed execution-state filter over the same /executions endpoint
@@ -64,8 +68,20 @@ const ControlTower = () => {
     const [selectedExecutionData, setSelectedExecutionData] = useState([])
     const [selectedMetadata, setSelectedMetadata] = useState({})
 
+    const navigate = useNavigate()
+
     const fetchTab = (tabIndex, page, limit) => {
         getAllExecutions.request({ state: TABS[tabIndex].state, page, limit })
+    }
+
+    const handleTileClick = (tile) => {
+        // Awaiting Approval is an execution-level bucket the page's own tabs already filter to —
+        // switch tab in place instead of leaving the page.
+        if (tile.key === 'awaitingApproval') {
+            handleTabChange(null, 1)
+            return
+        }
+        navigate(tile.filterStatus ? `/agentflows?health=${tile.filterStatus}` : '/agentflows')
     }
 
     const refreshAll = () => {
@@ -135,7 +151,19 @@ const ControlTower = () => {
                             const Icon = tile.icon
                             return (
                                 <Grid item xs={12} sm={6} md={2.4} key={tile.key}>
-                                    <Paper variant='outlined' sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, borderColor }}>
+                                    <Paper
+                                        variant='outlined'
+                                        onClick={() => handleTileClick(tile)}
+                                        sx={{
+                                            p: 2,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1.5,
+                                            borderColor,
+                                            cursor: 'pointer',
+                                            '&:hover': { borderColor: theme.palette.primary.main }
+                                        }}
+                                    >
                                         <Icon size={28} color={tile.color} style={{ flexShrink: 0 }} />
                                         <Box>
                                             <Typography variant='h4'>{stats ? stats[tile.key] ?? 0 : '—'}</Typography>
@@ -162,8 +190,11 @@ const ControlTower = () => {
                                 isLoading={isLoading}
                                 onExecutionRowClick={(execution) => {
                                     setOpenDrawer(true)
-                                    setSelectedExecutionData(parseExecutionData(execution))
+                                    // The list row no longer carries executionData (trimmed for payload size) —
+                                    // show what we already know immediately, fetch the full trace by id.
+                                    setSelectedExecutionData([])
                                     setSelectedMetadata(omit(execution, ['executionData']))
+                                    getExecutionByIdApi.request(execution.id)
                                 }}
                             />
 
@@ -175,6 +206,7 @@ const ControlTower = () => {
                                 open={openDrawer}
                                 execution={selectedExecutionData}
                                 metadata={selectedMetadata}
+                                loading={getExecutionByIdApi.loading}
                                 onClose={() => setOpenDrawer(false)}
                                 onProceedSuccess={() => {
                                     setOpenDrawer(false)

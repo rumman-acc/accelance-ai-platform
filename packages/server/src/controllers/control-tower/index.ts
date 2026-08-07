@@ -11,6 +11,18 @@ const getStats = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+const getAgentIds = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const workspaceId = req.user?.activeWorkspaceId
+        const status = req.query.status as 'healthy' | 'needsAttention' | 'runningNow'
+        const agentflowIds = await controlTowerService.getAgentIdsByStatus(status, workspaceId)
+        return res.json({ agentflowIds })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
-    getStats
+    getStats,
+    getAgentIds
 }

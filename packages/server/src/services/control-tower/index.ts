@@ -65,6 +65,46 @@ const getStats = async (workspaceId?: string): Promise<ControlTowerStats> => {
     }
 }
 
+export type AgentHealthStatus = 'healthy' | 'needsAttention' | 'runningNow'
+
+// Backs the Control Tower stat tiles' click-through: which specific agents make up a bucket,
+// for the Agents list page to filter down to. Same latest-execution-per-agent logic as getStats,
+// just returning ids instead of a count — no separate cache, this is only hit on a stat-tile click.
+const getAgentIdsByStatus = async (status: AgentHealthStatus, workspaceId?: string): Promise<string[]> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const baseCte = `WITH agent_execs AS (
+                SELECT e."agentflowId", e."state", e."updatedDate"
+                FROM execution e
+                INNER JOIN chat_flow cf ON cf.id = e."agentflowId"
+                WHERE e."workspaceId" = $1 AND cf."type" = 'AGENTFLOW'
+            ),
+            latest_exec AS (
+                SELECT DISTINCT ON ("agentflowId") "agentflowId", "state"
+                FROM agent_execs
+                ORDER BY "agentflowId", "updatedDate" DESC
+            )`
+
+        let query: string
+        if (status === 'healthy') {
+            query = `${baseCte} SELECT "agentflowId" FROM latest_exec WHERE "state" = 'FINISHED'`
+        } else if (status === 'needsAttention') {
+            query = `${baseCte} SELECT "agentflowId" FROM latest_exec WHERE "state" IN ('ERROR', 'TERMINATED', 'TIMEOUT')`
+        } else {
+            query = `${baseCte} SELECT DISTINCT "agentflowId" FROM agent_execs WHERE "state" = 'INPROGRESS'`
+        }
+
+        const rows = await appServer.AppDataSource.query(query, [workspaceId ?? null])
+        return rows.map((row: { agentflowId: string }) => row.agentflowId)
+    } catch (error) {
+        throw new InternalAccelanceError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: controlTowerService.getAgentIdsByStatus - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
-    getStats
+    getStats,
+    getAgentIdsByStatus
 }

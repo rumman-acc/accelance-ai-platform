@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 // material-ui
-import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, Chip, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -20,6 +20,7 @@ import { FlowListTable } from '@/ui-component/table/FlowListTable'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import controlTowerApi from '@/api/control-tower'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -29,9 +30,17 @@ import { AGENTFLOW_ICONS, baseURL } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconLayoutGrid, IconList, IconPlus } from '@tabler/icons-react'
+import { IconLayoutGrid, IconList, IconPlus, IconX } from '@tabler/icons-react'
 
 // ==============================|| AGENTS ||============================== //
+
+// Matches control-tower/index.jsx's STAT_TILES filterStatus values — labels shown on the
+// clear-filter chip when arriving via a Control Tower stat-tile click (?health=...).
+const HEALTH_FILTER_LABELS = {
+    healthy: 'Healthy Agents',
+    runningNow: 'Agents Running Now',
+    needsAttention: 'Needs Attention Agents'
+}
 
 const Agentflows = () => {
     const navigate = useNavigate()
@@ -46,7 +55,34 @@ const Agentflows = () => {
     const { error, setError } = useError()
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
+    const getAgentIdsApi = useApi(controlTowerApi.getAgentIds)
     const [view, setView] = useState(localStorage.getItem('agentFlowDisplayStyle') || 'card')
+
+    // Arrived via a Control Tower stat-tile click (?health=healthy|runningNow|needsAttention) —
+    // null means unfiltered, an array is the set of agentflow ids that stat bucket resolved to.
+    const [searchParams, setSearchParams] = useSearchParams()
+    const healthFilter = searchParams.get('health')
+    const [healthAgentIds, setHealthAgentIds] = useState(null)
+
+    useEffect(() => {
+        if (healthFilter) {
+            getAgentIdsApi.request(healthFilter)
+        } else {
+            setHealthAgentIds(null)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [healthFilter])
+
+    useEffect(() => {
+        if (getAgentIdsApi.data) {
+            setHealthAgentIds(getAgentIdsApi.data.agentflowIds || [])
+        }
+    }, [getAgentIdsApi.data])
+
+    const clearHealthFilter = () => {
+        searchParams.delete('health')
+        setSearchParams(searchParams)
+    }
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -81,11 +117,14 @@ const Agentflows = () => {
     }
 
     function filterFlows(data) {
-        return (
+        const matchesSearch =
             data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
             data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
+        // healthAgentIds === null means either unfiltered, or the id list hasn't resolved yet —
+        // show everything rather than flashing an empty list while that quick fetch is in flight.
+        const matchesHealthFilter = !healthFilter || healthAgentIds === null || healthAgentIds.includes(data.id)
+        return matchesSearch && matchesHealthFilter
     }
 
     const addNew = () => {
@@ -197,8 +236,18 @@ const Agentflows = () => {
                         search={true}
                         searchPlaceholder='Search Name or Category'
                         title='Agents'
-                        description='Multi-agent systems, workflow orchestration'
+                        description='Multi-agent systems'
                     >
+                        {healthFilter && (
+                            <Chip
+                                label={`Filtered: ${HEALTH_FILTER_LABELS[healthFilter] || healthFilter}`}
+                                onDelete={clearHealthFilter}
+                                deleteIcon={<IconX size={14} />}
+                                color='primary'
+                                variant='outlined'
+                                size='small'
+                            />
+                        )}
                         <ToggleButtonGroup
                             sx={{ borderRadius: 1, maxHeight: 40 }}
                             value={view}

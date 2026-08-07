@@ -21,6 +21,7 @@ import {
     useTheme
 } from '@mui/material'
 import { tableCellClasses } from '@mui/material/TableCell'
+import { IconListCheck } from '@tabler/icons-react'
 import FlowListMenu from '../button/FlowListMenu'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
@@ -118,18 +119,18 @@ export const FlowListTable = ({
                         }}
                     >
                         <TableRow>
-                            <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
+                            <StyledTableCell component='th' scope='row' style={{ width: isAgentCanvas ? '18%' : '20%' }} key='0'>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
                                     Name
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '25%' }} key='1'>
+                            <StyledTableCell style={{ width: isAgentCanvas ? '20%' : '25%' }} key='1'>
                                 Category
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '30%' }} key='2'>
+                            <StyledTableCell style={{ width: isAgentCanvas ? '25%' : '30%' }} key='2'>
                                 Nodes
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '15%' }} key='3'>
+                            <StyledTableCell style={{ width: isAgentCanvas ? '12%' : '15%' }} key='3'>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
                                     direction={order}
@@ -138,6 +139,11 @@ export const FlowListTable = ({
                                     Last Modified Date
                                 </TableSortLabel>
                             </StyledTableCell>
+                            {isAgentCanvas && (
+                                <StyledTableCell style={{ width: '15%' }} key='executions'>
+                                    Executions
+                                </StyledTableCell>
+                            )}
                             {isActionsAvailable && (
                                 <StyledTableCell style={{ width: '10%' }} key='4'>
                                     Actions
@@ -161,6 +167,11 @@ export const FlowListTable = ({
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
+                                    {isAgentCanvas && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                     {isActionsAvailable && (
                                         <StyledTableCell>
                                             <Skeleton variant='text' />
@@ -180,6 +191,11 @@ export const FlowListTable = ({
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
+                                    {isAgentCanvas && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                     {isActionsAvailable && (
                                         <StyledTableCell>
                                             <Skeleton variant='text' />
@@ -324,6 +340,19 @@ export const FlowListTable = ({
                                         <StyledTableCell key='3'>
                                             {moment(row.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
                                         </StyledTableCell>
+                                        {isAgentCanvas && (
+                                            <StyledTableCell key='executions'>
+                                                <Chip
+                                                    component={Link}
+                                                    to={`/executions?agentflowId=${row.id}`}
+                                                    clickable
+                                                    variant='outlined'
+                                                    size='small'
+                                                    icon={<IconListCheck size={14} />}
+                                                    label='View'
+                                                />
+                                            </StyledTableCell>
+                                        )}
                                         {isActionsAvailable && (
                                             <StyledTableCell key='4'>
                                                 <Stack
