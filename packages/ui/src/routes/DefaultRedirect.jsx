@@ -13,6 +13,7 @@ import LoginActivityPage from '@/views/auth/loginActivity'
 import SSOConfig from '@/views/auth/ssoConfig'
 import Unauthorized from '@/views/auth/unauthorized'
 import Chatflows from '@/views/chatflows'
+import ControlTower from '@/views/controltower'
 import Credentials from '@/views/credentials'
 import EvalDatasets from '@/views/datasets'
 import Documents from '@/views/docstore'
@@ -27,7 +28,8 @@ import Workspaces from '@/views/workspace'
 
 /**
  * Component that redirects users to the first accessible page based on their permissions
- * This prevents 403 errors when users don't have access to the default chatflows page
+ * Control Tower is the app's default landing page; this falls through to the first other
+ * accessible page for users without executions:view, preventing 403s on the default route.
  */
 export const DefaultRedirect = () => {
     const { hasPermission, hasDisplay } = useAuth()
@@ -37,6 +39,7 @@ export const DefaultRedirect = () => {
 
     // Define the order of routes to check (based on the menu order in dashboard.js)
     const routesToCheck = [
+        { component: ControlTower, permission: 'executions:view' },
         { component: Chatflows, permission: 'chatflows:view' },
         { component: Agentflows, permission: 'agentflows:view' },
         { component: Executions, permission: 'executions:view' },
@@ -66,14 +69,14 @@ export const DefaultRedirect = () => {
         return <Login />
     }
 
-    // For open source, show chatflows (no permission checks)
+    // For open source, show Control Tower (no permission checks)
     if (isOpenSource) {
-        return <Chatflows />
+        return <ControlTower />
     }
 
-    // For global admins, show chatflows (they have access to everything)
+    // For global admins, show Control Tower (they have access to everything)
     if (isGlobal) {
-        return <Chatflows />
+        return <ControlTower />
     }
 
     // Check each route in order and return the first accessible component

@@ -1,7 +1,7 @@
 const config = {
     // basename: only at build time to set, and Don't add '/' at end off BASENAME for breadcrumbs, also Don't put only '/' use blank('') instead,
     basename: '',
-    defaultPath: '/chatflows',
+    defaultPath: '/control-tower',
     // You can specify multiple fallback fonts
     // Per design-system/tokens.json (accelance design system): Inter primary, Arial corporate fallback
     fontFamily: `'Inter', 'Arial', sans-serif`,
