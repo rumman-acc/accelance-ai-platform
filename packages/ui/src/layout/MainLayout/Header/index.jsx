@@ -142,12 +142,14 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 sx={{
                     width: 228,
                     display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
                     [theme.breakpoints.down('md')]: {
                         width: 'auto'
                     }
                 }}
             >
-                <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
+                <Box component='span' sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
                     <LogoSection />
                 </Box>
                 {isAuthenticated && (

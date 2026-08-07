@@ -20,7 +20,7 @@ const Logo = ({ variant = 'auto', size = 24 }) => {
     const textColor = isLight ? '#FFFFFF' : '#062667'
 
     return (
-        <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 8, marginLeft: '10px' }}>
+        <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 8 }}>
             <svg width={size} height={size} viewBox='0 0 96 96' fill='none' aria-hidden='true'>
                 <path d='M20 24 H70' stroke={strokeMain} strokeWidth='14' strokeLinecap='round' />
                 <path d='M20 48 H46' stroke={strokeAccent} strokeWidth='14' strokeLinecap='round' />
