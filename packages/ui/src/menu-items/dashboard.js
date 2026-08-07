@@ -23,7 +23,8 @@ import {
     IconLockCheck,
     IconFileDatabase,
     IconShieldLock,
-    IconListCheck
+    IconListCheck,
+    IconGauge
 } from '@tabler/icons-react'
 
 // constant
@@ -51,7 +52,8 @@ const icons = {
     IconLockCheck,
     IconFileDatabase,
     IconShieldLock,
-    IconListCheck
+    IconListCheck,
+    IconGauge
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -67,8 +69,17 @@ const dashboard = {
             type: 'group',
             children: [
                 {
+                    id: 'controlTower',
+                    title: 'Control Tower',
+                    type: 'item',
+                    url: '/control-tower',
+                    icon: icons.IconGauge,
+                    breadcrumbs: true,
+                    permission: 'executions:view'
+                },
+                {
                     id: 'chatflows',
-                    title: 'Chatflows',
+                    title: 'Chatbots',
                     type: 'item',
                     url: '/chatflows',
                     icon: icons.IconHierarchy,
@@ -77,7 +88,7 @@ const dashboard = {
                 },
                 {
                     id: 'agentflows',
-                    title: 'Agentflows',
+                    title: 'Agents',
                     type: 'item',
                     url: '/agentflows',
                     icon: icons.IconUsersGroup,

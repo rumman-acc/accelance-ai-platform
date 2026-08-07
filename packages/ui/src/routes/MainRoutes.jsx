@@ -58,6 +58,9 @@ const Files = Loadable(lazy(() => import('@/views/files')))
 // executions routing
 const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
 
+// control tower routing
+const ControlTower = Loadable(lazy(() => import('@/views/controltower')))
+
 // enterprise features
 const UsersPage = Loadable(lazy(() => import('@/views/users')))
 const RolesPage = Loadable(lazy(() => import('@/views/roles')))
@@ -98,6 +101,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'executions:view'}>
                     <Executions />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/control-tower',
+            element: (
+                <RequireAuth permission={'executions:view'}>
+                    <ControlTower />
                 </RequireAuth>
             )
         },

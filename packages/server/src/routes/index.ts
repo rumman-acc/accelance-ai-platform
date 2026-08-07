@@ -9,6 +9,7 @@ import chatflowsStreamingRouter from './chatflows-streaming'
 import chatflowsUploadsRouter from './chatflows-uploads'
 import componentsCredentialsRouter from './components-credentials'
 import componentsCredentialsIconRouter from './components-credentials-icon'
+import controlTowerRouter from './control-tower'
 import credentialsRouter from './credentials'
 import customMcpServersRouter from './custom-mcp-servers'
 import datasetRouter from './dataset'
@@ -83,6 +84,7 @@ router.use('/chatmessage', chatMessageRouter)
 router.use('/chatflows-uploads', chatflowsUploadsRouter)
 router.use('/components-credentials', componentsCredentialsRouter)
 router.use('/components-credentials-icon', componentsCredentialsIconRouter)
+router.use('/control-tower', controlTowerRouter)
 router.use('/credentials', credentialsRouter)
 router.use('/datasets', IdentityManager.checkFeatureByPlan('feat:datasets'), datasetRouter)
 router.use('/document-store', documentStoreRouter)
