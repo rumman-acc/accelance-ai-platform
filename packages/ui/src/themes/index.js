@@ -40,8 +40,10 @@ export const theme = (customization) => {
               darkTextPrimary: color.grey700,
               darkTextSecondary: color.grey500,
               textDark: color.grey900,
-              menuSelected: color.secondaryDark,
-              menuSelectedBack: color.secondaryLight,
+              // Sidebar hover/active nav item — brand primary blue, not secondary (secondary is the
+              // Envoy green ramp, which reads as an unrelated status color on nav items, not a brand accent).
+              menuSelected: color.primaryDark,
+              menuSelectedBack: color.primaryLight,
               divider: color.grey200,
               customization
           }
