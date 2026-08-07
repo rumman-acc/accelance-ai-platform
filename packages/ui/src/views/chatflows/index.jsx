@@ -105,22 +105,14 @@ const Chatflows = () => {
                 const chatflows = getAllChatflowsApi.data?.data
                 const total = getAllChatflowsApi.data?.total
                 setTotal(total)
+                // Icons come pre-computed from the server (nodeIcons) rather than parsing the full
+                // flowData client-side — the list endpoint no longer ships flowData at all.
                 const images = {}
                 for (let i = 0; i < chatflows.length; i += 1) {
-                    const flowDataStr = chatflows[i].flowData
-                    const flowData = JSON.parse(flowDataStr)
-                    const nodes = flowData.nodes || []
-                    images[chatflows[i].id] = []
-                    for (let j = 0; j < nodes.length; j += 1) {
-                        if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
-                        const imageSrc = `${baseURL}/api/node-icon/${nodes[j].data.name}`
-                        if (!images[chatflows[i].id].some((img) => img.imageSrc === imageSrc)) {
-                            images[chatflows[i].id].push({
-                                imageSrc,
-                                label: nodes[j].data.label
-                            })
-                        }
-                    }
+                    images[chatflows[i].id] = (chatflows[i].nodeIcons || []).map((node) => ({
+                        imageSrc: `${baseURL}/api/node-icon/${node.nodeName}`,
+                        label: node.label
+                    }))
                 }
                 setImages(images)
             } catch (e) {
@@ -139,7 +131,7 @@ const Chatflows = () => {
                         onSearchChange={onSearchChange}
                         search={true}
                         searchPlaceholder='Search Name or Category'
-                        title='Chatflows'
+                        title='Chatbots'
                         description='Build single-agent systems, chatbots and simple LLM flows'
                     >
                         <ToggleButtonGroup
@@ -226,7 +218,7 @@ const Chatflows = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Chatflows Yet</div>
+                            <div>No Chatbots Yet</div>
                         </Stack>
                     )}
                 </Stack>

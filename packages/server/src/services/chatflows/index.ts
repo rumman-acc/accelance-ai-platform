@@ -28,6 +28,10 @@ import {
     isFlowValidForStream
 } from '../../utils'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { getCached, invalidateByPrefix, setCached } from '../../utils/redisCache'
+
+const CHATFLOWS_LIST_CACHE_PREFIX = 'chatflows:list:'
+const CHATFLOWS_LIST_CACHE_TTL_SECONDS = 30
 import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
@@ -161,6 +165,7 @@ const deleteChatflow = async (
         } catch (e) {
             logger.error(`[server]: Error deleting file storage for chatflow ${chatflowId}`)
         }
+        await invalidateByPrefix(CHATFLOWS_LIST_CACHE_PREFIX)
         return dbResponse
     } catch (error) {
         throw new InternalAccelanceError(
@@ -170,9 +175,40 @@ const deleteChatflow = async (
     }
 }
 
+// The list pages (Chatflows/Agentflows) only need this to render node-icon previews and to
+// know which flows are schedule-triggered — not the full graph. Computed once here, server-side,
+// so `flowData` (often the single largest column, sometimes 1MB+) never has to leave Postgres for
+// a list view. Opening a specific flow in the canvas still goes through getChatflowById, which is
+// unaffected and continues to return full flowData on demand.
+const summarizeFlowDataForList = (flowDataStr: string): { nodeIcons: { nodeName: string; label: string }[]; isScheduleFlow: boolean } => {
+    try {
+        const flowData: IReactFlowObject = JSON.parse(flowDataStr)
+        const nodes = flowData.nodes || []
+        const nodeIcons: { nodeName: string; label: string }[] = []
+        let isScheduleFlow = false
+        for (const node of nodes) {
+            const nodeName = node.data?.name
+            if (!nodeName || nodeName === 'stickyNote' || nodeName === 'stickyNoteAgentflow') continue
+            if (nodeName === 'startAgentflow' && node.data?.inputs?.startInputType === 'scheduleInput') {
+                isScheduleFlow = true
+            }
+            if (!nodeIcons.some((n) => n.nodeName === nodeName)) {
+                nodeIcons.push({ nodeName, label: node.data?.label })
+            }
+        }
+        return { nodeIcons, isScheduleFlow }
+    } catch {
+        return { nodeIcons: [], isScheduleFlow: false }
+    }
+}
+
 // Accepts either a single type ('AGENTFLOW') or a comma-separated list ('AGENTFLOW,MULTIAGENT') -
 // the latter is used by the Agentflows list page to show both v2 and legacy v1 flows together.
 const getAllChatflows = async (type?: ChatflowType | string, workspaceId?: string, page: number = -1, limit: number = -1) => {
+    const cacheKey = `${CHATFLOWS_LIST_CACHE_PREFIX}${workspaceId ?? 'none'}:${type ?? 'all'}:${page}:${limit}`
+    const cached = await getCached(cacheKey)
+    if (cached) return cached
+
     try {
         const appServer = getRunningExpressApp()
 
@@ -203,13 +239,18 @@ const getAllChatflows = async (type?: ChatflowType | string, workspaceId?: strin
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'CHATFLOW' })
         }
         if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
-        const [data, total] = await queryBuilder.getManyAndCount()
+        const [rawData, total] = await queryBuilder.getManyAndCount()
 
-        if (page > 0 && limit > 0) {
-            return { data, total }
-        } else {
-            return data
-        }
+        const data = rawData.map((chatflow) => {
+            const { nodeIcons, isScheduleFlow } = summarizeFlowDataForList(chatflow.flowData)
+            const summarized: any = { ...chatflow, nodeIcons, isScheduleFlow }
+            delete summarized.flowData
+            return summarized
+        })
+
+        const result = page > 0 && limit > 0 ? { data, total } : data
+        await setCached(cacheKey, result, CHATFLOWS_LIST_CACHE_TTL_SECONDS)
+        return result
     } catch (error) {
         throw new InternalAccelanceError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -458,6 +499,7 @@ const saveChatflow = async (
         { status: ACCELANCE_COUNTER_STATUS.SUCCESS }
     )
 
+    await invalidateByPrefix(CHATFLOWS_LIST_CACHE_PREFIX)
     return dbResponse
 }
 
@@ -560,6 +602,7 @@ const updateChatflow = async (
         }
     }
 
+    await invalidateByPrefix(CHATFLOWS_LIST_CACHE_PREFIX)
     return dbResponse
 }
 

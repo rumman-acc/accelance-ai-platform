@@ -7,6 +7,15 @@ import { getErrorMessage } from '../../errors/utils'
 import { ExecutionState, IAgentflowExecutedData } from '../../Interface'
 import { _removeCredentialId } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { getCached, invalidateByPrefix, setCached } from '../../utils/redisCache'
+
+const EXECUTIONS_LIST_CACHE_PREFIX = 'executions:list:'
+// Short TTL: executions are the most state-volatile list in the app (agents finish,
+// get approved/rejected, error out on their own). This mainly de-dupes rapid repeat
+// fetches (tab switches, pagination) rather than meaningfully caching across time —
+// the explicit invalidateByPrefix calls in updateExecution/deleteExecutions below are
+// what actually keep the Control Tower Approvals flow correct after a Proceed/Reject.
+const EXECUTIONS_LIST_CACHE_TTL_SECONDS = 5
 
 export interface ExecutionFilters {
     id?: string
@@ -64,15 +73,39 @@ const getPublicExecutionById = async (executionId: string): Promise<Execution | 
 }
 
 const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data: Execution[]; total: number }> => {
+    const cacheKey = `${EXECUTIONS_LIST_CACHE_PREFIX}${JSON.stringify(filters)}`
+    const cached = await getCached<{ data: Execution[]; total: number }>(cacheKey)
+    if (cached) return cached
+
     try {
         const appServer = getRunningExpressApp()
         const { id, agentflowId, agentflowName, sessionId, state, startDate, endDate, page = 1, limit = 12, workspaceId } = filters
 
         // Handle UUID fields properly using raw parameters to avoid type conversion issues
         // This uses the query builder instead of direct objects for compatibility with UUID fields
+        //
+        // Explicit .select(...) instead of leftJoinAndSelect: the list view only ever renders
+        // agentflow.name, but a plain leftJoinAndSelect pulls every ChatFlow column along for the
+        // ride — including its own flowData. Combined with excluding execution.executionData
+        // (only needed by the ExecutionDetails drawer, fetched separately via getExecutionById),
+        // this is what actually made the list payload multi-megabyte.
         const queryBuilder = appServer.AppDataSource.getRepository(Execution)
             .createQueryBuilder('execution')
-            .leftJoinAndSelect('execution.agentflow', 'agentflow')
+            .leftJoin('execution.agentflow', 'agentflow')
+            .select([
+                'execution.id',
+                'execution.state',
+                'execution.agentflowId',
+                'execution.sessionId',
+                'execution.action',
+                'execution.isPublic',
+                'execution.createdDate',
+                'execution.updatedDate',
+                'execution.stoppedDate',
+                'execution.workspaceId',
+                'agentflow.id',
+                'agentflow.name'
+            ])
             .orderBy('execution.updatedDate', 'DESC')
             .skip((page - 1) * limit)
             .take(limit)
@@ -96,7 +129,9 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
 
         const [data, total] = await queryBuilder.getManyAndCount()
 
-        return { data, total }
+        const result = { data, total }
+        await setCached(cacheKey, result, EXECUTIONS_LIST_CACHE_TTL_SECONDS)
+        return result
     } catch (error) {
         throw new InternalAccelanceError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -121,6 +156,7 @@ const updateExecution = async (executionId: string, data: Partial<Execution>, wo
         Object.assign(updateExecution, data)
         await appServer.AppDataSource.getRepository(Execution).merge(execution, updateExecution)
         const dbResponse = await appServer.AppDataSource.getRepository(Execution).save(execution)
+        await invalidateByPrefix(EXECUTIONS_LIST_CACHE_PREFIX)
         return dbResponse
     } catch (error) {
         throw new InternalAccelanceError(
@@ -151,6 +187,7 @@ const deleteExecutions = async (executionIds: string[], workspaceId?: string): P
         // Update chat message executionId column to NULL
         await appServer.AppDataSource.getRepository(ChatMessage).update({ executionId: In(executionIds) }, { executionId: null as any })
 
+        await invalidateByPrefix(EXECUTIONS_LIST_CACHE_PREFIX)
         return {
             success: true,
             deletedCount: result.affected || 0

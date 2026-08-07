@@ -378,7 +378,7 @@ const AgentExecutions = () => {
                         </Grid>
                     </Box>
 
-                    {executions?.length > 0 && (
+                    {(isLoading || executions?.length > 0) && (
                         <>
                             <ExecutionsListTable
                                 data={executions}

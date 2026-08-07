@@ -26,8 +26,17 @@ const getCategories = (fileDataObj: ITemplate) => {
     return Array.from(new Set(fileDataObj?.nodes?.map((node) => node.data.category).filter((category) => category)))
 }
 
+// Global marketplace templates are static JSON files on disk that only change on
+// deploy — getAllTemplates was re-scanning 4 directories and re-reading every file
+// on every single request. Cache in-process for the life of the server; a restart
+// (which is exactly when the files on disk would change too) is the only invalidation
+// this needs.
+let allTemplatesCache: any[] | undefined
+
 // Get all templates for marketplaces
 const getAllTemplates = async () => {
+    if (allTemplatesCache) return allTemplatesCache
+
     try {
         let marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows')
         let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
@@ -130,6 +139,7 @@ const getAllTemplates = async () => {
             return a.templateName.localeCompare(b.templateName)
         })
         const dbResponse = sortedTemplates
+        allTemplatesCache = dbResponse
         return dbResponse
     } catch (error) {
         throw new InternalAccelanceError(

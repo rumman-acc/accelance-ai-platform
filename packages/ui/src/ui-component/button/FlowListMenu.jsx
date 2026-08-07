@@ -298,7 +298,16 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         }
     }
 
-    const handleDuplicate = () => {
+    // List-page rows no longer carry flowData (trimmed server-side so the list itself stays light) —
+    // fetch it on demand for the two actions that actually need the full graph, rather than the list
+    // endpoint shipping it for every row on every page load.
+    const getFullFlowData = async () => {
+        if (chatflow.flowData) return chatflow.flowData
+        const response = await chatflowsApi.getSpecificChatflow(chatflow.id)
+        return response.data.flowData
+    }
+
+    const handleDuplicate = async () => {
         setAnchorEl(null)
         // V1 Agentflows (MULTIAGENT) can no longer be duplicated - that would create a new V1
         // flow, which is no longer supported. Existing V1 flows remain viewable/editable/runnable.
@@ -319,7 +328,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
             return
         }
         try {
-            localStorage.setItem('duplicatedFlowData', chatflow.flowData)
+            localStorage.setItem('duplicatedFlowData', await getFullFlowData())
             if (chatflow.type === 'AGENTFLOW') {
                 window.open(`${uiBaseURL}/v2/agentcanvas`, '_blank')
             } else if (isAgentCanvas) {
@@ -332,10 +341,10 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         }
     }
 
-    const handleExport = () => {
+    const handleExport = async () => {
         setAnchorEl(null)
         try {
-            const flowData = JSON.parse(chatflow.flowData)
+            const flowData = JSON.parse(await getFullFlowData())
             let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
             //let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
             const blob = new Blob([dataStr], { type: 'application/json' })

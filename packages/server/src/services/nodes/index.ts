@@ -13,15 +13,26 @@ import { filterNodeByClient } from './filterNodeByClient'
 
 export { filterNodeByClient }
 
+// nodesPool.componentNodes is populated once at server startup (index.ts/commands/worker.ts)
+// and never mutated afterward, so a plain in-process cache keyed by client is always correct —
+// no TTL or invalidation needed, and it's faster than a Redis round-trip since the whole point
+// is avoiding a ~700KB cloneDeep + re-serialize on every request.
+const allNodesCache = new Map<string, any[]>()
+
 // Get all component nodes
 const getAllNodes = async (client?: ClientType) => {
     try {
+        const cacheKey = client ?? '__all__'
+        const cached = allNodesCache.get(cacheKey)
+        if (cached) return cached
+
         const appServer = getRunningExpressApp()
         const dbResponse = []
         for (const nodeName in appServer.nodesPool.componentNodes) {
             const clonedNode = cloneDeep(appServer.nodesPool.componentNodes[nodeName])
             dbResponse.push(filterNodeByClient(clonedNode, client))
         }
+        allNodesCache.set(cacheKey, dbResponse)
         return dbResponse
     } catch (error) {
         throw new InternalAccelanceError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: nodesService.getAllNodes - ${getErrorMessage(error)}`)

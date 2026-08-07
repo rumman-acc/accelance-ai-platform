@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -123,36 +123,27 @@ const Agentflows = () => {
             try {
                 const agentflows = getAllAgentflows.data?.data
                 setTotal(getAllAgentflows.data?.total)
+                // nodeIcons/isScheduleFlow come pre-computed from the server — the list endpoint no
+                // longer ships flowData at all. AGENTFLOW_ICONS-vs-generic-image branching stays
+                // client-side since AGENTFLOW_ICONS is frontend-only asset data.
                 const images = {}
                 const icons = {}
                 const scheduleConfiguredIds = []
                 for (let i = 0; i < agentflows.length; i += 1) {
-                    const flowDataStr = agentflows[i].flowData
-                    const flowData = JSON.parse(flowDataStr)
-                    const nodes = flowData.nodes || []
                     images[agentflows[i].id] = []
                     icons[agentflows[i].id] = []
-                    let isScheduleFlow = false
-                    for (let j = 0; j < nodes.length; j += 1) {
-                        const node = nodes[j]
-                        if (node.data?.name === 'startAgentflow' && node.data?.inputs?.startInputType === 'scheduleInput') {
-                            isScheduleFlow = true
-                        }
-                        if (node.data.name === 'stickyNote' || node.data.name === 'stickyNoteAgentflow') continue
-                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.data.name)
+                    for (const node of agentflows[i].nodeIcons || []) {
+                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.nodeName)
                         if (foundIcon) {
                             icons[agentflows[i].id].push(foundIcon)
                         } else {
-                            const imageSrc = `${baseURL}/api/node-icon/${node.data.name}`
-                            if (!images[agentflows[i].id].some((img) => img.imageSrc === imageSrc)) {
-                                images[agentflows[i].id].push({
-                                    imageSrc,
-                                    label: node.data.label
-                                })
-                            }
+                            images[agentflows[i].id].push({
+                                imageSrc: `${baseURL}/api/node-icon/${node.nodeName}`,
+                                label: node.label
+                            })
                         }
                     }
-                    if (isScheduleFlow) scheduleConfiguredIds.push(agentflows[i].id)
+                    if (agentflows[i].isScheduleFlow) scheduleConfiguredIds.push(agentflows[i].id)
                 }
                 setImages(images)
                 setIcons(icons)
@@ -205,7 +196,7 @@ const Agentflows = () => {
                         onSearchChange={onSearchChange}
                         search={true}
                         searchPlaceholder='Search Name or Category'
-                        title='Agentflows'
+                        title='Agents'
                         description='Multi-agent systems, workflow orchestration'
                     >
                         <ToggleButtonGroup
@@ -252,6 +243,13 @@ const Agentflows = () => {
                         </StyledPermissionButton>
                     </ViewHeader>
 
+                    {isLoading && (
+                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                        </Box>
+                    )}
                     {!isLoading && total > 0 && (
                         <>
                             {!view || view === 'card' ? (
