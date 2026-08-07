@@ -143,13 +143,12 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     width: 228,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 1.5,
                     [theme.breakpoints.down('md')]: {
                         width: 'auto'
                     }
                 }}
             >
-                <Box component='span' sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
+                <Box component='span' sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', flexGrow: 1 }}>
                     <LogoSection />
                 </Box>
                 {isAuthenticated && (
@@ -185,14 +184,14 @@ const Header = ({ handleLeftDrawerToggle }) => {
                         ml: 2,
                         borderRadius: 15,
                         background: (theme) =>
-                            `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
-                        color: (theme) => theme.palette.secondary.contrastText,
+                            `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.primary.main} 100%)`,
+                        color: (theme) => theme.palette.primary.contrastText,
                         boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
                             background: (theme) =>
                                 `linear-gradient(90deg, ${darken(theme.palette.primary.main, 0.1)} 10%, ${darken(
-                                    theme.palette.secondary.main,
+                                    theme.palette.primary.main,
                                     0.1
                                 )} 100%)`,
                             boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
