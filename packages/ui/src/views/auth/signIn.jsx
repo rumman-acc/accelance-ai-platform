@@ -8,8 +8,10 @@ import { IconExclamationCircle } from '@tabler/icons-react'
 import { LoadingButton } from '@mui/lab'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
 import { Input } from '@/ui-component/input/Input'
+import AuthSplitShell from '@/ui-component/auth/AuthSplitShell'
+import AuthCenteredShell from '@/ui-component/auth/AuthCenteredShell'
+import Logo from '@/ui-component/extended/Logo'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -36,6 +38,12 @@ import Auth0SSOLoginIcon from '@/assets/images/auth0.svg'
 import GithubSSOLoginIcon from '@/assets/images/github.svg'
 
 // ==============================|| SignInPage ||============================== //
+
+const GOVERNANCE_TIERS = [
+    { label: 'AUTONOMOUS', description: 'Reads, drafts, enriches', bg: '#13BA2F', color: '#fff' },
+    { label: 'REVIEW', description: 'Human reads before it moves on', bg: '#FFD166', color: '#3A2A00' },
+    { label: 'APPROVAL', description: 'Nothing runs without a yes', bg: '#FFFFFF', color: '#062667' }
+]
 
 const SignInPage = () => {
     const theme = useTheme()
@@ -73,6 +81,13 @@ const SignInPage = () => {
     const location = useLocation()
     const { slug: organizationSlug } = useParams()
     const resendVerificationApi = useApi(accountApi.resendVerificationEmail)
+    // Display-only label derived from the URL slug — no extra API call for the org's real name.
+    const orgDisplayName = organizationSlug
+        ? organizationSlug
+              .split('-')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')
+        : ''
 
     const doLogin = (event) => {
         event.preventDefault()
@@ -177,169 +192,267 @@ const SignInPage = () => {
         }
     }
 
-    return (
+    const formBody = (
         <>
-            <MainCard maxWidth='sm'>
-                <Stack flexDirection='column' sx={{ width: '480px', gap: 3 }}>
-                    {successMessage && (
-                        <Alert variant='filled' severity='success' onClose={() => setSuccessMessage('')}>
-                            {successMessage}
-                        </Alert>
-                    )}
-                    {authRateLimitError && (
-                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
-                            {authRateLimitError}
-                        </Alert>
-                    )}
-                    {authError && (
-                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
-                            {authError}
-                        </Alert>
-                    )}
-                    {showResendButton && (
-                        <Stack sx={{ gap: 1 }}>
-                            <Button variant='text' onClick={handleResendVerification}>
-                                Resend Verification Email
-                            </Button>
-                        </Stack>
-                    )}
-                    <Stack sx={{ gap: 1 }}>
-                        <Typography variant='h1'>Sign In</Typography>
-                        {isCloud && (
-                            <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                                Don&apos;t have an account?{' '}
-                                <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
-                                    Sign up for free
-                                </Link>
-                                .
-                            </Typography>
-                        )}
-                        {isEnterpriseLicensed && (
-                            <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                                Have an invite code?{' '}
-                                <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
-                                    Sign up for an account
-                                </Link>
-                                .
-                            </Typography>
-                        )}
-                    </Stack>
-                    <form onSubmit={doLogin}>
-                        <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
-                            <Box sx={{ p: 0 }}>
-                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                    <Typography>
-                                        Email<span style={{ color: 'red' }}>&nbsp;*</span>
-                                    </Typography>
-                                    <div style={{ flexGrow: 1 }}></div>
-                                </div>
-                                <Input
-                                    inputParam={usernameInput}
-                                    onChange={(newValue) => setUsernameVal(newValue)}
-                                    value={usernameVal}
-                                    showDialog={false}
-                                />
-                            </Box>
-                            <Box sx={{ p: 0 }}>
-                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                    <Typography>
-                                        Password<span style={{ color: 'red' }}>&nbsp;*</span>
-                                    </Typography>
-                                    <div style={{ flexGrow: 1 }}></div>
-                                </div>
-                                <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
-                                <Typography variant='body2' sx={{ color: theme.palette.grey[600], mt: 1, textAlign: 'right' }}>
-                                    <Link style={{ color: theme.palette.primary.main }} to='/forgot-password'>
-                                        Forgot password?
-                                    </Link>
-                                </Typography>
-                            </Box>
-                            <LoadingButton loading={loading} variant='contained' style={{ height: 40, marginRight: 5 }} type='submit'>
-                                Login
-                            </LoadingButton>
-                            {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
-                            {configuredSsoProviders &&
-                                configuredSsoProviders.map(
-                                    (ssoProvider) =>
-                                        //https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-branding-in-apps
-                                        ssoProvider === 'azure' && (
-                                            <Button
-                                                key={ssoProvider}
-                                                variant='outlined'
-                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
-                                                onClick={() => signInWithSSO(ssoProvider)}
-                                                startIcon={
-                                                    <Icon>
-                                                        <img src={AzureSSOLoginIcon} alt={'MicrosoftSSO'} width={20} height={20} />
-                                                    </Icon>
-                                                }
-                                            >
-                                                Sign In With Microsoft
-                                            </Button>
-                                        )
-                                )}
-                            {configuredSsoProviders &&
-                                configuredSsoProviders.map(
-                                    (ssoProvider) =>
-                                        ssoProvider === 'google' && (
-                                            <Button
-                                                key={ssoProvider}
-                                                variant='outlined'
-                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
-                                                onClick={() => signInWithSSO(ssoProvider)}
-                                                startIcon={
-                                                    <Icon>
-                                                        <img src={GoogleSSOLoginIcon} alt={'GoogleSSO'} width={20} height={20} />
-                                                    </Icon>
-                                                }
-                                            >
-                                                Sign In With Google
-                                            </Button>
-                                        )
-                                )}
-                            {configuredSsoProviders &&
-                                configuredSsoProviders.map(
-                                    (ssoProvider) =>
-                                        ssoProvider === 'auth0' && (
-                                            <Button
-                                                key={ssoProvider}
-                                                variant='outlined'
-                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
-                                                onClick={() => signInWithSSO(ssoProvider)}
-                                                startIcon={
-                                                    <Icon>
-                                                        <img src={Auth0SSOLoginIcon} alt={'Auth0SSO'} width={20} height={20} />
-                                                    </Icon>
-                                                }
-                                            >
-                                                Sign In With Auth0 by Okta
-                                            </Button>
-                                        )
-                                )}
-                            {configuredSsoProviders &&
-                                configuredSsoProviders.map(
-                                    (ssoProvider) =>
-                                        ssoProvider === 'github' && (
-                                            <Button
-                                                key={ssoProvider}
-                                                variant='outlined'
-                                                style={{ height: 45, marginRight: 5, lineHeight: 0 }}
-                                                onClick={() => signInWithSSO(ssoProvider)}
-                                                startIcon={
-                                                    <Icon>
-                                                        <img src={GithubSSOLoginIcon} alt={'GithubSSO'} width={20} height={20} />
-                                                    </Icon>
-                                                }
-                                            >
-                                                Sign In With Github
-                                            </Button>
-                                        )
-                                )}
-                        </Stack>
-                    </form>
+            {!organizationSlug && (
+                <Box sx={{ alignSelf: 'center' }}>
+                    <Logo variant='dark' size={30} />
+                </Box>
+            )}
+            {successMessage && (
+                <Alert variant='filled' severity='success' onClose={() => setSuccessMessage('')}>
+                    {successMessage}
+                </Alert>
+            )}
+            {authRateLimitError && (
+                <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                    {authRateLimitError}
+                </Alert>
+            )}
+            {authError && (
+                <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                    {authError}
+                </Alert>
+            )}
+            {showResendButton && (
+                <Stack sx={{ gap: 1 }}>
+                    <Button variant='text' onClick={handleResendVerification}>
+                        Resend Verification Email
+                    </Button>
                 </Stack>
-            </MainCard>
+            )}
+            <Stack sx={{ gap: 2, textAlign: organizationSlug ? 'left' : 'center' }}>
+                {organizationSlug && (
+                    <Box
+                        sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            alignSelf: 'flex-start',
+                            py: 1,
+                            px: 1,
+                            pr: 1.5,
+                            border: `1px solid ${theme.palette.divider}`,
+                            borderRadius: '12px'
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '8px',
+                                background: theme.palette.primary.light,
+                                color: theme.palette.primary.main,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                                fontWeight: 500
+                            }}
+                        >
+                            {orgDisplayName.charAt(0)}
+                        </Box>
+                        <Typography variant='body2'>{orgDisplayName}</Typography>
+                        <Typography variant='caption' sx={{ fontFamily: 'ui-monospace, Menlo, monospace', color: theme.palette.grey[600] }}>
+                            /{organizationSlug}
+                        </Typography>
+                    </Box>
+                )}
+                <Typography sx={{ fontSize: '32px', lineHeight: 1.25, fontWeight: 500, color: theme.palette.primary.dark }}>
+                    {organizationSlug ? 'Sign in' : 'Welcome back'}
+                </Typography>
+                {!organizationSlug && (
+                    <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                        Enter your email and we&apos;ll take you to your organisation.
+                    </Typography>
+                )}
+                {isCloud && (
+                    <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                        Don&apos;t have an account?{' '}
+                        <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
+                            Sign up for free
+                        </Link>
+                        .
+                    </Typography>
+                )}
+                {isEnterpriseLicensed && (
+                    <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                        Have an invite code?{' '}
+                        <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
+                            {organizationSlug ? 'Join this organisation' : 'Sign up for an account'}
+                        </Link>
+                        .
+                    </Typography>
+                )}
+            </Stack>
+            <form onSubmit={doLogin}>
+                <Stack sx={{ width: '100%', gap: 3 }}>
+                    <Box>
+                        <Typography sx={{ mb: 1 }}>
+                            Email<span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
+                        </Typography>
+                        <Input
+                            inputParam={usernameInput}
+                            onChange={(newValue) => setUsernameVal(newValue)}
+                            value={usernameVal}
+                            showDialog={false}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack direction='row' sx={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
+                            <Typography>
+                                Password<span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
+                            </Typography>
+                            <Link style={{ color: theme.palette.primary.main, fontSize: '14px' }} to='/forgot-password'>
+                                Forgot password?
+                            </Link>
+                        </Stack>
+                        <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
+                    </Box>
+                    <LoadingButton fullWidth loading={loading} variant='contained' style={{ height: 52, borderRadius: 12 }} type='submit'>
+                        Sign in
+                    </LoadingButton>
+                    {configuredSsoProviders && configuredSsoProviders.length > 0 && (
+                        <Divider sx={{ width: '100%' }}>
+                            <Typography
+                                variant='caption'
+                                sx={{ letterSpacing: '0.08em', textTransform: 'uppercase', color: theme.palette.grey[600] }}
+                            >
+                                Or continue with
+                            </Typography>
+                        </Divider>
+                    )}
+                    {configuredSsoProviders && configuredSsoProviders.length > 0 && (
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                            {configuredSsoProviders.map(
+                                (ssoProvider) =>
+                                    //https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-branding-in-apps
+                                    ssoProvider === 'azure' && (
+                                        <Button
+                                            key={ssoProvider}
+                                            variant='outlined'
+                                            style={{ height: 48, borderRadius: 12 }}
+                                            onClick={() => signInWithSSO(ssoProvider)}
+                                            startIcon={
+                                                <Icon>
+                                                    <img src={AzureSSOLoginIcon} alt={'MicrosoftSSO'} width={20} height={20} />
+                                                </Icon>
+                                            }
+                                        >
+                                            Microsoft
+                                        </Button>
+                                    )
+                            )}
+                            {configuredSsoProviders.map(
+                                (ssoProvider) =>
+                                    ssoProvider === 'google' && (
+                                        <Button
+                                            key={ssoProvider}
+                                            variant='outlined'
+                                            style={{ height: 48, borderRadius: 12 }}
+                                            onClick={() => signInWithSSO(ssoProvider)}
+                                            startIcon={
+                                                <Icon>
+                                                    <img src={GoogleSSOLoginIcon} alt={'GoogleSSO'} width={20} height={20} />
+                                                </Icon>
+                                            }
+                                        >
+                                            Google
+                                        </Button>
+                                    )
+                            )}
+                            {configuredSsoProviders.map(
+                                (ssoProvider) =>
+                                    ssoProvider === 'auth0' && (
+                                        <Button
+                                            key={ssoProvider}
+                                            variant='outlined'
+                                            style={{ height: 48, borderRadius: 12 }}
+                                            onClick={() => signInWithSSO(ssoProvider)}
+                                            startIcon={
+                                                <Icon>
+                                                    <img src={Auth0SSOLoginIcon} alt={'Auth0SSO'} width={20} height={20} />
+                                                </Icon>
+                                            }
+                                        >
+                                            Auth0
+                                        </Button>
+                                    )
+                            )}
+                            {configuredSsoProviders.map(
+                                (ssoProvider) =>
+                                    ssoProvider === 'github' && (
+                                        <Button
+                                            key={ssoProvider}
+                                            variant='outlined'
+                                            style={{ height: 48, borderRadius: 12 }}
+                                            onClick={() => signInWithSSO(ssoProvider)}
+                                            startIcon={
+                                                <Icon>
+                                                    <img src={GithubSSOLoginIcon} alt={'GithubSSO'} width={20} height={20} />
+                                                </Icon>
+                                            }
+                                        >
+                                            GitHub
+                                        </Button>
+                                    )
+                            )}
+                        </Box>
+                    )}
+                </Stack>
+            </form>
+            {!organizationSlug && isEnterpriseLicensed && (
+                <>
+                    <Divider />
+                    <Stack sx={{ gap: 1, textAlign: 'center' }}>
+                        <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                            No organisation yet?
+                        </Typography>
+                        <Link style={{ color: theme.palette.primary.main, fontWeight: 500 }} to='/organization-setup'>
+                            Create your organisation
+                        </Link>
+                    </Stack>
+                </>
+            )}
         </>
+    )
+
+    return organizationSlug ? (
+        <AuthSplitShell
+            headline='Every consequential action still waits for a person.'
+            subtitle='Autonomous, review, approval — the three tiers are built into the run, not bolted on after.'
+            panelExtra={
+                <Stack sx={{ gap: 1.5 }}>
+                    {GOVERNANCE_TIERS.map((tier) => (
+                        <Stack key={tier.label} direction='row' sx={{ alignItems: 'center', gap: 1.5 }}>
+                            <Box
+                                sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    px: 1.25,
+                                    py: 0.5,
+                                    borderRadius: '8px',
+                                    background: tier.bg,
+                                    color: tier.color,
+                                    fontSize: '12px',
+                                    fontWeight: 500,
+                                    letterSpacing: '0.04em'
+                                }}
+                            >
+                                {tier.label}
+                            </Box>
+                            <Typography sx={{ fontSize: '15px', lineHeight: 1.5, fontWeight: 300, color: '#fff' }}>
+                                {tier.description}
+                            </Typography>
+                        </Stack>
+                    ))}
+                </Stack>
+            }
+        >
+            {formBody}
+        </AuthSplitShell>
+    ) : (
+        <AuthCenteredShell>{formBody}</AuthCenteredShell>
     )
 }
 
