@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import DatePicker from 'react-datepicker'
+import { useSearchParams } from 'react-router-dom'
 import 'react-datepicker/dist/react-datepicker.css'
 
 // material-ui
@@ -55,6 +56,8 @@ const AgentExecutions = () => {
     const deleteExecutionsApi = useApi(executionsApi.deleteExecutions)
     const getExecutionByIdApi = useApi(executionsApi.getExecutionById)
 
+    const [searchParams] = useSearchParams()
+
     const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
     const [executions, setExecutions] = useState([])
@@ -63,11 +66,13 @@ const AgentExecutions = () => {
     const [selectedMetadata, setSelectedMetadata] = useState({})
     const [selectedExecutionIds, setSelectedExecutionIds] = useState([])
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
+    // Pre-filled from ?agentflowId=... when arriving via the Agents page's "Executions" column
+    // link — a plain query param, not a new filter mechanism.
     const [filters, setFilters] = useState({
         state: '',
         startDate: null,
         endDate: null,
-        agentflowId: '',
+        agentflowId: searchParams.get('agentflowId') || '',
         agentflowName: '',
         sessionId: ''
     })
@@ -173,7 +178,7 @@ const AgentExecutions = () => {
     }
 
     useEffect(() => {
-        getAllExecutions.request({ page: 1, limit: DEFAULT_ITEMS_PER_PAGE })
+        applyFilters(1, pageLimit)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -236,7 +241,7 @@ const AgentExecutions = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader title='Agent Executions' description='Monitor and manage agentflows executions' />
+                    <ViewHeader title='Agent Executions' description='Monitor and manage agent executions' />
 
                     {/* Filter Section */}
                     <Box sx={{ mb: 2, width: '100%' }}>
@@ -319,7 +324,7 @@ const AgentExecutions = () => {
                             <Grid sx={{ ml: -1 }} item xs={12} md={2}>
                                 <TextField
                                     fullWidth
-                                    label='Agentflow'
+                                    label='Agent'
                                     value={filters.agentflowName}
                                     onChange={(e) => handleFilterChange('agentflowName', e.target.value)}
                                     size='small'
@@ -386,12 +391,11 @@ const AgentExecutions = () => {
                                 onSelectionChange={handleExecutionSelectionChange}
                                 onExecutionRowClick={(execution) => {
                                     setOpenDrawer(true)
-                                    const executionDetails =
-                                        typeof execution.executionData === 'string'
-                                            ? JSON.parse(execution.executionData)
-                                            : execution.executionData
-                                    setSelectedExecutionData(executionDetails)
+                                    // The list row no longer carries executionData (trimmed for payload size) —
+                                    // show what we already know immediately, fetch the full trace by id.
+                                    setSelectedExecutionData([])
                                     setSelectedMetadata(omit(execution, ['executionData']))
+                                    getExecutionByIdApi.request(execution.id)
                                 }}
                             />
 
@@ -404,6 +408,7 @@ const AgentExecutions = () => {
                                 open={openDrawer}
                                 execution={selectedExecutionData}
                                 metadata={selectedMetadata}
+                                loading={getExecutionByIdApi.loading}
                                 onClose={() => setOpenDrawer(false)}
                                 onProceedSuccess={() => {
                                     setOpenDrawer(false)

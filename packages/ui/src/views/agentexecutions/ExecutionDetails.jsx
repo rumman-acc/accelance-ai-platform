@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 
 // MUI
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView'
-import { Typography, Box, Drawer, Chip, Button, Tooltip } from '@mui/material'
+import { Typography, Box, Drawer, Chip, Button, Tooltip, CircularProgress } from '@mui/material'
 import { styled, alpha } from '@mui/material/styles'
 import { useTreeItem2 } from '@mui/x-tree-view/useTreeItem2'
 import {
@@ -293,7 +293,17 @@ const MIN_DRAWER_WIDTH = 400
 const DEFAULT_DRAWER_WIDTH = window.innerWidth - 400
 const MAX_DRAWER_WIDTH = window.innerWidth
 
-export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose, onProceedSuccess, onUpdateSharing, onRefresh }) => {
+export const ExecutionDetails = ({
+    open,
+    isPublic,
+    execution,
+    metadata,
+    onClose,
+    onProceedSuccess,
+    onUpdateSharing,
+    onRefresh,
+    loading
+}) => {
     const [drawerWidth, setDrawerWidth] = useState(Math.min(DEFAULT_DRAWER_WIDTH, MAX_DRAWER_WIDTH))
     const [executionTree, setExecution] = useState([])
     const [expandedItems, setExpandedItems] = useState([])
@@ -747,7 +757,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                                 sx={{ pl: 1 }}
                                 icon={<IconExternalLink size={15} />}
                                 variant='outlined'
-                                label={localMetadata?.agentflow?.name || localMetadata?.agentflow?.id || 'Go to AgentFlow'}
+                                label={localMetadata?.agentflow?.name || localMetadata?.agentflow?.id || 'Go to Agent'}
                                 className={'button'}
                                 onClick={() => window.open(`/v2/agentcanvas/${localMetadata?.agentflow?.id}`, '_blank')}
                             />
@@ -814,6 +824,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                             </Typography>
                             <IconButton
                                 onClick={() => onRefresh(localMetadata?.id)}
+                                disabled={loading}
                                 size='small'
                                 sx={{
                                     color: theme.palette.text.primary,
@@ -823,21 +834,27 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                                 }}
                                 title='Refresh execution data'
                             >
-                                <IconRefresh size={20} />
+                                {loading ? <IconLoader size={20} className='spin-animation' /> : <IconRefresh size={20} />}
                             </IconButton>
                         </Box>
                     </Box>
                 </Box>
-                <RichTreeView
-                    expandedItems={expandedItems}
-                    onExpandedItemsChange={handleExpandedItemsChange}
-                    selectedItems={selectedItem ? [selectedItem.id] : []}
-                    onSelectedItemsChange={handleNodeSelect}
-                    items={executionTree}
-                    slots={{
-                        item: CustomTreeItem
-                    }}
-                />
+                {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress size={28} />
+                    </Box>
+                ) : (
+                    <RichTreeView
+                        expandedItems={expandedItems}
+                        onExpandedItemsChange={handleExpandedItemsChange}
+                        selectedItems={selectedItem ? [selectedItem.id] : []}
+                        onSelectedItemsChange={handleNodeSelect}
+                        items={executionTree}
+                        slots={{
+                            item: CustomTreeItem
+                        }}
+                    />
+                )}
             </Box>
             <Box
                 sx={{
@@ -846,7 +863,11 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                     overflow: 'auto'
                 }}
             >
-                {selectedItem && selectedItem.data ? (
+                {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress size={28} />
+                    </Box>
+                ) : selectedItem && selectedItem.data ? (
                     <NodeExecutionDetails
                         data={selectedItem.data}
                         label={selectedItem.label}
@@ -983,7 +1004,8 @@ ExecutionDetails.propTypes = {
     onClose: PropTypes.func,
     onProceedSuccess: PropTypes.func,
     onUpdateSharing: PropTypes.func,
-    onRefresh: PropTypes.func
+    onRefresh: PropTypes.func,
+    loading: PropTypes.bool
 }
 
 ExecutionDetails.displayName = 'ExecutionDetails'
