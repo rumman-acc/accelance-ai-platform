@@ -10,7 +10,26 @@ import { AgentStatus } from '@/design-system/components/ui/agent-status'
 import { ApprovalCard } from '@/design-system/components/ui/approval-card'
 import { Field, Input } from '@/design-system/components/ui/input'
 import { cn } from '@/lib/utils'
-import AccelanceLogo from '@/assets/images/accelance-logo-blue.png'
+
+// Envoy mark "2a — Courier E", solid color (small-size treatment, not the gradient hero variant).
+const EnvoyLogo = ({ className, textClassName }) => (
+    <span className={cn('inline-flex items-center gap-1.5', className)}>
+        <svg width='1em' height='1em' viewBox='0 0 96 96' fill='none' aria-hidden='true' className='shrink-0'>
+            <path d='M20 24 H70' stroke='#0F74BD' strokeWidth='14' strokeLinecap='round' />
+            <path d='M20 48 H46' stroke='#13BA2F' strokeWidth='14' strokeLinecap='round' />
+            <path d='M66 48 H82' stroke='#13BA2F' strokeWidth='14' strokeLinecap='round' />
+            <path d='M20 72 H70' stroke='#0F74BD' strokeWidth='14' strokeLinecap='round' />
+        </svg>
+        <span className={cn('font-medium tracking-tight', textClassName)} style={{ color: '#062667' }}>
+            envoy
+        </span>
+    </span>
+)
+
+EnvoyLogo.propTypes = {
+    className: PropTypes.string,
+    textClassName: PropTypes.string
+}
 
 // Implements the "Org Sign-up Landing Page" template from the accelance design system
 // (Claude Design project 019dd881-a2db-7d6c-921c-ac19b85cf9e3,
@@ -200,7 +219,7 @@ const SignupLandingPage = () => {
             <header className='sticky top-0 z-20 border-b border-border bg-white/95 backdrop-blur'>
                 <div className='mx-auto flex max-w-grid items-center justify-between gap-3 px-3 py-2'>
                     <Link to='/get-started'>
-                        <img src={AccelanceLogo} alt='accelance' className='h-5' />
+                        <EnvoyLogo className='text-[20px]' textClassName='text-[20px]' />
                     </Link>
                     <nav className='flex items-center gap-3 text-small font-bold'>
                         <a href='#platform' className='text-body no-underline hover:text-primary hover:underline'>
@@ -376,7 +395,7 @@ const SignupLandingPage = () => {
             <footer className='border-t border-border bg-white p-3'>
                 <div className='mx-auto flex max-w-grid flex-wrap items-center justify-between gap-2 text-small'>
                     <Link to='/get-started'>
-                        <img src={AccelanceLogo} alt='accelance' className='h-4' />
+                        <EnvoyLogo className='text-[16px]' textClassName='text-[16px]' />
                     </Link>
                     <span>
                         <a href='mailto:support@accelance.io' className='text-body no-underline hover:text-primary hover:underline'>
