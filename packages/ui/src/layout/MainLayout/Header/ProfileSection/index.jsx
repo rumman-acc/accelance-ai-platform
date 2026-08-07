@@ -55,8 +55,8 @@ import useApi from '@/hooks/useApi'
 import { getErrorMessage } from '@/utils/errorHandler'
 
 const dataToExport = [
-    'Agentflows',
-    'Agentflows V2',
+    'Agents',
+    'Agents V2',
     'Assistants Custom',
     'Assistants OpenAI',
     'Assistants Azure',
@@ -306,8 +306,8 @@ const ProfileSection = ({ handleLogout }) => {
 
     const onExport = (data) => {
         const body = {}
-        if (data.includes('Agentflows')) body.agentflow = true
-        if (data.includes('Agentflows V2')) body.agentflowv2 = true
+        if (data.includes('Agents')) body.agentflow = true
+        if (data.includes('Agents V2')) body.agentflowv2 = true
         if (data.includes('Assistants Custom')) body.assistantCustom = true
         if (data.includes('Assistants OpenAI')) body.assistantOpenAI = true
         if (data.includes('Assistants Azure')) body.assistantAzure = true

@@ -60,7 +60,7 @@ const PLATFORM_PILLARS = [
     {
         icon: 'Sitemap',
         title: 'Multiple orchestration paradigms',
-        body: 'A branching Agentflow with loops and human-input checkpoints, a supervisor/worker multi-agent pattern, and an explicit state-machine sequential system — plus single-agent modes and 11 classic chain types. Or describe the process in plain language and generate the agentflow.'
+        body: 'A branching Agent with loops and human-input checkpoints, a supervisor/worker multi-agent pattern, and an explicit state-machine sequential system — plus single-agent modes and 11 classic chain types. Or describe the process in plain language and generate the agent.'
     },
     {
         icon: 'Cpu',

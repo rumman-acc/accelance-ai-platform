@@ -313,7 +313,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         // flow, which is no longer supported. Existing V1 flows remain viewable/editable/runnable.
         if (isAgentCanvas && chatflow.type === 'MULTIAGENT') {
             enqueueSnackbar({
-                message: 'Duplicating V1 Agentflows is no longer supported. Please rebuild this flow using the current Agentflow builder.',
+                message: 'Duplicating V1 Agents is no longer supported. Please rebuild this flow using the current Agent builder.',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

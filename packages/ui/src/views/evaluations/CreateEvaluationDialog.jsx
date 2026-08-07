@@ -544,7 +544,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             value='Agentflow v2'
                                             onChange={onChangeFlowType}
                                         />{' '}
-                                        Agentflows (v2)
+                                        Agents (v2)
                                         <Checkbox
                                             defaultChecked
                                             size='small'
@@ -658,7 +658,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             </DialogContent>
             <DialogActions style={{ justifyContent: 'space-between', marginBottom: 10 }}>
                 {activeStep > 0 && (
-                    <IconButton sx={{ ml: 2 }} color='secondary' title='Previous Step' onClick={() => goPrev(activeStep)}>
+                    <IconButton sx={{ ml: 2 }} color='primary' title='Previous Step' onClick={() => goPrev(activeStep)}>
                         <IconArrowLeft />
                     </IconButton>
                 )}
