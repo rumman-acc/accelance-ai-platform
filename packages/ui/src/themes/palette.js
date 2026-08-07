@@ -99,8 +99,10 @@ export default function themePalette(theme) {
         canvasHeader: {
             deployLight: theme.colors?.primaryLight,
             deployDark: theme.colors?.primaryDark,
-            saveLight: theme.colors?.secondaryLight,
-            saveDark: theme.colors?.secondaryDark,
+            // Was wired to secondaryLight/Dark (the Envoy brand green ramp) — every canvas Save
+            // button rendered green instead of the brand blue used by every other header avatar.
+            saveLight: theme.colors?.primaryLight,
+            saveDark: theme.colors?.primaryDark,
             settingsLight: theme.colors?.grey300,
             settingsDark: theme.colors?.grey700
         },
