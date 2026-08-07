@@ -78,14 +78,16 @@ const OrganizationSetupPage = () => {
         label: 'Password',
         name: 'password',
         type: 'password',
-        placeholder: '********'
+        placeholder: '********',
+        enablePasswordToggle: true
     }
 
     const confirmPasswordInput = {
         label: 'Confirm Password',
         name: 'confirmPassword',
         type: 'password',
-        placeholder: '********'
+        placeholder: '********',
+        enablePasswordToggle: true
     }
 
     const emailInput = {
@@ -401,9 +403,20 @@ const OrganizationSetupPage = () => {
                                 onChange={(newValue) => setConfirmPassword(newValue)}
                                 value={confirmPassword}
                             />
+                            {confirmPassword && password !== confirmPassword && (
+                                <Typography variant='caption' sx={{ color: theme.palette.error.main }}>
+                                    Passwords don&apos;t match
+                                </Typography>
+                            )}
                         </Box>
                         <Stack sx={{ gap: 2 }}>
-                            <StyledButton fullWidth variant='contained' style={{ height: 52, borderRadius: 12 }} type='submit'>
+                            <StyledButton
+                                fullWidth
+                                variant='contained'
+                                style={{ height: 52, borderRadius: 12 }}
+                                type='submit'
+                                disabled={!!confirmPassword && password !== confirmPassword}
+                            >
                                 {isEnterpriseLicensed ? 'Create organisation' : 'Sign Up'}
                             </StyledButton>
                             <Typography variant='body2' sx={{ color: theme.palette.grey[600], textAlign: 'center' }}>
