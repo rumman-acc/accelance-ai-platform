@@ -146,7 +146,10 @@ export default function componentStyleOverrides(theme) {
                 input: {
                     color: theme.textDark,
                     '&::placeholder': {
-                        color: theme.darkTextSecondary,
+                        // Light mode: darkTextSecondary (grey500, #9e9e9e) on the input's near-white
+                        // background (grey50) is under 3:1 contrast — barely legible. Dark mode's
+                        // value is untouched (separate, pre-existing behavior, no complaint there).
+                        color: theme?.customization?.isDarkMode ? theme.darkTextSecondary : theme.colors?.grey600,
                         fontSize: '0.875rem'
                     },
                     '&.Mui-disabled': {
