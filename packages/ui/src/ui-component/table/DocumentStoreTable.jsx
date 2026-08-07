@@ -71,7 +71,7 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
     return (
         <>
             <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                <Table sx={{ minWidth: 650 }} size='small' aria-label='document_store_table'>
+                <Table stickyHeader sx={{ minWidth: 650 }} size='small' aria-label='document_store_table'>
                     <TableHead
                         sx={{
                             backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
