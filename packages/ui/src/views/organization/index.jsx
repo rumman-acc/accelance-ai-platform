@@ -50,7 +50,7 @@ const OrgSetupSchema = z
     })
 
 const DAY_ONE_FEATURES = [
-    'Three orchestration engines — agentflows, supervisor/worker, sequential',
+    'Three orchestration engines — agents, supervisor/worker, sequential',
     '29 model providers, 16 vector stores, MCP tool servers',
     'Workspaces, custom roles and an approval checkpoint on every flow'
 ]
@@ -264,7 +264,7 @@ const OrganizationSetupPage = () => {
                                             width: '6px',
                                             height: '6px',
                                             borderRadius: '3px',
-                                            background: theme.palette.secondary.main,
+                                            background: theme.palette.primary.main,
                                             flexShrink: 0
                                         }}
                                     />

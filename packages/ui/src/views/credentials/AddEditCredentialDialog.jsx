@@ -507,7 +507,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
 
                 {!shared && componentCredential && componentCredential.name && componentCredential.name.includes('OAuth2') && (
                     <Box sx={{ p: 2 }}>
-                        <Button variant='contained' color='secondary' onClick={() => setOAuth2()}>
+                        <Button variant='contained' color='primary' onClick={() => setOAuth2()}>
                             Authenticate
                         </Button>
                     </Box>

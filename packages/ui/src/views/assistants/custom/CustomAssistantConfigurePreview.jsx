@@ -862,7 +862,7 @@ const CustomAssistantConfigurePreview = () => {
                                                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
                                                     <StyledFab
                                                         size='small'
-                                                        color='secondary'
+                                                        color='primary'
                                                         aria-label='back'
                                                         title='Back'
                                                         onClick={() => navigate(-1)}
@@ -1023,7 +1023,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         width: 25
                                                     }}
                                                     title='Expand'
-                                                    color='secondary'
+                                                    color='primary'
                                                     onClick={() => onExpandDialogClicked(customAssistantInstruction)}
                                                 >
                                                     <IconArrowsMaximize />

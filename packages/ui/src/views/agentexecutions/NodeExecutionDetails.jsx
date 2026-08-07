@@ -312,7 +312,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         icon={<IconClock size={17} />}
                         label={`${(data.output.timeMetadata.delta / 1000).toFixed(2)} seconds`}
                         variant='contained'
-                        color='secondary'
+                        color='primary'
                         size='small'
                         sx={{ ml: 1, '& .MuiChip-icon': { mr: 0.2, ml: 1 } }}
                     />

@@ -211,7 +211,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                     sx={{ position: 'absolute', right: 20, top: 20 }}
                     ref={anchorRef}
                     size='small'
-                    color='secondary'
+                    color='primary'
                     aria-label='chat'
                     title='Chat'
                     onClick={toggleAgentCanvasPanel}
@@ -239,7 +239,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 sx={{ position: 'absolute', right: 20, top: 20 }}
                 ref={anchorRef}
                 size='small'
-                color='secondary'
+                color='primary'
                 aria-label='chat'
                 title='Chat'
                 onClick={handleToggle}

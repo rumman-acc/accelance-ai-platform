@@ -334,10 +334,10 @@ const EvalsEvaluation = () => {
                                 sx={{
                                     borderRadius: 1,
                                     height: '100%',
-                                    color: theme.palette.secondary.main,
+                                    color: theme.palette.primary.main,
                                     '&:hover': {
                                         backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                        color: theme.palette.secondary.dark
+                                        color: theme.palette.primary.dark
                                     }
                                 }}
                                 onClick={onRefresh}

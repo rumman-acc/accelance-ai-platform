@@ -318,7 +318,7 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
                                 {inputParam.hint && (
                                     <Button
                                         sx={{ p: 0, px: 2 }}
-                                        color='secondary'
+                                        color='primary'
                                         variant='text'
                                         onClick={() => {
                                             onInputHintDialogClicked(inputParam.hint)

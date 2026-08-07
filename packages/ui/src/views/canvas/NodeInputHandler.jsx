@@ -948,7 +948,7 @@ const NodeInputHandler = ({
                                         width: 25
                                     }}
                                     title={inputParam.hint.label}
-                                    color='secondary'
+                                    color='primary'
                                     onClick={() => onInputHintDialogClicked(inputParam.hint)}
                                 >
                                     <IconBulb />
@@ -957,7 +957,7 @@ const NodeInputHandler = ({
                             {inputParam.hint && isAdditionalParams && (
                                 <Button
                                     sx={{ p: 0, px: 2 }}
-                                    color='secondary'
+                                    color='primary'
                                     variant='text'
                                     onClick={() => {
                                         onInputHintDialogClicked(inputParam.hint)
@@ -980,7 +980,7 @@ const NodeInputHandler = ({
                                         width: 25
                                     }}
                                     size='small'
-                                    color='secondary'
+                                    color='primary'
                                     onClick={() => generateDocStoreToolDesc(data.inputs['documentStore'])}
                                 >
                                     <IconWand />
@@ -995,7 +995,7 @@ const NodeInputHandler = ({
                                         ml: 0.5
                                     }}
                                     size='small'
-                                    color='secondary'
+                                    color='primary'
                                     onClick={() => generateInstruction()}
                                 >
                                     <IconWand />

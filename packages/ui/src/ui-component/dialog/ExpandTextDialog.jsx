@@ -102,7 +102,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                                 {inputParam.hint && (
                                     <Button
                                         sx={{ p: 0, px: 2 }}
-                                        color='secondary'
+                                        color='primary'
                                         variant='text'
                                         onClick={() => {
                                             onInputHintDialogClicked(inputParam.hint)
@@ -152,11 +152,11 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                         sx={{
                             mt: 2,
                             '&:hover': {
-                                backgroundColor: theme.palette.secondary.main,
+                                backgroundColor: theme.palette.primary.main,
                                 backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
                             },
                             '&:disabled': {
-                                backgroundColor: theme.palette.secondary.main,
+                                backgroundColor: theme.palette.primary.main,
                                 backgroundImage: `linear-gradient(rgb(0 0 0/50%) 0 0)`
                             }
                         }}

@@ -58,7 +58,7 @@ const ScheduleHistoryFAB = ({ chatflowid, onOpenChange }) => {
                         }
                     }}
                 >
-                    <StyledFab size='small' color='secondary' aria-label='schedule-history' onClick={handleToggle}>
+                    <StyledFab size='small' color='primary' aria-label='schedule-history' onClick={handleToggle}>
                         <IconHistory />
                     </StyledFab>
                 </Badge>

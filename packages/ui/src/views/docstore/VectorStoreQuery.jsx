@@ -268,7 +268,7 @@ const VectorStoreQuery = () => {
                         <PermissionButton
                             permissionId={'documentStores:upsert-config'}
                             variant='outlined'
-                            color='secondary'
+                            color='primary'
                             sx={{ height: '100%' }}
                             startIcon={<IconDeviceFloppy />}
                             onClick={saveConfig}

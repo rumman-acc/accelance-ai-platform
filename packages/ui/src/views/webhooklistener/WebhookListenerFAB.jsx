@@ -61,7 +61,7 @@ const WebhookListenerFAB = ({ chatflowid, onOpenChange }) => {
                         }
                     }}
                 >
-                    <StyledFab size='small' color='secondary' aria-label='webhook-listener' onClick={handleToggle}>
+                    <StyledFab size='small' color='primary' aria-label='webhook-listener' onClick={handleToggle}>
                         <IconWebhook size={18} stroke={2.2} />
                     </StyledFab>
                 </Badge>

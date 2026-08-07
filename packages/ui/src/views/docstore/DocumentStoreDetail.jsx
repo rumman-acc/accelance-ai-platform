@@ -508,7 +508,7 @@ const DocumentStoreDetails = () => {
                                 aria-expanded={open ? 'true' : undefined}
                                 variant='outlined'
                                 disableElevation
-                                color='secondary'
+                                color='primary'
                                 onClick={handleClick}
                                 sx={{ minWidth: 150 }}
                                 endIcon={<KeyboardArrowDownIcon />}

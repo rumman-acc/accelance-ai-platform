@@ -1057,7 +1057,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                 {dialogProps.type === 'EDIT' && (
                     <StyledPermissionButton
                         permissionId={'assistants:create,assistants:update'}
-                        color='secondary'
+                        color='primary'
                         variant='contained'
                         onClick={() => onSyncClick()}
                     >

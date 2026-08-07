@@ -28,7 +28,7 @@ const PasswordStrengthBar = ({ password }) => {
                         height: '3px',
                         flex: 1,
                         borderRadius: '2px',
-                        backgroundColor: (theme) => (i < strength ? theme.palette.secondary.main : theme.palette.grey[300])
+                        backgroundColor: (theme) => (i < strength ? theme.palette.primary.main : theme.palette.grey[300])
                     }}
                 />
             ))}

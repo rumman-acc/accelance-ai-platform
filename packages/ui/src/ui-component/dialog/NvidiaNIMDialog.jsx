@@ -413,7 +413,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                         Cancel
                     </Button>
                     {activeStep === 0 && (
-                        <Button onClick={handleNext} variant='outline' color='secondary'>
+                        <Button onClick={handleNext} variant='outline' color='primary'>
                             Next
                         </Button>
                     )}

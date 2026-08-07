@@ -301,7 +301,7 @@ const EvalDatasetRows = () => {
                             <StyledPermissionButton
                                 permissionId={'datasets:create,datasets:update'}
                                 variant='outlined'
-                                color='secondary'
+                                color='primary'
                                 sx={{ height: '100%' }}
                                 onClick={uploadCSV}
                                 startIcon={<IconUpload />}

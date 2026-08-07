@@ -26,11 +26,11 @@ const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
                             ...theme.typography.commonAvatar,
                             ...theme.typography.mediumAvatar,
                             transition: 'all .2s ease-in-out',
-                            background: theme.palette.secondary.light,
-                            color: theme.palette.secondary.dark,
+                            background: theme.palette.primary.light,
+                            color: theme.palette.primary.dark,
                             '&:hover': {
-                                background: theme.palette.secondary.dark,
-                                color: theme.palette.secondary.light
+                                background: theme.palette.primary.main,
+                                color: theme.palette.primary.light
                             }
                         }}
                         color='inherit'
@@ -56,7 +56,7 @@ const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
             <Available permission={'chatflows:create,agentflows.create'}>
                 <Box>
                     <StyledButton
-                        color='secondary'
+                        color='primary'
                         variant='contained'
                         title='Use Chatflow'
                         onClick={() => onChatflowCopy(flowData)}

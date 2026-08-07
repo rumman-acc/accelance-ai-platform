@@ -459,7 +459,7 @@ const LoginActivity = () => {
                                                                                     height: '100%',
                                                                                     borderRadius: '50%',
                                                                                     objectFit: 'contain',
-                                                                                    color: theme.palette.secondary.dark
+                                                                                    color: theme.palette.grey[600]
                                                                                 }}
                                                                             />
                                                                         )}

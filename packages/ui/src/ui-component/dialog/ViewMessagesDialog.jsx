@@ -970,12 +970,12 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             aria-expanded={open ? 'true' : undefined}
                             variant={customization.isDarkMode ? 'contained' : 'outlined'}
                             disableElevation
-                            color='secondary'
+                            color='primary'
                             onClick={handleClick}
                             sx={{
                                 minWidth: 150,
                                 '&:hover': {
-                                    backgroundColor: customization.isDarkMode ? alpha(theme.palette.secondary.main, 0.8) : undefined
+                                    backgroundColor: customization.isDarkMode ? alpha(theme.palette.primary.main, 0.8) : undefined
                                 }
                             }}
                             endIcon={

@@ -539,7 +539,7 @@ const VectorStoreConfigure = () => {
                                         Object.keys(selectedVectorStoreProvider).length > 0) && (
                                         <Button
                                             variant='outlined'
-                                            color='secondary'
+                                            color='primary'
                                             sx={{
                                                 height: '100%'
                                             }}
@@ -656,7 +656,7 @@ const VectorStoreConfigure = () => {
                                                                             <IconButton
                                                                                 variant='outlined'
                                                                                 sx={{ ml: 1 }}
-                                                                                color='secondary'
+                                                                                color='primary'
                                                                                 onClick={showEmbeddingsList}
                                                                             >
                                                                                 <IconEditCircle />
@@ -774,7 +774,7 @@ const VectorStoreConfigure = () => {
                                                                             <IconButton
                                                                                 variant='outlined'
                                                                                 sx={{ ml: 1 }}
-                                                                                color='secondary'
+                                                                                color='primary'
                                                                                 onClick={showVectorStoreList}
                                                                             >
                                                                                 <IconEditCircle />
@@ -900,7 +900,7 @@ const VectorStoreConfigure = () => {
                                                                             <IconButton
                                                                                 variant='outlined'
                                                                                 sx={{ ml: 1 }}
-                                                                                color='secondary'
+                                                                                color='primary'
                                                                                 onClick={showRecordManagerList}
                                                                             >
                                                                                 <IconEditCircle />
