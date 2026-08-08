@@ -131,8 +131,8 @@ const Chatflows = () => {
                         onSearchChange={onSearchChange}
                         search={true}
                         searchPlaceholder='Search Name or Category'
-                        title='Chatbots'
-                        description='Build single-agent systems, chatbots and simple LLM flows'
+                        title='Agents'
+                        description='Single agents — retrieval, tools, memory, and a shareable chat widget'
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 1, maxHeight: 40 }}
@@ -218,7 +218,7 @@ const Chatflows = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Chatbots Yet</div>
+                            <div>No Agents Yet</div>
                         </Stack>
                     )}
                 </Stack>

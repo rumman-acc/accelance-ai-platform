@@ -37,9 +37,9 @@ import { IconLayoutGrid, IconList, IconPlus, IconX } from '@tabler/icons-react'
 // Matches control-tower/index.jsx's STAT_TILES filterStatus values — labels shown on the
 // clear-filter chip when arriving via a Control Tower stat-tile click (?health=...).
 const HEALTH_FILTER_LABELS = {
-    healthy: 'Healthy Agents',
-    runningNow: 'Agents Running Now',
-    needsAttention: 'Needs Attention Agents'
+    healthy: 'Healthy Agent Swarms',
+    runningNow: 'Agent Swarms Running Now',
+    needsAttention: 'Needs Attention Agent Swarms'
 }
 
 const Agentflows = () => {
@@ -235,8 +235,8 @@ const Agentflows = () => {
                         onSearchChange={onSearchChange}
                         search={true}
                         searchPlaceholder='Search Name or Category'
-                        title='Agents'
-                        description='Multi-agent systems'
+                        title='Agent Swarms'
+                        description='Multiple agents working together'
                     >
                         {healthFilter && (
                             <Chip
@@ -343,7 +343,7 @@ const Agentflows = () => {
                                     alt='AgentsEmptySVG'
                                 />
                             </Box>
-                            <div>No Agents Yet</div>
+                            <div>No Agent Swarms Yet</div>
                         </Stack>
                     )}
                 </Stack>

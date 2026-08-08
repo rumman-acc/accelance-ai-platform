@@ -757,7 +757,7 @@ export const ExecutionDetails = ({
                                 sx={{ pl: 1 }}
                                 icon={<IconExternalLink size={15} />}
                                 variant='outlined'
-                                label={localMetadata?.agentflow?.name || localMetadata?.agentflow?.id || 'Go to Agent'}
+                                label={localMetadata?.agentflow?.name || localMetadata?.agentflow?.id || 'Go to Agent Swarm'}
                                 className={'button'}
                                 onClick={() => window.open(`/v2/agentcanvas/${localMetadata?.agentflow?.id}`, '_blank')}
                             />

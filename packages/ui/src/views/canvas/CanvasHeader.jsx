@@ -149,7 +149,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const [savePermission, setSavePermission] = useState(isAgentCanvas ? 'agentflows:create' : 'chatflows:create')
 
-    const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+    const title = isAgentCanvas ? 'Agent Swarm' : 'Agent'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getScheduleStatusApi = useApi(chatflowsApi.getScheduleStatus)
@@ -230,7 +230,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             // which is no longer supported. The flow being viewed keeps working as-is.
             if (isAgentCanvas && !isAgentflowV2) {
                 enqueueSnackbar({
-                    message: 'Duplicating V1 Agents is no longer supported. Please rebuild this flow using the current Agent builder.',
+                    message:
+                        'Duplicating V1 Agent Swarms is no longer supported. Please rebuild this flow using the current Agent Swarm builder.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -669,6 +670,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     confirmButtonName: 'Save',
                     cancelButtonName: 'Cancel'
                 }}
+                namePlaceholder={isAgentCanvas ? 'My New Agent Swarm' : 'My New Agent'}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}
             />

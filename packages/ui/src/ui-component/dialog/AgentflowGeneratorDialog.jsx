@@ -209,7 +209,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 onConfirm()
             } else {
                 enqueueSnackbar({
-                    message: response.error || 'Failed to generate agent',
+                    message: response.error || 'Failed to generate agent swarm',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -224,7 +224,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             }
         } catch (error) {
             enqueueSnackbar({
-                message: error.response?.data?.message || 'Failed to generate agent',
+                message: error.response?.data?.message || 'Failed to generate agent swarm',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -270,9 +270,9 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 <DialogContent>
                     {loading ? (
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                            <img src={generatorGIF} alt='Generating Agent' style={{ maxWidth: '100%', height: 'auto' }} />
+                            <img src={generatorGIF} alt='Generating Agent Swarm' style={{ maxWidth: '100%', height: 'auto' }} />
                             <Typography variant='h5' sx={{ mt: 2 }}>
-                                Generating your Agent...
+                                Generating your Agent Swarm...
                             </Typography>
                             <Box sx={{ width: '100%', mt: 2 }}>
                                 <LinearProgress
@@ -360,7 +360,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                             <Box sx={{ mt: 2 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Select model to generate agent<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        Select model to generate agent swarm<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                 </div>
                                 <Dropdown

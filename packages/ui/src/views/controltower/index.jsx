@@ -24,15 +24,21 @@ import execution_empty from '@/assets/images/executions_empty.svg'
 
 // ==============================|| CONTROL TOWER ||============================== //
 
-// `filterStatus` is the value sent to /control-tower/agent-ids and appended to the Agents page
-// link as ?health=<status> — null means "no filter" (Agents Built) / "switch tab in place" (Awaiting
-// Approval, which is an execution-level bucket already exposed via this page's own tabs below).
+// `filterStatus` is the value sent to /control-tower/agent-ids and appended to the Agent Swarms
+// page link as ?health=<status> — null means "no filter" (Swarms Built) / "switch tab in place"
+// (Awaiting Approval, an execution-level bucket already exposed via this page's own tabs below).
 const STAT_TILES = [
-    { key: 'totalAgents', label: 'Agents Built', icon: IconRobot, color: '#7c4dff', filterStatus: null },
-    { key: 'healthy', label: 'Healthy Agents', icon: IconHeartbeat, color: '#2e7d32', filterStatus: 'healthy' },
-    { key: 'runningNow', label: 'Agents Running Now', icon: IconPlayerPlay, color: '#1565c0', filterStatus: 'runningNow' },
+    { key: 'totalAgents', label: 'Agent Swarms Built', icon: IconRobot, color: '#7c4dff', filterStatus: null },
+    { key: 'healthy', label: 'Healthy Agent Swarms', icon: IconHeartbeat, color: '#2e7d32', filterStatus: 'healthy' },
+    { key: 'runningNow', label: 'Agent Swarms Running Now', icon: IconPlayerPlay, color: '#1565c0', filterStatus: 'runningNow' },
     { key: 'awaitingApproval', label: 'Awaiting Approval', icon: IconHourglass, color: '#ed6c02', filterStatus: undefined },
-    { key: 'needsAttention', label: 'Needs Attention Agents', icon: IconAlertTriangle, color: '#c62828', filterStatus: 'needsAttention' }
+    {
+        key: 'needsAttention',
+        label: 'Needs Attention Agent Swarms',
+        icon: IconAlertTriangle,
+        color: '#c62828',
+        filterStatus: 'needsAttention'
+    }
 ]
 
 // Each tab is just a fixed execution-state filter over the same /executions endpoint
@@ -144,7 +150,7 @@ const ControlTower = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader title='Control Tower' description='Live health and pending approvals across every agent' />
+                    <ViewHeader title='Control Tower' description='Live health and pending approvals across every agent swarm' />
 
                     <Grid container spacing={2}>
                         {STAT_TILES.map((tile) => {

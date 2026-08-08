@@ -79,7 +79,7 @@ const dashboard = {
                 },
                 {
                     id: 'chatflows',
-                    title: 'Chatbots',
+                    title: 'Agents',
                     type: 'item',
                     url: '/chatflows',
                     icon: icons.IconHierarchy,
@@ -88,7 +88,7 @@ const dashboard = {
                 },
                 {
                     id: 'agentflows',
-                    title: 'Agents',
+                    title: 'Agent Swarms',
                     type: 'item',
                     url: '/agentflows',
                     icon: icons.IconUsersGroup,

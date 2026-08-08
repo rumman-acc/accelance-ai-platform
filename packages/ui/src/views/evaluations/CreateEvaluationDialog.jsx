@@ -544,7 +544,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             value='Agentflow v2'
                                             onChange={onChangeFlowType}
                                         />{' '}
-                                        Agents (v2)
+                                        Agent Swarms (v2)
                                         <Checkbox
                                             defaultChecked
                                             size='small'

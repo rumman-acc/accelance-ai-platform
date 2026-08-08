@@ -100,7 +100,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     const [exportTemplateDialogOpen, setExportTemplateDialogOpen] = useState(false)
     const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
 
-    const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+    const title = isAgentCanvas ? 'Agent Swarm' : 'Agent'
 
     const refreshFlows = async () => {
         try {
@@ -313,7 +313,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         // flow, which is no longer supported. Existing V1 flows remain viewable/editable/runnable.
         if (isAgentCanvas && chatflow.type === 'MULTIAGENT') {
             enqueueSnackbar({
-                message: 'Duplicating V1 Agents is no longer supported. Please rebuild this flow using the current Agent builder.',
+                message:
+                    'Duplicating V1 Agent Swarms is no longer supported. Please rebuild this flow using the current Agent Swarm builder.',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -469,6 +470,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                     confirmButtonName: 'Rename',
                     cancelButtonName: 'Cancel'
                 }}
+                namePlaceholder={isAgentCanvas ? 'My New Agent Swarm' : 'My New Agent'}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={saveFlowRename}
             />

@@ -185,7 +185,7 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                             </StyledTableCell>
                             <StyledTableCell component='th' scope='row'>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
-                                    Agent
+                                    Agent Swarm
                                 </TableSortLabel>
                             </StyledTableCell>
                             <StyledTableCell>Session</StyledTableCell>

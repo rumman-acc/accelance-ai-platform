@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
-const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const SaveChatflowDialog = ({ show, dialogProps, namePlaceholder = 'My New Agent', onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
 
     const [chatflowName, setChatflowName] = useState('')
@@ -37,7 +37,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     id='chatflow-name'
                     type='text'
                     fullWidth
-                    placeholder='My New Chatbot'
+                    placeholder={namePlaceholder}
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                     onKeyDown={(e) => {
@@ -60,6 +60,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 SaveChatflowDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
+    namePlaceholder: PropTypes.string,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func
 }

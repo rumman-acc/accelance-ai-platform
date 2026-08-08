@@ -393,7 +393,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
         setDialogProps({
             title: 'What would you like to build?',
             description:
-                'Enter your prompt to generate an agent. Performance may vary with different models. Only nodes and edges are generated, you will need to fill in the input fields for each node.'
+                'Enter your prompt to generate an agent swarm. Performance may vary with different models. Only nodes and edges are generated, you will need to fill in the input fields for each node.'
         })
     }
 
@@ -433,7 +433,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                     size='small'
                     color='primary'
                     aria-label='generate'
-                    title='Generate Agent'
+                    title='Generate Agent Swarm'
                 >
                     <IconSparkles />
                 </StyledFab>

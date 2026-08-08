@@ -55,12 +55,12 @@ import useApi from '@/hooks/useApi'
 import { getErrorMessage } from '@/utils/errorHandler'
 
 const dataToExport = [
-    'Agents',
-    'Agents V2',
+    'Agent Swarms',
+    'Agent Swarms V2',
     'Assistants Custom',
     'Assistants OpenAI',
     'Assistants Azure',
-    'Chatflows',
+    'Agents',
     'Chat Messages',
     'Chat Feedbacks',
     'Custom Templates',
@@ -306,12 +306,12 @@ const ProfileSection = ({ handleLogout }) => {
 
     const onExport = (data) => {
         const body = {}
-        if (data.includes('Agents')) body.agentflow = true
-        if (data.includes('Agents V2')) body.agentflowv2 = true
+        if (data.includes('Agent Swarms')) body.agentflow = true
+        if (data.includes('Agent Swarms V2')) body.agentflowv2 = true
         if (data.includes('Assistants Custom')) body.assistantCustom = true
         if (data.includes('Assistants OpenAI')) body.assistantOpenAI = true
         if (data.includes('Assistants Azure')) body.assistantAzure = true
-        if (data.includes('Chatflows')) body.chatflow = true
+        if (data.includes('Agents')) body.chatflow = true
         if (data.includes('Chat Messages')) body.chat_message = true
         if (data.includes('Chat Feedbacks')) body.chat_feedback = true
         if (data.includes('Custom Templates')) body.custom_template = true
