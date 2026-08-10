@@ -34,6 +34,9 @@ import { initializeDBClientAndStore, initializeRedisClientAndStore } from './Ses
 const localStrategy = require('passport-local').Strategy
 
 const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 'true'
+const DEFAULT_AUTH_TOKEN_EXPIRY_IN_MINUTES = 60
+const DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES = 1440
+const MILLISECONDS_PER_MINUTE = 60 * 1000
 
 // Allow explicit override of cookie security settings
 // This is useful when running behind a reverse proxy/load balancer that terminates SSL
@@ -58,8 +61,10 @@ const _initializePassportMiddleware = async (app: express.Application) => {
         cookie: {
             secure: secureCookie,
             httpOnly: true,
-            sameSite: 'lax' // Add sameSite attribute
-        }
+            sameSite: 'lax', // Add sameSite attribute
+            maxAge: DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES * MILLISECONDS_PER_MINUTE
+        },
+        rolling: true
     }
 
     // if the auth tokens are not to be expired on restart, then configure the session store
@@ -311,6 +316,8 @@ export const setTokenOrCookies = (
     isSSO?: boolean
 ) => {
     const token = generateJwtAuthToken(user)
+    const authTokenMaxAge = getAuthTokenExpiryInMinutes(user) * MILLISECONDS_PER_MINUTE
+    const refreshTokenMaxAge = getRefreshTokenExpiryInMinutes(user) * MILLISECONDS_PER_MINUTE
     let refreshToken: string = ''
     if (regenerateRefreshToken) {
         refreshToken = generateJwtRefreshToken(user)
@@ -334,12 +341,14 @@ export const setTokenOrCookies = (
             .cookie('token', token, {
                 httpOnly: true,
                 secure: secureCookie,
-                sameSite: 'lax'
+                sameSite: 'lax',
+                maxAge: authTokenMaxAge
             })
             .cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: secureCookie,
-                sameSite: 'lax'
+                sameSite: 'lax',
+                maxAge: refreshTokenMaxAge
             })
         resWithCookies.redirect(dashboardUrl)
     } else {
@@ -347,12 +356,14 @@ export const setTokenOrCookies = (
         res.cookie('token', token, {
             httpOnly: true,
             secure: secureCookie,
-            sameSite: 'lax'
+            sameSite: 'lax',
+            maxAge: authTokenMaxAge
         })
             .cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: secureCookie,
-                sameSite: 'lax'
+                sameSite: 'lax',
+                maxAge: refreshTokenMaxAge
             })
             .type('json')
             .send({ ...returnUser })
@@ -360,43 +371,41 @@ export const setTokenOrCookies = (
 }
 
 export const generateJwtAuthToken = (user: any) => {
-    let expiryInMinutes = -1
-    if (user?.ssoToken) {
-        const jwtHeader = jwt.decode(user.ssoToken, { complete: true })
-        if (jwtHeader) {
-            const utcSeconds = (jwtHeader.payload as any).exp
-            let d = new Date(0) // The 0 there is the key, which sets the date to the epoch
-            d.setUTCSeconds(utcSeconds)
-            // get the minutes difference from current time
-            expiryInMinutes = Math.abs(d.getTime() - new Date().getTime()) / 60000
-        }
-    }
-    if (expiryInMinutes === -1) {
-        expiryInMinutes = process.env.JWT_TOKEN_EXPIRY_IN_MINUTES ? parseInt(process.env.JWT_TOKEN_EXPIRY_IN_MINUTES) : 60
-    }
-    return _generateJwtToken(user, expiryInMinutes, getJWTAuthTokenSecret())
+    return _generateJwtToken(user, getAuthTokenExpiryInMinutes(user), getJWTAuthTokenSecret())
 }
 
 export const generateJwtRefreshToken = (user: any) => {
-    let expiryInMinutes = -1
-    if (user.ssoRefreshToken) {
-        const jwtHeader = jwt.decode(user.ssoRefreshToken, { complete: false })
-        if (jwtHeader && typeof jwtHeader !== 'string') {
-            const utcSeconds = (jwtHeader as JwtPayload).exp
-            if (utcSeconds) {
-                let d = new Date(0) // The 0 there is the key, which sets the date to the epoch
-                d.setUTCSeconds(utcSeconds)
-                // get the minutes difference from current time
-                expiryInMinutes = Math.abs(d.getTime() - new Date().getTime()) / 60000
-            }
-        }
-    }
-    if (expiryInMinutes === -1) {
-        expiryInMinutes = process.env.JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES
-            ? parseInt(process.env.JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES)
-            : 129600 // 90 days
-    }
-    return _generateJwtToken(user, expiryInMinutes, getJWTRefreshTokenSecret())
+    return _generateJwtToken(user, getRefreshTokenExpiryInMinutes(user), getJWTRefreshTokenSecret())
+}
+
+const getAuthTokenExpiryInMinutes = (user: any) => {
+    const ssoTokenExpiry = getTokenExpiryMinutesFromJwt(user?.ssoToken, true)
+    if (ssoTokenExpiry !== -1) return ssoTokenExpiry
+
+    const configuredExpiry = Number.parseInt(process.env.JWT_TOKEN_EXPIRY_IN_MINUTES ?? '', 10)
+    return Number.isFinite(configuredExpiry) ? configuredExpiry : DEFAULT_AUTH_TOKEN_EXPIRY_IN_MINUTES
+}
+
+const getRefreshTokenExpiryInMinutes = (user: any) => {
+    const ssoRefreshTokenExpiry = getTokenExpiryMinutesFromJwt(user?.ssoRefreshToken)
+    if (ssoRefreshTokenExpiry !== -1) return ssoRefreshTokenExpiry
+
+    const configuredExpiry = Number.parseInt(process.env.JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES ?? '', 10)
+    return Number.isFinite(configuredExpiry) ? configuredExpiry : DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES
+}
+
+const getTokenExpiryMinutesFromJwt = (token?: string, includeHeaderPayload = false) => {
+    if (!token) return -1
+
+    const decodedToken = jwt.decode(token, { complete: includeHeaderPayload })
+    const payload = includeHeaderPayload ? (decodedToken as any)?.payload : decodedToken
+    const utcSeconds = typeof payload === 'string' ? undefined : (payload as JwtPayload | undefined)?.exp
+
+    if (!utcSeconds) return -1
+
+    const expirationDate = new Date(0)
+    expirationDate.setUTCSeconds(utcSeconds)
+    return Math.abs(expirationDate.getTime() - new Date().getTime()) / 60000
 }
 
 const _generateJwtToken = (user: Partial<LoggedInUser>, expiryInMinutes: number, secret: string) => {

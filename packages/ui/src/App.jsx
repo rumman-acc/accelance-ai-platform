@@ -11,6 +11,7 @@ import themes from '@/themes'
 
 // project imports
 import NavigationScroll from '@/layout/NavigationScroll'
+import SessionTimeout from '@/ui-component/auth/SessionTimeout'
 
 // ==============================|| APP ||============================== //
 
@@ -22,6 +23,7 @@ const App = () => {
             <ThemeProvider theme={themes(customization)}>
                 <CssBaseline />
                 <NavigationScroll>
+                    <SessionTimeout />
                     <Routes />
                 </NavigationScroll>
             </ThemeProvider>
