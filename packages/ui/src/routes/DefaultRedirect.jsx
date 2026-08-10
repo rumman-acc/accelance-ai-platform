@@ -1,30 +1,37 @@
+import { lazy } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useConfig } from '@/store/context/ConfigContext'
 import { useSelector } from 'react-redux'
+import Loadable from '@/ui-component/loading/Loadable'
 
-// Import all view components
-import Account from '@/views/account'
-import Executions from '@/views/agentexecutions'
-import Agentflows from '@/views/agentflows'
-import APIKey from '@/views/apikey'
-import Assistants from '@/views/assistants'
-import Login from '@/views/auth/login'
-import LoginActivityPage from '@/views/auth/loginActivity'
-import SSOConfig from '@/views/auth/ssoConfig'
-import Unauthorized from '@/views/auth/unauthorized'
-import Chatflows from '@/views/chatflows'
-import ControlTower from '@/views/controltower'
-import Credentials from '@/views/credentials'
-import EvalDatasets from '@/views/datasets'
-import Documents from '@/views/docstore'
-import EvalEvaluation from '@/views/evaluations/index'
-import Evaluators from '@/views/evaluators'
-import Marketplaces from '@/views/marketplaces'
-import RolesPage from '@/views/roles'
-import Tools from '@/views/tools'
-import UsersPage from '@/views/users'
-import Variables from '@/views/variables'
-import Workspaces from '@/views/workspace'
+// Every view below is only ever rendered behind a permission/display check, but a plain
+// static import loads its whole dependency tree unconditionally as part of this file's own
+// chunk — and since DefaultRedirect sits in the router config (always eager), that dragged
+// ~5.4MB of feature-specific weight (data grids, code/rich-text editors, math rendering,
+// syntax highlighting) into every single page load, including the anonymous landing page.
+// lazy() + Loadable matches the pattern every other route in this app already uses.
+const Account = Loadable(lazy(() => import('@/views/account')))
+const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
+const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
+const APIKey = Loadable(lazy(() => import('@/views/apikey')))
+const Assistants = Loadable(lazy(() => import('@/views/assistants')))
+const Login = Loadable(lazy(() => import('@/views/auth/login')))
+const LoginActivityPage = Loadable(lazy(() => import('@/views/auth/loginActivity')))
+const SSOConfig = Loadable(lazy(() => import('@/views/auth/ssoConfig')))
+const Unauthorized = Loadable(lazy(() => import('@/views/auth/unauthorized')))
+const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
+const ControlTower = Loadable(lazy(() => import('@/views/controltower')))
+const Credentials = Loadable(lazy(() => import('@/views/credentials')))
+const EvalDatasets = Loadable(lazy(() => import('@/views/datasets')))
+const Documents = Loadable(lazy(() => import('@/views/docstore')))
+const EvalEvaluation = Loadable(lazy(() => import('@/views/evaluations/index')))
+const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
+const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
+const RolesPage = Loadable(lazy(() => import('@/views/roles')))
+const Tools = Loadable(lazy(() => import('@/views/tools')))
+const UsersPage = Loadable(lazy(() => import('@/views/users')))
+const Variables = Loadable(lazy(() => import('@/views/variables')))
+const Workspaces = Loadable(lazy(() => import('@/views/workspace')))
 
 /**
  * Component that redirects users to the first accessible page based on their permissions
