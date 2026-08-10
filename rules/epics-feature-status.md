@@ -26,7 +26,7 @@ field)
 
 | Epic | Status | Accelance evidence | Reference Pattern |
 | --- | --- | --- | --- |
-| Agentflow V2 (Agent, Condition, Loop, Iteration, ExecuteFlow nodes) | ✅ Done | `packages/components/nodes/agentflow/` | LangGraph-style supervisor/services/task agent orchestration |
+| Agentflow V2 (Agent, Condition, Loop, Iteration, ExecuteFlow nodes) — user-facing as "Agent Swarm" | ✅ Done | `packages/components/nodes/agentflow/` | LangGraph-style supervisor/services/task agent orchestration |
 | Multi-agent Supervisor/Worker pattern | ✅ Done | `nodes/multiagents/{Supervisor,Worker}` | Same supervisor/worker orchestration pattern |
 | Sequential Agents (explicit State-machine style) | ✅ Done | `nodes/sequentialagents/{Agent,Condition,LLMNode,Loop,State,ToolNode}` | Formal state-machine loop driver (RECEIVED → ... → DONE) — the kind of thing most from-scratch builds spend real effort designing |
 | Classic single agents (ToolAgent, ReAct, XMLAgent, OpenAI Assistants, LlamaIndex) | ✅ Done | `nodes/agents/` | Single-agent execution tier |
@@ -83,7 +83,7 @@ field)
 | API keys | ✅ Done | `routes/apikey` | Scoped API keys — a per-endpoint-scoped, expiring version is a further-hardening option, not a gap |
 | Service accounts (non-human identities scoped to a project) | 🔴 To build | none found | Service-account identity model |
 | ABAC / resource tagging | 🔴 To build | none | Attribute/tag-based access control |
-| **Multi-org platform mode (true multi-tenant SaaS)** | 🟡 **Built, disabled** | `IdentityManager.ts` (`Platform.CLOUD`), `StripeManager.ts`, `UsageCacheManager.ts`, `LICENSE_QUOTAS` — see Q2 below | Full SaaS onboarding: any org self-registers, billed and quota-capped independently |
+| **Multi-org platform mode (true multi-tenant SaaS)** | 🟡 **Partially enabled** | Org-creation lock removed in Enterprise mode (`93bff59`); per-org SSO via slug routing added (`09d279e`); billing/quota enforcement (`StripeManager.ts`, `UsageCacheManager.ts`, `LICENSE_QUOTAS`) still gated behind `Platform.CLOUD`, unused — see Q2 below | Full SaaS onboarding: any org self-registers, billed and quota-capped independently |
 
 ## 7. Infrastructure, Scaling & Environments
 
@@ -154,7 +154,7 @@ field)
 
 | Epic | Status | Accelance evidence | Reference Pattern |
 | --- | --- | --- | --- |
-| Unified admin dashboard (agent inventory, approvals, budgets, one screen) | 🔴 To build | none | Governance control tower / admin center — the largest single item in most platform builds |
+| Unified admin dashboard (agent inventory, approvals, budgets, one screen) | 🟡 Partially built | Control Tower: agent inventory + health stat tiles + awaiting-approval count + click-through filtering into Agents/Executions — `packages/ui/src/views/controltower/`, `packages/server/src/{controllers,routes,services}/control-tower/` | Governance control tower / admin center — inventory/approvals covered, budgets still missing |
 | Agent lifecycle states (draft → validated → published) | 🔴 To build | none | Governed catalog with lifecycle states |
 | Ownerless-agent / agent-risk flagging | 🔴 To build | none | Rules-based lifecycle governance |
 
@@ -201,14 +201,21 @@ target model, and every story required to get from one to the other.
 
 ### Current state (the constraint)
 
-Accelance runs today in `Platform.ENTERPRISE` mode (`packages/server/src/IdentityManager.ts`,
-forced via the `ACCELANCE_PLATFORM=enterprise` env override). That mode enforces **exactly
-one organization per deployment** — confirmed in `rules/architecture.md`. Concretely: every
-user, workspace, credential, and flow in this running instance belongs to one org. A second
-customer today can only be served by a **second, fully separate deployment** — its own Neon
-database, its own `.env`, its own URL. That's a legitimate model (plenty of enterprise
-software is sold "single-tenant, your own instance"), but it means N customers = N
-deployments to patch, monitor, and pay for separately.
+**Update (2026-08-10, commit `93bff59`):** the one-organization-per-deployment lock described
+below has been removed — `ensureOneOrganizationOnly()` no longer exists in the codebase.
+ENTERPRISE mode now permits multiple organizations on one deployment, each with its own
+workspaces and (per `09d279e`) its own independently-configured SSO via slug-based routing
+(`/o/:slug/login`). What's described next — the *billing/quota* half of true multi-tenant
+SaaS — is still accurate and still open.
+
+Envoy runs today in `Platform.ENTERPRISE` mode (`packages/server/src/IdentityManager.ts`,
+forced via the `ACCELANCE_PLATFORM=enterprise` env override). Previously that mode enforced
+**exactly one organization per deployment**; as of `93bff59` it no longer does — every
+user, workspace, credential, and flow can now belong to any of several orgs on the same
+deployment. What ENTERPRISE mode still doesn't provide is self-serve signup, billing, or
+quota enforcement per org — those remain gated behind `Platform.CLOUD` (below), so scaling
+to many paying customers still means an admin manually provisioning each org rather than
+self-serve signup with billing.
 
 ### Target state (the model)
 
@@ -234,7 +241,7 @@ scaffolding already exists in the codebase and has simply never been turned on:
 | --- | --- | --- | --- |
 | 1 | Stand up a real Stripe account + products | Stripe dashboard has products/prices matching the intended plan tiers (e.g. Starter/Growth/Enterprise); `STRIPE_SECRET_KEY` set in `.env`; `StripeManager.getInstance()` initializes without error | 1 day |
 | 2 | Define plan tiers against `LICENSE_QUOTAS` | A config mapping each Stripe price ID → concrete quota values (predictions/month, max flows, max users, storage cap, extra seats) — replacing the placeholder `DISABLED_QUOTAS`/`UNLIMITED_QUOTAS` constants with real tier definitions | 1 day |
-| 3 | Switch platform mode + remove the single-org lock | `IdentityManager` resolves `Platform.CLOUD` (not the enterprise env bypass) for this deployment; org registration no longer rejects a second organization | 1 day |
+| 3 | Switch platform mode to CLOUD for billing | ~~Remove the single-org lock~~ — done (`93bff59`, Enterprise mode already permits multiple orgs). Remaining: `IdentityManager` resolves `Platform.CLOUD` for deployments that need Stripe billing/quota enforcement rather than Enterprise's current unmetered multi-org mode | 1 day |
 | 4 | Self-serve org signup flow | A new org can register (`/register`-equivalent), select a plan, and land with a Stripe customer + subscription created automatically — no admin intervention required | 2 days |
 | 5 | Quota enforcement on the request path | `UsageCacheManager` checks are actually invoked before creating a flow, adding a user, running a prediction, or uploading a file — requests over quota return a clear, actionable error rather than silently succeeding | 2 days |
 | 6 | Tenant isolation verification | A written test pass confirming one org's workspaces, credentials, flows, and storage are never visible or reachable from another org's session — this is the step that makes CLOUD mode trustworthy, not just functional | 2 days |
@@ -343,7 +350,7 @@ is newly estimated on the same reduced basis.
 
 **ABAC / resource tagging** — RBAC is role-only; no tag-based scoping. **Effort: 4 days.**
 
-**Multi-org platform mode** — See the dedicated answer to Q2 below; this is a platform-mode switch plus billing integration, not a from-scratch build. **Effort: 8–10 days** for a first working CLOUD-mode rollout (Stripe product/plan setup, quota wiring, removing the single-org constraint, isolation testing) — this is a new estimate, since it wasn't sized before this pass.
+**Multi-org platform mode** — See the dedicated answer to Q2 below; this is a platform-mode switch plus billing integration, not a from-scratch build. The single-org constraint itself is already removed (`93bff59`) and per-org SSO already works (`09d279e`). **Effort: 6–8 days** for a first working CLOUD-mode rollout (Stripe product/plan setup, quota wiring, isolation testing) — revised down from the original 8–10 day estimate now that the org-lock removal is done.
 
 ### 7. Infrastructure, Scaling & Environments
 
@@ -419,7 +426,7 @@ is newly estimated on the same reduced basis.
 
 ### 14. Admin / Governance Control Plane
 
-**Unified admin dashboard** — No single screen for agent inventory, approvals, or budgets exists. **Effort: 15 days** (kept as originally sized) — the largest single item in the entire backlog.
+**Unified admin dashboard** — Partially built: Control Tower (`packages/ui/src/views/controltower/`) now covers agent inventory, health stat tiles, and awaiting-approval counts, with click-through filtering into Agents/Executions; budgets/cost data are still missing. **Effort: ~8 days remaining** (revised down from the original 15-day estimate, which predated Control Tower) — still the largest open item in this section, but no longer a from-scratch build.
 
 **Agent lifecycle states (draft → validated → published)** — No lifecycle state exists on flows today. **Effort: 5 days** (kept as originally sized) — shares work with the pre-publish evaluation gate in section 13.
 

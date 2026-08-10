@@ -104,8 +104,8 @@ them — Qdrant or Neo4j.
 
 ### Core AI — from the Flowise OSS foundation (Apache 2.0, no build cost)
 
-- Visual chatflow + agentflow builder (drag-and-drop canvas)
-- Multi-agent orchestration: supervisor/worker pattern, sequential state-machine agents, Agentflow V2 (conditions, loops, human-input checkpoints)
+- Visual builder for single-flow Agents (route `/chatflows`) and multi-agent Agent Swarms (route `/agentflows`, drag-and-drop canvas) — renamed from "Chatflow(s)"/"Agentflow(s)" in the UI; the code-level identifiers (`chatflowId`, `agentflowId`, route paths) were deliberately left unchanged
+- Multi-agent orchestration: supervisor/worker pattern, sequential state-machine agents, Agentflow V2 engine — user-facing as "Agent Swarm" (conditions, loops, human-input checkpoints)
 - 200+ LangChain-based node integrations — chat models (29 providers, including self-hosted Ollama/LocalAI), embeddings, vector stores, document loaders, tools
 - Flow execution engine with SSE streaming
 - Document Store + vector search (RAG pipeline)
@@ -119,8 +119,9 @@ them — Qdrant or Neo4j.
 - Multi-tenant org → workspace hierarchy with RBAC and custom roles
 - Enterprise auth: registration, login, invites, password reset (JWT + session)
 - Encryption-key persistence and credential-loss prevention (self-healing key storage)
-- Brand theme (colors, email templates) and rebrand of internal error/metric identifiers
+- Brand theme (colors, email templates) and rebrand of internal error/metric identifiers — now on the Envoy brand (Azure Blue `#0F74BD` / DeepBlue `#062667` / Vivid Green `#13BA2F`, `packages/ui/src/assets/scss/_themes-vars.module.scss`), superseding the earlier Accelance blue
 - Pluggable storage provider (local / S3 / GCS / Azure / ImageKit)
+- Control Tower: agent-health/execution overview dashboard, now the default landing page (`packages/ui/src/views/controltower/`, `packages/server/src/{controllers,routes,services}/control-tower/`), gated behind `executions:view`
 
 ### Not yet built or not yet configured
 
@@ -163,11 +164,14 @@ license check → forces `Platform.ENTERPRISE` in `IdentityManager`
 (`packages/server/src/IdentityManager.ts` → `_validateLicenseKey()`). Unlocks `/register`,
 `/signin`, workspace CRUD, user invites, custom roles.
 
-**Constraint:** ENTERPRISE mode allows only **one organization per deployment**
-(`ensureOneOrganizationOnly()`). This is correct for the current single-customer setup — one
-Accelance instance = one org with multiple workspaces. True multi-org SaaS requires
-switching to `Platform.CLOUD` (Stripe billing scaffolding already exists in the codebase,
-unused — see `rules/epics-feature-status.md` for the full breakdown).
+**Update (2026-08-10, commit `93bff59`):** the one-organization-per-deployment lock has been
+removed — `ensureOneOrganizationOnly()` no longer exists anywhere in the codebase. ENTERPRISE
+mode now permits multiple organizations on one Envoy deployment, each with its own
+workspaces, and (per commit `09d279e`) its own independently-configured SSO via slug-based
+routing (`/o/:slug/login`, `organization.slug` column). What ENTERPRISE mode still lacks vs.
+`Platform.CLOUD` is self-serve signup UI, Stripe billing, and quota enforcement (Stripe
+billing scaffolding already exists in the codebase, unused) — see
+`rules/epics-feature-status.md` for the full breakdown.
 
 ---
 
@@ -201,7 +205,7 @@ unused — see `rules/epics-feature-status.md` for the full breakdown).
 
 ## Open item: no user-journey document exists yet
 
-There is currently no written user-journey flow for the Accelance platform itself anywhere
+There is currently no written user-journey flow for the Envoy platform itself anywhere
 in this repo (`rules/` was checked in full). If one is wanted for the same senior
 presentation this file is meant to support, that would be new documentation to write, not
 something to locate.

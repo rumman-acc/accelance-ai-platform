@@ -529,6 +529,35 @@ Anything the design conversation hasn't resolved yet — flagged here so Claude 
   addition to RBAC permissions — meaning the visible nav differs by plan/tier (OSS vs Cloud vs
   Enterprise). Section 6 (page layouts) and any nav component spec need to account for at least 2-3
   distinct "visible nav" states, not a single canonical sidebar.
+- **Reconciliation pass (2026-08-10) — several rows behind, logged here per the Gap protocol; none
+  of the following edits touch Section 4's prose or Section 2's page inventory directly, since this
+  file's header reserves that for the design conversation:**
+  - **Section 4's inline token values are now stale.** `design-system/tokens.json` was updated this
+    pass to the Envoy brand actually shipped in `packages/ui/src/assets/scss/_themes-vars.module.scss`
+    (migration-checklist.md row 19 and later theme-fix commits) — primary is now `#0F74BD`/dark
+    `#062667` (Azure Blue → DeepBlue), tint is `#D5E4FE`, and a new `secondaryAccent` `#13BA2F` (Vivid
+    Green) was added for narrow secondary/positive use only. Section 4's "Target tokens" bullet list
+    above (lines ~181-182) still quotes the superseded values (`#0052CC`/`#003A8F`/`#C8D8EC`) inline —
+    needs a design-conversation pass to bring that prose back in sync with `tokens.json`, the actual
+    source of truth. Typography is unchanged (Inter/Arial body font) — but the Logo component's
+    wordmark specifically renders in `Lexend` 500, a deliberate one-off brand-mark exception Section 4
+    doesn't mention.
+  - **Section 2's page inventory is missing three shipped IA changes:** (1) `/get-started` and the
+    root-route (`/`) gating for anonymous visitors (row 18, already flagged in that row but never
+    folded into Section 2 itself); (2) a new **Control Tower** dashboard at `/control-tower`
+    (`packages/ui/src/views/controltower/`), gated behind `executions:view`, which is now the default
+    landing page for authenticated users and was never part of the original 17-row migration scope;
+    (3) the single-flow builder (`/chatflows`) is now user-facing "Agent"/"Agents" and the
+    multi-agent builder (`/agentflows`) is now "Agent Swarm"/"Agent Swarms" — a plain-language rename
+    across nav, page titles, and dialogs (route paths/code identifiers unchanged). None of these were
+    migrated through this checklist's process — Control Tower in particular ships un-reviewed against
+    `design-system/tokens.json`/`component-inventory.md`, since it was built outside this workflow.
+  - **Component-inventory gaps from row 19 are now closed in `component-inventory.md` itself:** the
+    three new Envoy Auth shell components (`AuthSplitShell`, `AuthCenteredShell`,
+    `PasswordStrengthBar`) are added there marked `status: draft — pending design review`, and the
+    four row-18 components (`card.jsx`, `agent-status.jsx`, `approval-card.jsx`, `input.jsx`) plus
+    row-1's `button.jsx`/`icon.jsx` now carry `Implemented:` pointers to their code. Still pending a
+    real design-conversation review pass, not a substitute for one.
 
 ## 10. Changelog
 

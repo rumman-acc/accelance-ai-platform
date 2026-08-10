@@ -1,70 +1,34 @@
-<!-- # Accelance AI Platform — Claude Instructions
-
-## Read This First
-
-Before making any change, read the files in `rules/` to understand the current state of the project.
-After making any change, update the relevant file in `rules/`.
-
-**Rules folder:** `rules/`
-
--   `rules/architecture.md` — service layout, ports, decisions
--   `rules/changes.md` — log of every structural change made
--   `rules/services.md` — what each service does, where it lives, its status
--   `rules/known-issues.md` — bugs encountered and how they were resolved
--   `rules/shared-database-entities.md` — **CRITICAL: entity ownership + cross-service change checklist**
-
-## Project Overview
-
-Accelance AI Platform — a multi-tenant AI agent platform built on a Flowise OSS fork.
-Root: `d:/Accelance AI Platform/AI-Platform-Internal/`
-
-Current state: **Flowise 3.1.2** running in enterprise mode with PostgreSQL on Neon.
-Enterprise auth is enabled via a `FLOWISE_PLATFORM=enterprise` env bypass (no license needed).
-
-## Developer Setup (for new contributors)
-
-Quick path from clone to running:
-
-```bash
-# 1. Install Node 24 via nvm
-nvm install 24.15.0 && nvm use
-
-# 2. Install dependencies
-corepack enable && pnpm install
-
-# 3. Create and fill in the .env file
-cp packages/server/.env.example packages/server/.env
-# Edit packages/server/.env — fill in Neon DB credentials and generated secrets
-
-# 4. Build and run
-pnpm build
-cd packages/server && node bin/run start
-
-# 5. First time only: go to http://localhost:3002/register
-#    First registered user becomes the org admin (OWNER role)
-```
-
-See `rules/steps/01-enterprise-auth-setup.md` for full detail.
-For Neon DB: sign up at neon.tech → create project → Connection Details → **Direct connection** (not pooler).
-
-## Key Rules
-
--   Never modify files outside this repo
--   Always check `rules/changes.md` before starting work so you know what was already done
--   When a service breaks, check `rules/known-issues.md` first
--   `FLOWISE_PLATFORM=enterprise` in `packages/server/.env` enables enterprise auth — do not remove this
--   All auth flows use Flowise's built-in enterprise code — do not build custom auth
--   Shared TypeScript types live in `packages/shared` only
--   **After every step or change: run build + test and record the result**
--   **Save the full step plan to `rules/steps/` before touching any code**
--   **When you alter any entity/table, immediately check `rules/shared-database-entities.md`** -->
 # CLAUDE.md — implementation rules
 
-## Role
+## Project overview
 
-You are implementing UI changes based on `DESIGN_SPEC.md` and `design-system/tokens.json`.
-You are NOT the designer. Do not make aesthetic judgment calls that contradict the spec.
-If the spec doesn't cover something you need, stop and flag it — see "Gap protocol" below.
+Envoy (formerly "Accelance AI Platform") — a multi-tenant AI agent platform built on a Flowise
+3.1.2 OSS fork, running in enterprise mode with PostgreSQL on Neon. Root:
+`d:/Accelance AI Platform/AI-Platform-Internal/`. See `NEW-DEVELOPER-SETUP.md` for the dev setup
+path and `rules/architecture.md` for the full service layout.
+
+This repo carries two separate, differently-owned bodies of tracking documentation. Which one(s)
+apply depends on what kind of change you're making — most non-trivial changes touch both:
+
+| If the change is... | Read / update... |
+|---|---|
+| UI/presentation — re-skinning an existing page, or any page-level visual work | `DESIGN_SPEC.md` (read-only except Section 9) + `migration-checklist.md` + `design-system/tokens.json` + `design-system/components/component-inventory.md` |
+| Backend, business logic, architecture, or a new feature/epic | `rules/architecture.md`, `rules/epics-feature-status.md`, `rules/known-issues.md`, `rules/changes.md` |
+| A user-facing rename or copy change (product name, page names, terminology) | Whichever of the above already refers to the old name — add a one-line note wherever it appears, don't just fix the code |
+
+**Never skip the read step because a change "looks small."** The 2026-08 Control Tower dashboard,
+the Envoy rebrand, and the Chatbots→Agent/Agent Swarm rename all shipped without touching any of
+these files, and by the time it was caught, `DESIGN_SPEC.md`, `tokens.json`,
+`component-inventory.md`, `migration-checklist.md`, and `rules/epics-feature-status.md` were all
+simultaneously wrong. Reconciling that after the fact costs far more than reading four files
+before starting would have.
+
+## Role (UI/design-system work)
+
+When the change is UI/presentation work, you are implementing changes based on `DESIGN_SPEC.md`
+and `design-system/tokens.json`. You are NOT the designer. Do not make aesthetic judgment calls
+that contradict the spec. If the spec doesn't cover something you need, stop and flag it — see
+"Gap protocol" below.
 
 ## Hard rules
 
@@ -91,21 +55,50 @@ If the spec doesn't cover something you need, stop and flag it — see "Gap prot
    conventions of the closest existing component, using only existing tokens.
 3. Add it to `design-system/components/component-inventory.md` marked
    `status: draft — pending design review`.
-4. Add a line to `DESIGN_SPEC.md` Section 9 (Open questions / gaps) describing what
+4. Add ONE line to `DESIGN_SPEC.md` Section 9 (Open questions / gaps) describing what
    you built and why. Do not silently treat it as final.
+   **Section 9 is the ONLY part of `DESIGN_SPEC.md` you may ever edit.** Every other
+   section (1-8, 10) is owned by the design conversation and read-only to you, full stop
+   — not "read-only unless it looks wrong," not "read-only unless the user asks for a
+   general reconciliation pass." If a value elsewhere in the file is stale or wrong,
+   say so in a Section 9 line; do not fix it yourself, even in the same edit that adds
+   the Section 9 line.
 5. Do not proceed to style five more screens using an unreviewed draft component —
    surface it and wait for a review pass after 1–2 uses.
 
-## Before each page
+## Before each page (UI/design-system work)
 
 - Re-read the relevant section of `DESIGN_SPEC.md` and the current row in
   `migration-checklist.md`.
 - Re-check `design-system/tokens.json` and `component-inventory.md` for anything
   that's changed since your last pass (design conversation may have updated it).
 
-## After each page
+## After each page (UI/design-system work)
 
 - Run `npm run lint:design-tokens` (or equivalent) and fix violations.
 - Take before/after screenshots if the visual-review script is set up.
 - Update `migration-checklist.md` status for that row to `done` and note any
   drafted components in the "notes" column.
+- **If this page/feature didn't come from the next row in the checklist** (e.g. it was
+  built to meet a deadline outside the normal one-page-at-a-time flow, like a new
+  dashboard) — still add a row for it, even if its status is `not started` for the
+  design-system pass. A shipped page with no row is exactly how this checklist goes
+  stale; logging it as "not yet migrated" is far better than not logging it at all.
+- If the page satisfies, contradicts, or changes the status of anything in
+  `rules/epics-feature-status.md` (a new dashboard, a removed constraint, a renamed
+  feature), update that file too in the same pass — don't leave it for a future
+  "reconciliation" prompt to discover via git log.
+
+## Before/after any backend, architecture, or feature change
+
+- **Before:** read `rules/architecture.md` and the relevant section(s) of
+  `rules/epics-feature-status.md` to see what's already built, built-but-disabled, or
+  explicitly not started — so you don't rebuild something that exists or contradict a
+  documented constraint that was already lifted. Check `rules/known-issues.md` for
+  anything relevant to what you're touching.
+- **After:** update the epic's status row in `rules/epics-feature-status.md` (flip
+  ✅/🟡/🔴 as appropriate, note the commit/file that changed it), add a line to
+  `rules/architecture.md` if it changes a documented constraint or adds a new
+  service/route, and log a `rules/known-issues.md` entry if you fixed a bug. A one-line
+  update in the same commit is cheaper than a later audit reconstructing it from
+  `git log`.

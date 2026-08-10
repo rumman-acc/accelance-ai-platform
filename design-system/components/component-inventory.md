@@ -18,6 +18,7 @@
 ## Core (`components/core/`)
 
 ### Button
+- **Implemented:** `design-system/components/ui/button.jsx` (migration-checklist.md row 1)
 - **Variants:** primary (solid Accelance Blue, white text), secondary (white bg, blue border/text), tertiary (transparent, blue text, link-style)
 - **States:** default, hover (darken to `#003A8F`)
 - **Anatomy:** optional icon-left slot (Tabler), label
@@ -26,6 +27,7 @@
 - **Don't:** invent a fourth variant; use permission-seeking copy ("Can we...")
 
 ### Card
+- **Implemented:** `design-system/components/ui/card.jsx` (migration-checklist.md row 18)
 - **Variants:** default (white, 1px border), `tinted` (light-blue, borderless — preferred for grouping/callouts over hard borders), `elevated` (shadow — busy backgrounds only)
 - **Anatomy:** optional icon (Tabler, in blue circle), title, body
 - **Tokens used:** `radius` (8px), `color.tint`, `shadow.subtle`
@@ -39,6 +41,7 @@
 - **Don't:** use as decorative color — every tone must map to its semantic meaning
 
 ### Icon
+- **Implemented:** `design-system/components/ui/icon.jsx` (migration-checklist.md row 1)
 - **Library:** Tabler Icons, outline, 2px stroke, via webfont (`tokens/fonts.css`)
 - **Sizes:** 24×24 standard, 16×16 dense UI
 - **Props:** `name` (Tabler slug), `size`, `color` (defaults to inherited text color)
@@ -47,6 +50,7 @@
 ## Forms (`components/forms/`)
 
 ### Input / Field
+- **Implemented:** `design-system/components/ui/input.jsx` (migration-checklist.md row 18)
 - **States:** default, focus (2px blue ring), error (orange border + inline message below field)
 - **Anatomy:** label **above** input (never placeholder-as-label), input, optional hint text, optional error text
 - **`Field`** is exported separately to wrap custom controls with the same label/hint/error chrome
@@ -104,12 +108,39 @@
 ## Agent governance (`components/agent/`) — specific to this product's domain
 
 ### AgentStatus
+- **Implemented:** `design-system/components/ui/agent-status.jsx` (migration-checklist.md row 18)
 - **Variants (tier):** `autonomous` (green — no human review needed), `review` (amber `#B45309` — human review required), `approval` (red `#B91C1C` — mandatory approval before execution)
 - **Rule:** this three-tier system is not optional styling — it is the visual expression of the product's human-in-the-loop governance positioning. Every AI-proposed action must use it consistently.
 
 ### ApprovalCard
+- **Implemented:** `design-system/components/ui/approval-card.jsx` (migration-checklist.md row 18)
 - **Anatomy:** agent name, proposed action, detail/context text, approve + reject actions
 - **Rule:** every AI-proposed action renders as an explicit confirmation card — never silent auto-execution. This maps directly onto this platform's actual agent-execution model (see DESIGN_SPEC.md Section 2/3 — executions, agent builder).
+
+## Auth (`ui-component/auth/`) — status: draft, pending design review
+
+> Built during the Envoy Auth rebuild (migration-checklist.md row 19) against a Claude Design
+> project (`accelance-design-system-ee18bc52-ef81-4433-9e6b-233c9f4b825e`) that is newer than —
+> and on a different brand from — the "accelance design system" project this inventory's
+> other sections were pulled from. Added here per CLAUDE.md's Gap protocol step 3; not yet
+> reviewed back into the source design system. Reused for 1–2 pages before flagging (row 19),
+> not five+ — do not adopt further without a review pass.
+
+### AuthSplitShell
+- **Anatomy:** gradient brand panel (Logo + headline/subtitle, `linear-gradient(45deg, primary.main → primary.dark)`) at fixed width on `md`+, full-width form on the other side; panel hides below `md`
+- **Used by:** organization setup, org-scoped sign-in (`/o/:slug/login`), invite-accept register
+- **Tokens used:** `color.primary`/`primaryDark` (gradient), `radius`, `spacing`
+
+### AuthCenteredShell
+- **Anatomy:** centered card, no split brand panel — used only by plain `/signin` (no org slug in the URL), since its source mockup has no split-panel treatment
+- **Don't:** reuse for any org-scoped auth screen — those use AuthSplitShell
+
+### PasswordStrengthBar
+- **Anatomy:** 4-segment bar, fill count reflects `getPasswordStrength()` (length/upper+lower/digit/symbol — a visual echo of `utils/validation.js`'s zod `passwordSchema`, not a separate validation source)
+- **Don't:** treat as the actual validation — it's feedback only; the zod schema is still the source of truth
+
+### Logo — updated, not new
+- Gained a `variant` prop (`'auto' | 'light' | 'dark'`, default `'auto'`) so callers can force the white-on-gradient or navy-on-white treatment independent of the app's dark-mode setting (used by AuthSplitShell's brand panel). Mark/wordmark itself unchanged (see `design-system/tokens.json` `color.logo` for the current Envoy mark spec).
 
 ## Reference: full internal-app example
 
