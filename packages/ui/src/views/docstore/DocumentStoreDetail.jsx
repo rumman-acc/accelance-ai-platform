@@ -20,7 +20,7 @@ import {
     MenuItem,
     Divider,
     Button,
-    Skeleton
+    CircularProgress
 } from '@mui/material'
 import { alpha, styled, useTheme } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
@@ -663,58 +663,18 @@ const DocumentStoreDetails = () => {
                                     </TableHead>
                                     <TableBody>
                                         {isLoading ? (
-                                            <>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <Available permission={'documentStores:preview-process,documentStores:delete-loader'}>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </Available>
-                                                </StyledTableRow>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <Available permission={'documentStores:preview-process,documentStores:delete-loader'}>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </Available>
-                                                </StyledTableRow>
-                                            </>
+                                            <StyledTableRow>
+                                                <StyledTableCell
+                                                    colSpan={
+                                                        hasPermission('documentStores:preview-process,documentStores:delete-loader') ? 7 : 6
+                                                    }
+                                                    sx={{ border: 0 }}
+                                                >
+                                                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                        <CircularProgress />
+                                                    </Box>
+                                                </StyledTableCell>
+                                            </StyledTableRow>
                                         ) : (
                                             <>
                                                 {documentStore?.loaders &&

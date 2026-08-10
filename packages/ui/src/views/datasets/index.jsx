@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 // material-ui
 import {
-    Skeleton,
+    CircularProgress,
     Box,
     Stack,
     TableContainer,
@@ -256,48 +256,13 @@ const EvalDatasets = () => {
                                         </TableHead>
                                         <TableBody>
                                             {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'datasets:update,datasets:create'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                        <Available permission={'datasets:delete'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'datasets:update,datasets:create'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                        <Available permission={'datasets:delete'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                </>
+                                                <StyledTableRow>
+                                                    <StyledTableCell colSpan={6} sx={{ border: 0 }}>
+                                                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                            <CircularProgress />
+                                                        </Box>
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
                                             ) : (
                                                 <>
                                                     {datasets.filter(filterDatasets).map((ds, index) => (

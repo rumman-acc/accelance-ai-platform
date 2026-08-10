@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux'
 import { styled } from '@mui/material/styles'
 import {
     Box,
+    CircularProgress,
     IconButton,
     Paper,
-    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -99,64 +99,13 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
-                            <>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    {showActions && (
-                                        <StyledTableCell>
-                                            <Skeleton variant='text' />
-                                        </StyledTableCell>
-                                    )}
-                                </StyledTableRow>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    {showActions && (
-                                        <StyledTableCell>
-                                            <Skeleton variant='text' />
-                                        </StyledTableCell>
-                                    )}
-                                </StyledTableRow>
-                            </>
+                            <StyledTableRow>
+                                <StyledTableCell colSpan={showActions ? 8 : 7} sx={{ border: 0 }}>
+                                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                        <CircularProgress />
+                                    </Box>
+                                </StyledTableCell>
+                            </StyledTableRow>
                         ) : (
                             <>
                                 {sortedData.map((row) => {

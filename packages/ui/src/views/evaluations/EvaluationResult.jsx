@@ -19,7 +19,7 @@ import {
     Box,
     IconButton,
     TableRow,
-    Skeleton,
+    CircularProgress,
     TableCell
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -705,30 +705,13 @@ const EvalEvaluationRows = () => {
                                 </TableHead>
                                 <TableBody>
                                     {isTableLoading ? (
-                                        <>
-                                            <StyledTableRow>
-                                                <StyledTableCell sx={{ width: 2 }}>
-                                                    <Skeleton variant='text' />
-                                                </StyledTableCell>
-                                                <StyledTableCell>
-                                                    <Skeleton variant='text' />
-                                                </StyledTableCell>
-                                                <StyledTableCell>
-                                                    <Skeleton variant='text' />
-                                                </StyledTableCell>
-                                            </StyledTableRow>
-                                            <StyledTableRow>
-                                                <StyledTableCell sx={{ width: 2 }}>
-                                                    <Skeleton variant='text' />
-                                                </StyledTableCell>
-                                                <StyledTableCell>
-                                                    <Skeleton variant='text' />
-                                                </StyledTableCell>
-                                                <StyledTableCell>
-                                                    <Skeleton variant='text' />
-                                                </StyledTableCell>
-                                            </StyledTableRow>
-                                        </>
+                                        <StyledTableRow>
+                                            <StyledTableCell colSpan={3} sx={{ border: 0 }}>
+                                                <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                    <CircularProgress />
+                                                </Box>
+                                            </StyledTableCell>
+                                        </StyledTableRow>
                                     ) : (
                                         <>
                                             {rows.length > 0 &&

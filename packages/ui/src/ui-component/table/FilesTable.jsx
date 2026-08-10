@@ -2,9 +2,10 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { styled } from '@mui/material/styles'
 import {
+    Box,
+    CircularProgress,
     IconButton,
     Paper,
-    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -68,36 +69,13 @@ export const FilesTable = ({ data, isLoading, filterFunction, handleDelete }) =>
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
-                            <>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                                <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                            </>
+                            <StyledTableRow>
+                                <StyledTableCell colSpan={4} sx={{ border: 0 }}>
+                                    <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                        <CircularProgress />
+                                    </Box>
+                                </StyledTableCell>
+                            </StyledTableRow>
                         ) : (
                             <>
                                 {data?.filter(filterFunction).map((row, index) => (

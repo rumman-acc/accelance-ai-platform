@@ -5,8 +5,8 @@ import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Box,
     Button,
+    CircularProgress,
     Paper,
-    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -103,17 +103,13 @@ export const MCPServersTable = ({ data, isLoading, onSelect }) => {
                 </TableHead>
                 <TableBody>
                     {isLoading ? (
-                        <>
-                            {[0, 1].map((i) => (
-                                <StyledTableRow key={i}>
-                                    {[0, 1, 2, 3, 4].map((j) => (
-                                        <StyledTableCell key={j}>
-                                            <Skeleton variant='text' />
-                                        </StyledTableCell>
-                                    ))}
-                                </StyledTableRow>
-                            ))}
-                        </>
+                        <StyledTableRow>
+                            <StyledTableCell colSpan={5} sx={{ border: 0 }}>
+                                <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                    <CircularProgress />
+                                </Box>
+                            </StyledTableCell>
+                        </StyledTableRow>
                     ) : (
                         <>
                             {data?.map((row) => {

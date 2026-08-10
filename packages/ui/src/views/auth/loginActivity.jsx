@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 import {
     Box,
     Checkbox,
+    CircularProgress,
     FormControl,
     IconButton,
     InputLabel,
@@ -16,7 +17,6 @@ import {
     OutlinedInput,
     Paper,
     Select,
-    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -381,42 +381,13 @@ const LoginActivity = () => {
                                         </TableHead>
                                         <TableBody>
                                             {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                </>
+                                                <StyledTableRow>
+                                                    <StyledTableCell colSpan={5} sx={{ border: 0 }}>
+                                                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                            <CircularProgress />
+                                                        </Box>
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
                                             ) : (
                                                 <>
                                                     {activity.map((item, index) => (

@@ -20,7 +20,6 @@ import {
     FormControlLabel,
     IconButton,
     Paper,
-    Skeleton,
     Stack,
     Switch,
     Table,
@@ -619,10 +618,8 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
                 {/* Table */}
                 <Box sx={{ flex: 1, overflow: 'auto' }}>
                     {logsApi.loading && logs.length === 0 ? (
-                        <Box sx={{ p: 3 }}>
-                            {[...Array(5)].map((_, i) => (
-                                <Skeleton key={i} height={48} sx={{ my: 0.5 }} />
-                            ))}
+                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                            <CircularProgress />
                         </Box>
                     ) : logs.length === 0 ? (
                         <Box sx={{ p: 6, textAlign: 'center', color: 'text.secondary' }}>

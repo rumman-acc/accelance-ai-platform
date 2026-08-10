@@ -1,4 +1,4 @@
-import { Box, Skeleton, Typography } from '@mui/material'
+import { Box, CircularProgress, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import PropTypes from 'prop-types'
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -22,9 +22,8 @@ const TrialInfo = ({ billingPortalUrl, isLoading, paymentMethodExists, trialDays
             }}
         >
             {isLoading ? (
-                <Box display='flex' flexDirection='column' gap={1} sx={{ width: '100%' }}>
-                    <Skeleton width='100%' height={32} />
-                    <Skeleton width='100%' height={32} />
+                <Box display='flex' alignItems='center' justifyContent='center' sx={{ width: '100%', py: 1 }}>
+                    <CircularProgress size={24} />
                 </Box>
             ) : (
                 <>

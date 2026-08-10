@@ -15,7 +15,7 @@ import {
     OutlinedInput,
     Checkbox,
     ListItemText,
-    Skeleton,
+    CircularProgress,
     FormControlLabel,
     ToggleButtonGroup,
     MenuItem,
@@ -708,10 +708,8 @@ const Marketplace = () => {
                                 {!view || view === 'card' ? (
                                     <>
                                         {isLoading ? (
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
+                                            <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 10 }}>
+                                                <CircularProgress />
                                             </Box>
                                         ) : (
                                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
@@ -841,10 +839,8 @@ const Marketplace = () => {
                                 {!view || view === 'card' ? (
                                     <>
                                         {isLoading ? (
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
+                                            <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 10 }}>
+                                                <CircularProgress />
                                             </Box>
                                         ) : (
                                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>

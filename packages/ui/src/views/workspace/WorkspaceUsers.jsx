@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     IconButton,
     Checkbox,
-    Skeleton,
+    CircularProgress,
     Box,
     TableRow,
     TableContainer,
@@ -397,48 +397,13 @@ const WorkspaceDetails = () => {
                                         </TableHead>
                                         <TableBody>
                                             {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                </>
+                                                <StyledTableRow>
+                                                    <StyledTableCell colSpan={6} sx={{ border: 0 }}>
+                                                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                            <CircularProgress />
+                                                        </Box>
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
                                             ) : (
                                                 <>
                                                     {(workspaceUsers || []).filter(filterUsers).map((item, index) => (

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Stack, Skeleton } from '@mui/material'
+import { Box, Stack, CircularProgress } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -143,10 +143,8 @@ const OpenAIAssistantLayout = () => {
                             </StyledPermissionButton>
                         </ViewHeader>
                         {isLoading ? (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
+                            <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 10 }}>
+                                <CircularProgress />
                             </Box>
                         ) : (
                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>

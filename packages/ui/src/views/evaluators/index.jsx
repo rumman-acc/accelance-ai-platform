@@ -2,7 +2,20 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
-import { Chip, Skeleton, Box, Stack, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Button } from '@mui/material'
+import {
+    Chip,
+    CircularProgress,
+    Box,
+    Stack,
+    TableContainer,
+    Paper,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    Button
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -230,42 +243,13 @@ const Evaluators = () => {
                                         </TableHead>
                                         <TableBody>
                                             {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                </>
+                                                <StyledTableRow>
+                                                    <StyledTableCell colSpan={5} sx={{ border: 0 }}>
+                                                        <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
+                                                            <CircularProgress />
+                                                        </Box>
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
                                             ) : (
                                                 <>
                                                     {evaluators.filter(filterDatasets).map((ds, index) => (

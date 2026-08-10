@@ -9,7 +9,7 @@ import { styled } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Box,
-    Skeleton,
+    CircularProgress,
     Stack,
     Table,
     TableBody,
@@ -589,39 +589,18 @@ const Roles = () => {
                                                 </TableHead>
                                                 <TableBody>
                                                     {isLoading ? (
-                                                        <>
-                                                            <StyledTableRow>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                            </StyledTableRow>
-                                                            <StyledTableRow>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                            </StyledTableRow>
-                                                        </>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell colSpan={5} sx={{ border: 0 }}>
+                                                                <Box
+                                                                    display='flex'
+                                                                    alignItems='center'
+                                                                    justifyContent='center'
+                                                                    sx={{ py: 6 }}
+                                                                >
+                                                                    <CircularProgress />
+                                                                </Box>
+                                                            </StyledTableCell>
+                                                        </StyledTableRow>
                                                     ) : (
                                                         <>
                                                             {roles.filter(filterUsers).map((role, index) => (
