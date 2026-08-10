@@ -107,13 +107,11 @@ export class AccountController {
                         })
                     })
                 } else {
-                    // For JWT-based users (owner, org_admin)
-                    res.clearCookie('connect.sid') // Clear the session cookie
-                    res.clearCookie('token') // Clear the JWT cookie
-                    res.clearCookie('refreshToken') // Clear the JWT cookie
-                    return res.redirect('/login') // Redirect to the login page
+                    clearAuthCookies(res)
+                    return res.redirect('/login')
                 }
             }
+            clearAuthCookies(res)
             return res.status(200).json({ message: 'logged_out', redirectTo: `/login` })
         } catch (error) {
             next(error)
@@ -197,4 +195,10 @@ function sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
     }
 
     return sanitized
+}
+
+function clearAuthCookies(res: Response) {
+    res.clearCookie('connect.sid')
+    res.clearCookie('token')
+    res.clearCookie('refreshToken')
 }
