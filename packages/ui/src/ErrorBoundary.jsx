@@ -6,8 +6,11 @@ import { IconCopy } from '@tabler/icons-react'
 const ErrorBoundary = ({ error }) => {
     const theme = useTheme()
 
+    const status = error?.response?.status ?? 'Network Error'
+    const message = error?.response?.data?.message ?? error?.message ?? 'Unable to reach the server. Please try again shortly.'
+
     const copyToClipboard = () => {
-        const errorMessage = `Status: ${error.response.status}\n${error.response.data.message}`
+        const errorMessage = `Status: ${status}\n${message}`
         navigator.clipboard.writeText(errorMessage)
     }
 
@@ -28,9 +31,9 @@ const ErrorBoundary = ({ error }) => {
                             <IconCopy />
                         </IconButton>
                         <pre style={{ margin: 0, overflowWrap: 'break-word', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
-                            <code>{`Status: ${error.response.status}`}</code>
+                            <code>{`Status: ${status}`}</code>
                             <br />
-                            <code>{error.response?.data?.message}</code>
+                            <code>{message}</code>
                         </pre>
                     </Box>
                 </Card>

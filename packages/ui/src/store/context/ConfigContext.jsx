@@ -7,6 +7,7 @@ const ConfigContext = createContext()
 export const ConfigProvider = ({ children }) => {
     const [config, setConfig] = useState({})
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [isEnterpriseLicensed, setEnterpriseLicensed] = useState(false)
     const [isCloud, setCloudLicensed] = useState(false)
     const [isOpenSource, setOpenSource] = useState(false)
@@ -37,14 +38,17 @@ export const ConfigProvider = ({ children }) => {
 
                 setLoading(false)
             })
-            .catch((error) => {
-                console.error('Error fetching data:', error)
+            .catch((err) => {
+                console.error('Error fetching data:', err)
+                setError(err)
                 setLoading(false)
             })
     }, [])
 
     return (
-        <ConfigContext.Provider value={{ config, loading, isEnterpriseLicensed, isCloud, isOpenSource }}>{children}</ConfigContext.Provider>
+        <ConfigContext.Provider value={{ config, loading, error, isEnterpriseLicensed, isCloud, isOpenSource }}>
+            {children}
+        </ConfigContext.Provider>
     )
 }
 

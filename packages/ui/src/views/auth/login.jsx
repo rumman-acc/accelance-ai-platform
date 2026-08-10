@@ -5,18 +5,21 @@ import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // API
 import authApi from '@/api/auth'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useError } from '@/store/context/ErrorContext'
 
 // ==============================|| ResolveLoginPage ||============================== //
 
 const ResolveLoginPage = () => {
     const resolveLogin = useApi(authApi.resolveLogin)
     const [loading, setLoading] = useState(false)
+    const { error } = useError()
 
     useEffect(() => {
         setLoading(false)
@@ -37,7 +40,10 @@ const ResolveLoginPage = () => {
 
     return (
         <>
-            <MainCard maxWidth='md'>{loading && <BackdropLoader open={loading} />}</MainCard>
+            <MainCard maxWidth='md'>
+                {loading && <BackdropLoader open={loading} />}
+                {!loading && error && <ErrorBoundary error={error} />}
+            </MainCard>
         </>
     )
 }
