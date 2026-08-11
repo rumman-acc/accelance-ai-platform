@@ -10,6 +10,7 @@ import ItemCard from '@/ui-component/cards/ItemCard'
 import MCPItemCard from '@/ui-component/cards/MCPItemCard'
 import ToolDialog from './ToolDialog'
 import CustomMcpServerDialog from './CustomMcpServerDialog'
+import NativeToolsTab from './NativeToolsTab'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { ToolsTable } from '@/ui-component/table/ToolsListTable'
@@ -23,6 +24,7 @@ import customMcpServersApi from '@/api/custommcpservers'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import useNativeToolsCatalog from '@/hooks/useNativeToolsCatalog'
 import { useError } from '@/store/context/ErrorContext'
 import { gridSpacing } from '@/store/constant'
 
@@ -30,12 +32,21 @@ import { gridSpacing } from '@/store/constant'
 import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 
+const SEARCH_PLACEHOLDERS = [
+    'Search Tools',
+    'Search Custom MCP Servers',
+    'Search Native Tools',
+    'Search Native Connectors',
+    'Search Native MCP Servers'
+]
+
 // ==============================|| TOOLS ||============================== //
 
 const Tools = () => {
     const theme = useTheme()
     const getAllToolsApi = useApi(toolsApi.getAllTools)
     const getAllCustomMcpServersApi = useApi(customMcpServersApi.getAllCustomMcpServers)
+    const nativeCatalog = useNativeToolsCatalog()
     const { error, setError } = useError()
 
     const [tabValue, setTabValue] = useState(0)
@@ -208,7 +219,7 @@ const Tools = () => {
     useEffect(() => {
         if (tabValue === 0) {
             refresh(currentPage, pageLimit)
-        } else {
+        } else if (tabValue === 1) {
             refreshCustomMcp(mcpCurrentPage, mcpPageLimit)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -395,7 +406,7 @@ const Tools = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder={tabValue === 0 ? 'Search Tools' : 'Search Custom MCP Servers'}
+                            searchPlaceholder={SEARCH_PLACEHOLDERS[tabValue] || 'Search'}
                             title='Tools'
                             description='External functions or APIs the agent can use to take action'
                         />
@@ -412,11 +423,41 @@ const Tools = () => {
                             <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)} aria-label='tools tabs'>
                                 <Tab label='Custom Tools' />
                                 <Tab label='Custom MCP Servers' />
+                                <Tab label='Native Tools' />
+                                <Tab label='Native Connectors' />
+                                <Tab label='Native MCP Servers' />
                             </Tabs>
-                            <Box sx={{ pb: 1 }}>{tabValue === 0 ? renderCustomToolsToolbar() : renderMcpServersToolbar()}</Box>
+                            <Box sx={{ pb: 1 }}>
+                                {tabValue === 0 && renderCustomToolsToolbar()}
+                                {tabValue === 1 && renderMcpServersToolbar()}
+                            </Box>
                         </Box>
                         {tabValue === 0 && renderCustomToolsTab()}
                         {tabValue === 1 && renderMcpServersTab()}
+                        {tabValue === 2 && (
+                            <NativeToolsTab
+                                items={nativeCatalog.tools}
+                                isLoading={nativeCatalog.isLoading}
+                                search={search}
+                                emptyLabel='No Native Tools Match Your Search'
+                            />
+                        )}
+                        {tabValue === 3 && (
+                            <NativeToolsTab
+                                items={nativeCatalog.connectors}
+                                isLoading={nativeCatalog.isLoading}
+                                search={search}
+                                emptyLabel='No Native Connectors Match Your Search'
+                            />
+                        )}
+                        {tabValue === 4 && (
+                            <NativeToolsTab
+                                items={nativeCatalog.mcpServers}
+                                isLoading={nativeCatalog.isLoading}
+                                search={search}
+                                emptyLabel='No Native MCP Servers Match Your Search'
+                            />
+                        )}
                     </Stack>
                 )}
             </MainCard>
