@@ -201,6 +201,19 @@ triggered a given run. This is foundation-only plumbing for the 🔴 "agent prin
 §2 of `rules/epics-feature-status.md` — no enforcement exists yet, this just makes the identity
 available for those epics to consume.
 
+**Update (2026-08-11, cont'd):** built on that plumbing — `CredentialAccess`
+(`database/entities/CredentialAccess.ts`, `services/credential-access`) is a new explicit
+per-user grant table for `Credential`, plus a `Credential.createdBy` owner column. Previously
+`Credential` was scoped only by `workspaceId`; any workspace member with
+`chatflows:update`/`credentials:update` could attach any teammate's credential to any flow with
+no record of it. `hasAccess(userId, credentialId)` checks ownership, an explicit grant, or
+cross-workspace sharing via the existing `WorkspaceShared` mechanism. A backfill migration grants
+every current active `WorkspaceUser` access to their workspace's existing credentials so nothing
+breaks on deploy; credentials created after this ships default to creator-only access. Still no
+execution-time enforcement — `hasAccess()` is only consulted by the new non-blocking
+`GET /chatflows/:id/credential-access-warnings` endpoint so far. Enforcement is the Phase 3
+tool-call chokepoint in the same epic, not yet built.
+
 ---
 
 ## 7. Deployment
