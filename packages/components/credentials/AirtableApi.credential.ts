@@ -12,13 +12,13 @@ class AirtableApi implements INodeCredential {
         this.name = 'airtableApi'
         this.version = 1.0
         this.description =
-            'Refer to <a target="_blank" href="https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens">official guide</a> on how to get accessToken on Airtable'
+            'Personal Access Token created at <a target="_blank" href="https://airtable.com/create/tokens">airtable.com/create/tokens</a>, scoped with data.records:read / data.records:write access on the target base'
         this.inputs = [
             {
-                label: 'Access Token',
+                label: 'Personal Access Token',
                 name: 'accessToken',
                 type: 'password',
-                placeholder: '<AIRTABLE_ACCESS_TOKEN>'
+                placeholder: '<AIRTABLE_PAT>'
             }
         ]
     }

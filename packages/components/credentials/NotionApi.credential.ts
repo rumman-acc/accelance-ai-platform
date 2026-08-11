@@ -12,12 +12,13 @@ class NotionApi implements INodeCredential {
         this.name = 'notionApi'
         this.version = 1.0
         this.description =
-            'You can find integration token <a target="_blank" href="https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration">here</a>'
+            'Internal Integration Secret from a Notion integration. Refer to <a target="_blank" href="https://www.notion.so/profile/integrations">Notion integrations settings</a> to create one and share the relevant pages/databases with it.'
         this.inputs = [
             {
-                label: 'Notion Integration Token',
+                label: 'Internal Integration Secret',
                 name: 'notionIntegrationToken',
-                type: 'password'
+                type: 'password',
+                placeholder: '<NOTION_INTEGRATION_SECRET>'
             }
         ]
     }
