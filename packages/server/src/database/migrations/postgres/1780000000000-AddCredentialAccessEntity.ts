@@ -13,7 +13,7 @@ export class AddCredentialAccessEntity1780000000000 implements MigrationInterfac
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
             `CREATE TABLE IF NOT EXISTS "credential_access" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "id" uuid NOT NULL DEFAULT gen_random_uuid(),
                 "credentialId" text NOT NULL,
                 "userId" text NOT NULL,
                 "workspaceId" text NOT NULL,

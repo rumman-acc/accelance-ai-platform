@@ -6,7 +6,7 @@ export class AddAgentToolPolicyEntity1781000000000 implements MigrationInterface
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
             `CREATE TABLE IF NOT EXISTS "agent_tool_policy" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "id" uuid NOT NULL DEFAULT gen_random_uuid(),
                 "workspaceId" text NOT NULL,
                 "chatflowId" text NOT NULL DEFAULT '',
                 "toolNodeName" text NOT NULL,
