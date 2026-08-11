@@ -48,6 +48,7 @@ import { AddWebhookSecretToChatFlow1776240000002 } from './1776240000002-AddWebh
 import { AddUserIdToExecution1778000000001 } from './1778000000001-AddUserIdToExecution'
 import { AddCreatedByToCredential1779000000001 } from './1779000000001-AddCreatedByToCredential'
 import { AddCredentialAccessEntity1780000000001 } from './1780000000001-AddCredentialAccessEntity'
+import { AddAgentToolPolicyEntity1781000000001 } from './1781000000001-AddAgentToolPolicyEntity'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
@@ -126,6 +127,7 @@ export const mysqlMigrations = [
     AddUserIdToExecution1778000000001,
     AddCreatedByToCredential1779000000001,
     AddCredentialAccessEntity1780000000001,
+    AddAgentToolPolicyEntity1781000000001,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000

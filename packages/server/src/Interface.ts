@@ -158,6 +158,18 @@ export interface ICredentialAccess {
     createdDate: Date
 }
 
+export interface IAgentToolPolicy {
+    id: string
+    workspaceId: string
+    /** '' (empty string) means workspace-wide default -- see AgentToolPolicy entity comment. */
+    chatflowId: string
+    toolNodeName: string
+    effect: string
+    createdBy?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
 export interface IVariable {
     id: string
     name: string

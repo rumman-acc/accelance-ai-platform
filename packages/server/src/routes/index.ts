@@ -51,6 +51,7 @@ import publicExecutionsRouter from './public-executions'
 import settingsRouter from './settings'
 import statsRouter from './stats'
 import textToSpeechRouter from './text-to-speech'
+import toolPolicyRouter from './tool-policy'
 import toolsRouter from './tools'
 import upsertHistoryRouter from './upsert-history'
 import validationRouter from './validation'
@@ -88,6 +89,7 @@ router.use('/components-credentials-icon', componentsCredentialsIconRouter)
 router.use('/control-tower', controlTowerRouter)
 router.use('/credentials', credentialsRouter)
 router.use('/credential-access', credentialAccessRouter)
+router.use('/tool-policy', toolPolicyRouter)
 router.use('/datasets', IdentityManager.checkFeatureByPlan('feat:datasets'), datasetRouter)
 router.use('/document-store', documentStoreRouter)
 router.use('/evaluations', IdentityManager.checkFeatureByPlan('feat:evaluations'), evaluationsRouter)

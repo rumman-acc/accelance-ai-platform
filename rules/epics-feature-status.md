@@ -128,7 +128,7 @@ field)
 | Encrypted secrets at rest | ✅ Done & configured | `utils/index.ts` `getEncryptionKey()`, `SECRETKEY_OVERWRITE` | Secrets management |
 | Production security toggles (HTTP/OAuth2 checks, path-traversal safety, trust-proxy) | 🟡 Built, not configured | left on defaults in `.env` | Standard hardening checklist |
 | Agent principal model (an agent only ever exercises the acting user's own delegated grants) | 🟡 Built, not enforced | `CredentialAccess` entity + `services/credential-access`, `Credential.createdBy`, `userId` now threaded through the whole execution path (`Interface.ts` `IExecuteFlowParams`) — commits on `feature/tool-governance-phase-0-identity`. Grant model + backfill exist; nothing at execution time checks it yet (that's the Phase 3 tool-call chokepoint, still 🔴) | Least-privilege, per-user-delegated tool execution |
-| Least-privilege per-agent tool allowlist | 🔴 To build | none (only which nodes a flow author drags in — not an enforced allowlist) | Least-privilege agent access control |
+| Least-privilege per-agent tool allowlist | 🟡 Built, not enforced | `AgentToolPolicy` entity + `services/tool-policy` — commits on `feature/tool-governance-phase-0-identity`. Workspace-wide/chatflow-scoped allow/deny rows exist with CRUD routes under `/tool-policy` (`tools:manage-policy` permission); nothing at execution time checks `evaluate()` yet (Phase 3 tool-call chokepoint, still 🔴). Coarse by design — keyed on toolNodeName, so composite nodes like `agentAsTool` are allow/deny as a whole, not per downstream target | Least-privilege agent access control |
 
 ## 12. Cost / Token / FinOps Management
 

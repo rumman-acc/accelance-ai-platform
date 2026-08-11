@@ -45,6 +45,7 @@ import { AES, enc } from 'crypto-js'
 
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
+import { AgentToolPolicy } from '../database/entities/AgentToolPolicy'
 import { Credential } from '../database/entities/Credential'
 import { CredentialAccess } from '../database/entities/CredentialAccess'
 import { Tool } from '../database/entities/Tool'
@@ -99,6 +100,7 @@ export const databaseEntities: IDatabaseEntity = {
     Tool: Tool,
     Credential: Credential,
     CredentialAccess: CredentialAccess,
+    AgentToolPolicy: AgentToolPolicy,
     Lead: Lead,
     Assistant: Assistant,
     Variable: Variable,

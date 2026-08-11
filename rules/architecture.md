@@ -214,6 +214,23 @@ execution-time enforcement — `hasAccess()` is only consulted by the new non-bl
 `GET /chatflows/:id/credential-access-warnings` endpoint so far. Enforcement is the Phase 3
 tool-call chokepoint in the same epic, not yet built.
 
+**Update (2026-08-11, cont'd again):** added `AgentToolPolicy` (`database/entities/AgentToolPolicy.ts`,
+`services/tool-policy`) — the least-privilege per-agent tool allowlist. Rows are keyed on
+`(workspaceId, chatflowId, toolNodeName)`; `chatflowId` uses `''` as a "workspace-wide default"
+sentinel rather than `NULL`, since two `NULL`s don't collide under a unique index and a sentinel
+keeps exactly one default row enforceable across all four DB drivers this repo still migrates
+(postgres/mysql/mariadb/sqlite). `evaluate()` does most-specific-match-wins (chatflow-scoped row
+beats the workspace default) and defaults to allow when no row matches at all — deliberately
+permissive so nothing breaks the moment this ships. CRUD routes live under `/tool-policy`, gated
+by a new `tools:manage-policy` permission. Same as `CredentialAccess`: the grant model exists,
+nothing at execution time consults it yet. Known coarseness, not a bug: composite tool nodes
+like `AgentAsTool` (which lets one agent call another agentflow via its own fresh HTTP request to
+`/api/prediction/:agentflowid`) are allow/deny as a whole under this scheme — a workspace can
+block the `agentAsTool` node type for an agent, but not restrict which *target* agentflow it may
+call. That also means the *called* agentflow's own principal check is unaffected by the caller's
+identity, since the inner request authenticates via `agentAsTool`'s own credential, not the
+original triggering user.
+
 ---
 
 ## 7. Deployment

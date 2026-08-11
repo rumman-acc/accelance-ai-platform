@@ -35,6 +35,7 @@ export class Permissions {
         toolsCategory.addPermission(new Permission('tools:update', 'Update', true, true, true))
         toolsCategory.addPermission(new Permission('tools:delete', 'Delete', true, true, true))
         toolsCategory.addPermission(new Permission('tools:export', 'Export', true, true, true))
+        toolsCategory.addPermission(new Permission('tools:manage-policy', 'Manage Tool Access Policy', false, true, true))
         this.categories.push(toolsCategory)
 
         const assistantsCategory = new PermissionCategory('assistants')

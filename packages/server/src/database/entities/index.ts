@@ -1,6 +1,7 @@
 import { ChatFlow } from './ChatFlow'
 import { ChatMessage } from './ChatMessage'
 import { ChatMessageFeedback } from './ChatMessageFeedback'
+import { AgentToolPolicy } from './AgentToolPolicy'
 import { Credential } from './Credential'
 import { CredentialAccess } from './CredentialAccess'
 import { Tool } from './Tool'
@@ -37,6 +38,7 @@ export const entities = {
     ChatMessageFeedback,
     Credential,
     CredentialAccess,
+    AgentToolPolicy,
     Tool,
     Assistant,
     Variable,
