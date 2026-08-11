@@ -50,6 +50,7 @@ export class Permissions {
         credentialsCategory.addPermission(new Permission('credentials:update', 'Update', true, true, true))
         credentialsCategory.addPermission(new Permission('credentials:delete', 'Delete', true, true, true))
         credentialsCategory.addPermission(new Permission('credentials:share', 'Share', false, true, true))
+        credentialsCategory.addPermission(new Permission('credentials:manage-access', 'Manage User Access', false, true, true))
         this.categories.push(credentialsCategory)
 
         const variablesCategory = new PermissionCategory('variables')

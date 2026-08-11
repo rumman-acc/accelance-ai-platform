@@ -46,6 +46,8 @@ import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermi
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
 import { AddWebhookSecretToChatFlow1776240000002 } from './1776240000002-AddWebhookSecretToChatFlow'
 import { AddUserIdToExecution1778000000001 } from './1778000000001-AddUserIdToExecution'
+import { AddCreatedByToCredential1779000000001 } from './1779000000001-AddCreatedByToCredential'
+import { AddCredentialAccessEntity1780000000001 } from './1780000000001-AddCredentialAccessEntity'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
@@ -122,6 +124,8 @@ export const mysqlMigrations = [
     AddReasonContentToChatMessage1764759496768,
     AddWebhookSecretToChatFlow1776240000002,
     AddUserIdToExecution1778000000001,
+    AddCreatedByToCredential1779000000001,
+    AddCredentialAccessEntity1780000000001,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000

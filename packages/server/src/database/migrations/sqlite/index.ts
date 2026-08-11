@@ -42,6 +42,8 @@ import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermi
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
 import { AddWebhookSecretToChatFlow1776240000000 } from './1776240000000-AddWebhookSecretToChatFlow'
 import { AddUserIdToExecution1778000000003 } from './1778000000003-AddUserIdToExecution'
+import { AddCreatedByToCredential1779000000003 } from './1779000000003-AddCreatedByToCredential'
+import { AddCredentialAccessEntity1780000000003 } from './1780000000003-AddCredentialAccessEntity'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
@@ -114,6 +116,8 @@ export const sqliteMigrations = [
     AddReasonContentToChatMessage1764759496768,
     AddWebhookSecretToChatFlow1776240000000,
     AddUserIdToExecution1778000000003,
+    AddCreatedByToCredential1779000000003,
+    AddCredentialAccessEntity1780000000003,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000

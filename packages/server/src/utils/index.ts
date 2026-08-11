@@ -46,6 +46,7 @@ import { AES, enc } from 'crypto-js'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
+import { CredentialAccess } from '../database/entities/CredentialAccess'
 import { Tool } from '../database/entities/Tool'
 import { Assistant } from '../database/entities/Assistant'
 import { Lead } from '../database/entities/Lead'
@@ -97,6 +98,7 @@ export const databaseEntities: IDatabaseEntity = {
     ChatMessage: ChatMessage,
     Tool: Tool,
     Credential: Credential,
+    CredentialAccess: CredentialAccess,
     Lead: Lead,
     Assistant: Assistant,
     Variable: Variable,
@@ -1768,6 +1770,10 @@ export const transformToCredentialEntity = async (body: ICredentialReqBody): Pro
 
     if (body.workspaceId) {
         newCredential.workspaceId = body.workspaceId
+    }
+
+    if (body.createdBy) {
+        newCredential.createdBy = body.createdBy
     }
 
     return newCredential

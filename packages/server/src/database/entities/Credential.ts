@@ -26,4 +26,7 @@ export class Credential implements ICredential {
 
     @Column({ nullable: false, type: 'text' })
     workspaceId: string
+
+    @Column({ nullable: true, type: 'text' })
+    createdBy?: string
 }

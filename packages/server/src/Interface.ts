@@ -143,6 +143,19 @@ export interface ICredential {
     updatedDate: Date
     createdDate: Date
     workspaceId: string
+    /** Who registered this credential. Undefined for credentials created before this column
+     * existed — the backfill migration does not set it, since there's no reliable historical
+     * owner to attribute pre-existing rows to. */
+    createdBy?: string
+}
+
+export interface ICredentialAccess {
+    id: string
+    credentialId: string
+    userId: string
+    workspaceId: string
+    grantedBy?: string
+    createdDate: Date
 }
 
 export interface IVariable {
@@ -411,6 +424,7 @@ export interface ICredentialReqBody {
     credentialName: string
     plainDataObj: ICredentialDataDecrypted
     workspaceId: string
+    createdBy?: string
 }
 
 // Decrypted credential object sent back to client

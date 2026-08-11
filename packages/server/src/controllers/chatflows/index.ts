@@ -7,6 +7,7 @@ import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import apiKeyService from '../../services/apikey'
 import chatflowsService from '../../services/chatflows'
+import credentialAccessService from '../../services/credential-access'
 import scheduleService from '../../services/schedule'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -317,6 +318,28 @@ const checkIfChatflowHasChanged = async (req: Request, res: Response, next: Next
     }
 }
 
+const getCredentialAccessWarnings = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params.id) {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatflowsController.getCredentialAccessWarnings - id not provided!`
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalAccelanceError(
+                StatusCodes.NOT_FOUND,
+                `Error: chatflowsController.getCredentialAccessWarnings - workspace not found!`
+            )
+        }
+        const apiResponse = await credentialAccessService.getCredentialAccessWarnings(req.params.id, workspaceId, req.user?.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const setWebhookSecret = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.params.id) {
@@ -474,6 +497,7 @@ export default {
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
     setWebhookSecret,
+    getCredentialAccessWarnings,
     clearWebhookSecret,
     getScheduleStatus,
     getScheduleTriggerLogs,

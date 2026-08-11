@@ -37,6 +37,13 @@ router.delete(['/', '/:id'], checkAnyPermission('chatflows:delete,agentflows:del
 router.post('/:id/webhook-secret', checkAnyPermission('chatflows:update,agentflows:update'), chatflowsController.setWebhookSecret)
 router.delete('/:id/webhook-secret', checkAnyPermission('chatflows:update,agentflows:update'), chatflowsController.clearWebhookSecret)
 
+// CREDENTIAL ACCESS WARNINGS (build-time, non-blocking)
+router.get(
+    '/:id/credential-access-warnings',
+    checkAnyPermission('chatflows:create,chatflows:update,agentflows:create,agentflows:update'),
+    chatflowsController.getCredentialAccessWarnings
+)
+
 // CHECK FOR CHANGE
 router.get(
     '/has-changed/:id/:lastUpdatedDateTime',

@@ -13,6 +13,7 @@ const createCredential = async (req: Request, res: Response, next: NextFunction)
         }
         const body = req.body
         body.workspaceId = req.user?.activeWorkspaceId
+        body.createdBy = req.user?.id
         const apiResponse = await credentialsService.createCredential(body)
         return res.json(apiResponse)
     } catch (error) {
