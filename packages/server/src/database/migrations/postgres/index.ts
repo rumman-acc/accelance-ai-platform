@@ -61,6 +61,7 @@ import { AddUserIdToExecution1778000000000 } from './1778000000000-AddUserIdToEx
 import { AddCreatedByToCredential1779000000000 } from './1779000000000-AddCreatedByToCredential'
 import { AddCredentialAccessEntity1780000000000 } from './1780000000000-AddCredentialAccessEntity'
 import { AddAgentToolPolicyEntity1781000000000 } from './1781000000000-AddAgentToolPolicyEntity'
+import { AddToolCallAuditEntity1782000000000 } from './1782000000000-AddToolCallAuditEntity'
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/postgres/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/postgres/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/postgres/1746862866554-ExecutionLinkWorkspaceId'
@@ -130,5 +131,6 @@ export const postgresMigrations = [
     AddUserIdToExecution1778000000000,
     AddCreatedByToCredential1779000000000,
     AddCredentialAccessEntity1780000000000,
-    AddAgentToolPolicyEntity1781000000000
+    AddAgentToolPolicyEntity1781000000000,
+    AddToolCallAuditEntity1782000000000
 ]

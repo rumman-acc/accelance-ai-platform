@@ -49,6 +49,7 @@ import { AddUserIdToExecution1778000000002 } from './1778000000002-AddUserIdToEx
 import { AddCreatedByToCredential1779000000002 } from './1779000000002-AddCreatedByToCredential'
 import { AddCredentialAccessEntity1780000000002 } from './1780000000002-AddCredentialAccessEntity'
 import { AddAgentToolPolicyEntity1781000000002 } from './1781000000002-AddAgentToolPolicyEntity'
+import { AddToolCallAuditEntity1782000000002 } from './1782000000002-AddToolCallAuditEntity'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
 
@@ -127,6 +128,7 @@ export const mariadbMigrations = [
     AddCreatedByToCredential1779000000002,
     AddCredentialAccessEntity1780000000002,
     AddAgentToolPolicyEntity1781000000002,
+    AddToolCallAuditEntity1782000000002,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000
 ]

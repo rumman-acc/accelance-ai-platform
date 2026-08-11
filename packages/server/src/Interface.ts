@@ -158,6 +158,18 @@ export interface ICredentialAccess {
     createdDate: Date
 }
 
+export interface IToolCallAudit {
+    id: string
+    workspaceId: string
+    chatflowId: string
+    userId?: string
+    toolNodeName: string
+    credentialId?: string
+    decision: string
+    reason?: string
+    createdDate: Date
+}
+
 export interface IAgentToolPolicy {
     id: string
     workspaceId: string

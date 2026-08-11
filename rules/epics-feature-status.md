@@ -39,7 +39,7 @@ field)
 | --- | --- | --- | --- |
 | Native tool nodes (Gmail, GDrive, Jira, MS Teams/Outlook, Composio, MCP, custom REST) | 🟡 Built, not configured | `packages/components/nodes/tools/` | Built-in tool/connector library |
 | Encrypted per-node credential store + OAuth2 | ✅ Done (mechanism) | `services/credentials`, `routes/oauth2` | OAuth/token/secret management for tools |
-| Centralized tool-call policy / DLP enforcement | 🔴 To build | none | Per-action runtime authorization tied to IdP/DLP/compliance policy, with audit logging — worth building directly on the existing credential/tool-node model rather than adopting a third-party tool-governance vendor for what's ultimately a policy layer, not new integrations |
+| Centralized tool-call policy enforcement | 🟡 Built, not DLP | `wrapToolWithPolicy`/`evaluateToolCall` (`packages/components/src/toolPolicy.ts`), wired into the two real tool-instantiation surfaces — `utils/index.ts` `buildFlow` (covers classic single-agent, Multi-Agent, and Sequential Agents, since all three instantiate tool nodes through this one shared loop) and AgentFlow V2's `Tool.ts` — plus `ToolCallAudit` logging every allow/deny. Commits on `feature/tool-governance-phase-0-identity`. Enforces the allowlist (`AgentToolPolicy`) and per-user credential grants (`CredentialAccess`) live; DLP content redaction was never built — everything past "may this tool/credential run" (field-level masking, regex rules on tool input/output) is still 🔴 | Per-action runtime authorization tied to IdP/DLP/compliance policy, with audit logging — worth building directly on the existing credential/tool-node model rather than adopting a third-party tool-governance vendor for what's ultimately a policy layer, not new integrations |
 | Custom MCP tool support | 🟡 Built, not configured | `CUSTOM_MCP_SECURITY_CHECK`, `CUSTOM_MCP_ALLOWED_ENV_VARS` | MCP as the standard tool-context protocol |
 
 ## 3. Memory, Knowledge & RAG
@@ -127,8 +127,8 @@ field)
 | --- | --- | --- | --- |
 | Encrypted secrets at rest | ✅ Done & configured | `utils/index.ts` `getEncryptionKey()`, `SECRETKEY_OVERWRITE` | Secrets management |
 | Production security toggles (HTTP/OAuth2 checks, path-traversal safety, trust-proxy) | 🟡 Built, not configured | left on defaults in `.env` | Standard hardening checklist |
-| Agent principal model (an agent only ever exercises the acting user's own delegated grants) | 🟡 Built, not enforced | `CredentialAccess` entity + `services/credential-access`, `Credential.createdBy`, `userId` now threaded through the whole execution path (`Interface.ts` `IExecuteFlowParams`) — commits on `feature/tool-governance-phase-0-identity`. Grant model + backfill exist; nothing at execution time checks it yet (that's the Phase 3 tool-call chokepoint, still 🔴) | Least-privilege, per-user-delegated tool execution |
-| Least-privilege per-agent tool allowlist | 🟡 Built, not enforced | `AgentToolPolicy` entity + `services/tool-policy` — commits on `feature/tool-governance-phase-0-identity`. Workspace-wide/chatflow-scoped allow/deny rows exist with CRUD routes under `/tool-policy` (`tools:manage-policy` permission); nothing at execution time checks `evaluate()` yet (Phase 3 tool-call chokepoint, still 🔴). Coarse by design — keyed on toolNodeName, so composite nodes like `agentAsTool` are allow/deny as a whole, not per downstream target | Least-privilege agent access control |
+| Agent principal model (an agent only ever exercises the acting user's own delegated grants) | ✅ Done | `CredentialAccess` + `services/credential-access`, `Credential.createdBy`, `userId` threaded through the execution path, now **enforced** at runtime via `evaluateToolCall` (`packages/components/src/toolPolicy.ts`), wired into both real tool-instantiation surfaces (`utils/index.ts` `buildFlow`, AgentFlow V2 `Tool.ts`) — commits on `feature/tool-governance-phase-0-identity`. No-principal runs (public chatbot/API-key) skip this check by design, per the locked-in rollout decision | Least-privilege, per-user-delegated tool execution |
+| Least-privilege per-agent tool allowlist | ✅ Done | `AgentToolPolicy` + `services/tool-policy`, **enforced** at the same chokepoint as above — commits on `feature/tool-governance-phase-0-identity`. CRUD routes under `/tool-policy` (`tools:manage-policy` permission). Coarse by design — keyed on toolNodeName, so composite nodes like `agentAsTool` are allow/deny as a whole, not per downstream target | Least-privilege agent access control |
 
 ## 12. Cost / Token / FinOps Management
 
@@ -294,7 +294,7 @@ is newly estimated on the same reduced basis.
 
 **Encrypted credential store + OAuth2** — The underlying mechanism (encryption at rest, OAuth2 routes/templates) is done; it's what the tool-credential work above plugs into. **Effort: 0 days.**
 
-**Centralized tool-call policy/DLP enforcement** — Nothing today enforces, in one place, which agent/tenant may call which tool under what data rule. The tool nodes and OAuth/credential mechanism Flowise already has cover the actual integrations (Gmail, Jira, Drive, etc.) — what's missing is a policy layer on top, which is why this is worth building directly rather than adopting a third-party tool-governance product whose main value (a large pre-built tool catalog) is redundant with what's already native here. Scope: a policy-check step wrapping tool execution, a per-tenant/per-agent allowlist table, optional DLP rule hooks. **Effort: 10 days** (kept as originally sized).
+**Centralized tool-call policy enforcement** — Done for the policy-check half: `evaluateToolCall`/`wrapToolWithPolicy` wraps every real tool instantiation (classic/Multi-Agent/Sequential Agents via `buildFlow`, and AgentFlow V2's `Tool.ts`), checks `AgentToolPolicy` + `CredentialAccess`, and logs to `ToolCallAudit`. **DLP rule hooks (content-level redaction) were not built** — this covers "may this tool/credential run," not "does this tool call contain data that should be masked/blocked." **Effort remaining: ~3 days** for DLP redaction rules, if/when needed.
 
 **Custom MCP tool support** — Security toggles and env vars exist; no MCP server has been connected and the toggles haven't been explicitly reviewed. **Effort: 0.5 day** per server connected.
 
@@ -396,9 +396,9 @@ is newly estimated on the same reduced basis.
 
 **Production security toggles** — Exist, left on defaults. **Effort: 0.5 day** to review and set deliberately before sitting behind a real load balancer.
 
-**Agent principal model (agent acts only within its user's own permissions)** — Today a flow's credentials are static, not scoped to whoever triggered the run. **Effort: 5 days** — the highest-leverage security item in the backlog, since everything else (tool governance, audit, HIL) is stronger once this invariant holds.
+**Agent principal model (agent acts only within its user's own permissions)** — Done. `userId` threaded through the execution path, `CredentialAccess` grants enforced at the tool-call chokepoint. **Effort: 0 days.**
 
-**Least-privilege per-agent tool allowlist** — No enforced allowlist beyond which nodes a flow author happens to drag in. **Effort: 3 days.**
+**Least-privilege per-agent tool allowlist** — Done. `AgentToolPolicy` enforced at the same chokepoint. **Effort: 0 days.**
 
 ### 12. Cost / Token / FinOps Management
 

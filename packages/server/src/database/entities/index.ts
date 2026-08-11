@@ -4,6 +4,7 @@ import { ChatMessageFeedback } from './ChatMessageFeedback'
 import { AgentToolPolicy } from './AgentToolPolicy'
 import { Credential } from './Credential'
 import { CredentialAccess } from './CredentialAccess'
+import { ToolCallAudit } from './ToolCallAudit'
 import { Tool } from './Tool'
 import { Assistant } from './Assistant'
 import { Variable } from './Variable'
@@ -39,6 +40,7 @@ export const entities = {
     Credential,
     CredentialAccess,
     AgentToolPolicy,
+    ToolCallAudit,
     Tool,
     Assistant,
     Variable,

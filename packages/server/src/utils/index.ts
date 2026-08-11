@@ -38,7 +38,8 @@ import {
     IMessage,
     FlowiseMemory,
     IFileUpload,
-    StorageProviderFactory
+    StorageProviderFactory,
+    wrapToolWithPolicy
 } from 'accelance-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
@@ -48,7 +49,10 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { AgentToolPolicy } from '../database/entities/AgentToolPolicy'
 import { Credential } from '../database/entities/Credential'
 import { CredentialAccess } from '../database/entities/CredentialAccess'
+import { ToolCallAudit } from '../database/entities/ToolCallAudit'
 import { Tool } from '../database/entities/Tool'
+import { WorkspaceShared } from '../enterprise/database/entities/EnterpriseEntities'
+import { WorkspaceUser } from '../enterprise/database/entities/workspace-user.entity'
 import { Assistant } from '../database/entities/Assistant'
 import { Lead } from '../database/entities/Lead'
 import { DataSource } from 'typeorm'
@@ -101,6 +105,9 @@ export const databaseEntities: IDatabaseEntity = {
     Credential: Credential,
     CredentialAccess: CredentialAccess,
     AgentToolPolicy: AgentToolPolicy,
+    ToolCallAudit: ToolCallAudit,
+    WorkspaceShared: WorkspaceShared,
+    WorkspaceUser: WorkspaceUser,
     Lead: Lead,
     Assistant: Assistant,
     Variable: Variable,
@@ -669,6 +676,20 @@ export const buildFlow = async ({
                     updateStorageUsage,
                     checkStorage
                 })
+
+                if (reactFlowNode.data.category === 'Tools') {
+                    outputResult = wrapToolWithPolicy(
+                        outputResult,
+                        {
+                            workspaceId: workspaceId as string,
+                            chatflowId: chatflowid,
+                            toolNodeName: reactFlowNode.data.name,
+                            userId,
+                            credentialId: reactFlowNodeData.credential
+                        },
+                        { appDataSource, databaseEntities }
+                    )
+                }
 
                 // Save dynamic variables
                 if (reactFlowNode.data.name === 'setVariable') {

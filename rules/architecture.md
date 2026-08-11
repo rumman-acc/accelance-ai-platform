@@ -231,6 +231,23 @@ call. That also means the *called* agentflow's own principal check is unaffected
 identity, since the inner request authenticates via `agentAsTool`'s own credential, not the
 original triggering user.
 
+**Update (2026-08-11, final):** enforcement is now live — `evaluateToolCall`/`wrapToolWithPolicy`
+(`packages/components/src/toolPolicy.ts`) wraps every tool instance's `_call` so a denial surfaces
+as a normal tool-error observation through LangChain's own callback machinery (`handleToolError`),
+not a bolted-on special case. **Correction to the two updates above:** actual tracing showed only
+**two** tool-instantiation surfaces exist, not three. `packages/server/src/utils/index.ts`
+`buildFlow`'s generic per-node `.init()` loop is where every real tool node (Gmail, Jira, custom
+REST, ...) gets instantiated — and *every* flow type routes through it first: classic
+single-agent, Multi-Agent, and Sequential Agents all call `buildFlow` before their own downstream
+graph-building runs (confirmed via `sequentialagents/ToolNode/ToolNode.ts`, which receives
+already-built `StructuredTool[]` instances via `nodeData.inputs.tools`, not raw config it
+instantiates itself). AgentFlow V2's `Tool.ts` is the only genuinely separate surface, because its
+underlying tool is selected dynamically at runtime from a dropdown rather than being its own node
+in the graph. So the two wrap sites are: `utils/index.ts` `buildFlow` (right after
+`newNodeInstance.init()`, gated on `category === 'Tools'`) and `Tool.ts`'s own `init()` call.
+`buildAgentGraph.ts` needed no changes — it only consumes tool instances `buildFlow` already
+wrapped. `ToolCallAudit` (new entity) logs every allow/deny; DLP content redaction was not built.
+
 ---
 
 ## 7. Deployment

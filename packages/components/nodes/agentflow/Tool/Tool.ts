@@ -4,6 +4,7 @@ import { processTemplateVariables } from '../../../src/utils'
 import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { toolSchemaToJsonSchema } from '../../../src/utils'
+import { wrapToolWithPolicy } from '../../../src/toolPolicy'
 
 interface IToolInputArgs {
     inputArgName: string
@@ -220,7 +221,18 @@ class Tool_Agentflow implements INode {
                 ...selectedToolConfig
             }
         }
-        const toolInstance = (await newToolNodeInstance.init(newNodeData, '', options)) as Tool | Tool[]
+        let toolInstance = (await newToolNodeInstance.init(newNodeData, '', options)) as Tool | Tool[]
+        toolInstance = wrapToolWithPolicy(
+            toolInstance,
+            {
+                workspaceId: options.workspaceId as string,
+                chatflowId: options.chatflowid as string,
+                toolNodeName: selectedTool,
+                userId: options.userId as string | undefined,
+                credentialId: newNodeData.credential
+            },
+            options
+        )
 
         let toolCallArgs: Record<string, any> = {}
 
