@@ -67,6 +67,7 @@ import { MonthDaysPicker } from '@/ui-component/picker/MonthDaysPicker'
 import { DatePicker } from '@/ui-component/picker/DatePicker'
 
 import ToolDialog from '@/views/tools/ToolDialog'
+import CustomMcpServerDialog from '@/views/tools/CustomMcpServerDialog'
 import AssistantDialog from '@/views/assistants/openai/AssistantDialog'
 import FormatPromptValuesDialog from '@/ui-component/dialog/FormatPromptValuesDialog'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
@@ -171,6 +172,8 @@ const NodeInputHandler = ({
     const [inputHintDialogProps, setInputHintDialogProps] = useState({})
     const [showConditionDialog, setShowConditionDialog] = useState(false)
     const [conditionDialogProps, setConditionDialogProps] = useState({})
+    const [showSaveMcpServerDialog, setShowSaveMcpServerDialog] = useState(false)
+    const [saveMcpServerDialogProps, setSaveMcpServerDialogProps] = useState({})
     const [isNvidiaNIMDialogOpen, setIsNvidiaNIMDialogOpen] = useState(false)
     const [tabValue, setTabValue] = useState(0)
 
@@ -595,6 +598,41 @@ const NodeInputHandler = ({
         }
         setAsyncOptionEditDialogProps({})
         setAsyncOptionEditDialog('')
+    }
+
+    const saveMcpServerFromConfig = () => {
+        const rawConfig = data.inputs?.mcpServerConfig
+        let parsedConfig
+        try {
+            parsedConfig = typeof rawConfig === 'string' ? JSON.parse(rawConfig) : rawConfig
+        } catch (e) {
+            enqueueSnackbar({
+                message: 'MCP Server Config is not valid JSON. Fix it before saving to your MCP servers list.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'error' }
+            })
+            return
+        }
+
+        if (!parsedConfig?.url) {
+            enqueueSnackbar({
+                message:
+                    'Only remote (URL-based) MCP servers can be saved to your reusable MCP servers list. Stdio command-based servers must stay inline in this flow.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'warning' }
+            })
+            return
+        }
+
+        const prefill = {
+            name: data.inputs?.mcpServerName || data.label || 'New MCP Server',
+            serverUrl: parsedConfig.url
+        }
+        if (parsedConfig.headers && Object.keys(parsedConfig.headers).length > 0) {
+            prefill.authType = 'CUSTOM_HEADERS'
+            prefill.authConfig = { headers: parsedConfig.headers }
+        }
+
+        setSaveMcpServerDialogProps({ type: 'ADD', data: prefill })
+        setShowSaveMcpServerDialog(true)
     }
 
     const handleNvidiaNIMDialogComplete = (containerData) => {
@@ -1106,7 +1144,7 @@ const NodeInputHandler = ({
                         )}
                         {inputParam.type === 'code' && (
                             <>
-                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start' }}>
+                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: 8 }}>
                                     {inputParam.codeExample && (
                                         <Button
                                             variant='outlined'
@@ -1116,6 +1154,11 @@ const NodeInputHandler = ({
                                             }}
                                         >
                                             See Example
+                                        </Button>
+                                    )}
+                                    {inputParam.name === 'mcpServerConfig' && data.name === 'customMCP' && (
+                                        <Button variant='outlined' onClick={saveMcpServerFromConfig}>
+                                            Save to My MCP Servers
                                         </Button>
                                     )}
                                 </div>
@@ -1526,6 +1569,19 @@ const NodeInputHandler = ({
                 onCancel={() => setAsyncOptionEditDialog('')}
                 onConfirm={onConfirmAsyncOption}
             ></AssistantDialog>
+            <CustomMcpServerDialog
+                show={showSaveMcpServerDialog}
+                dialogProps={saveMcpServerDialogProps}
+                onCancel={() => setShowSaveMcpServerDialog(false)}
+                onConfirm={() => setShowSaveMcpServerDialog(false)}
+                onCreated={() => {
+                    setShowSaveMcpServerDialog(false)
+                    enqueueSnackbar({
+                        message: 'Saved to your MCP servers list. Use the "Custom MCP Server" node to reuse it in any flow.',
+                        options: { key: new Date().getTime() + Math.random(), variant: 'success' }
+                    })
+                }}
+            ></CustomMcpServerDialog>
             <ExpandTextDialog
                 show={showExpandDialog}
                 dialogProps={expandDialogProps}

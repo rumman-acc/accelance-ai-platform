@@ -506,13 +506,21 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
             setIsEditing(false)
             setServerUrlError('')
         } else if (dialogProps.type === 'ADD') {
+            // dialogProps.data optionally prefills the form (e.g. when saving an
+            // inline Custom MCP node config from the canvas into the reusable list).
+            const prefill = dialogProps.data || {}
             setServerId('')
-            setServerName('')
-            setServerUrl('')
-            setIconSrc('')
-            setColor('')
-            setAuthType(MCP_AUTH_TYPE.NONE)
-            setHeaders([{ key: '', value: '' }])
+            setServerName(prefill.name || '')
+            setServerUrl(prefill.serverUrl || '')
+            setIconSrc(prefill.iconSrc || '')
+            setColor(prefill.color || '')
+            setAuthType(prefill.authType || MCP_AUTH_TYPE.NONE)
+            if (prefill.authType === MCP_AUTH_TYPE.CUSTOM_HEADERS && prefill.authConfig?.headers) {
+                const entries = Object.entries(prefill.authConfig.headers).map(([key, value]) => ({ key, value }))
+                setHeaders(entries.length > 0 ? entries : [{ key: '', value: '' }])
+            } else {
+                setHeaders([{ key: '', value: '' }])
+            }
             setStatus(MCP_SERVER_STATUS.PENDING)
             setDiscoveredTools([])
             setToolSearch('')
