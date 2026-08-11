@@ -506,6 +506,7 @@ type BuildFlowParams = {
     orgId?: string
     workspaceId?: string
     subscriptionId?: string
+    userId?: string
     usageCacheManager?: any
     uploadedFilesContent?: string
     updateStorageUsage?: (orgId: string, workspaceId: string, totalSize: number, usageCacheManager?: any) => void
@@ -544,6 +545,7 @@ export const buildFlow = async ({
     orgId,
     workspaceId,
     subscriptionId,
+    userId,
     usageCacheManager,
     updateStorageUsage,
     checkStorage
@@ -645,6 +647,7 @@ export const buildFlow = async ({
                     orgId,
                     workspaceId,
                     subscriptionId,
+                    userId,
                     chatId,
                     sessionId,
                     chatflowid,

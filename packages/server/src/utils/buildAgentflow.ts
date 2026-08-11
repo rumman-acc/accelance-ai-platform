@@ -165,6 +165,7 @@ interface IExecuteNodeParams {
     workspaceId: string
     subscriptionId: string
     productId: string
+    userId?: string
 }
 
 interface IExecuteAgentFlowParams extends Omit<IExecuteFlowParams, 'incomingInput'> {
@@ -186,7 +187,8 @@ const addExecution = async (
     agentflowId: string,
     agentFlowExecutedData: IAgentflowExecutedData[],
     sessionId: string,
-    workspaceId: string
+    workspaceId: string,
+    userId?: string
 ) => {
     const newExecution = new Execution()
     const bodyExecution = {
@@ -194,6 +196,7 @@ const addExecution = async (
         state: 'INPROGRESS',
         sessionId,
         workspaceId,
+        userId,
         executionData: JSON.stringify(agentFlowExecutedData)
     }
     Object.assign(newExecution, bodyExecution)
@@ -1091,7 +1094,8 @@ const executeNode = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    productId
+    productId,
+    userId
 }: IExecuteNodeParams): Promise<{
     result: any
     shouldStop?: boolean
@@ -1235,6 +1239,7 @@ const executeNode = async ({
             orgId,
             workspaceId,
             subscriptionId,
+            userId,
             chatId,
             sessionId,
             chatflowid: chatflow.id,
@@ -1569,7 +1574,8 @@ export const executeAgentFlow = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    productId
+    productId,
+    userId
 }: IExecuteAgentFlowParams) => {
     logger.debug('\n🚀 Starting flow execution')
 
@@ -1894,7 +1900,7 @@ export const executeAgentFlow = async ({
             newExecution = parentExecution
         } else {
             console.warn(`   ⚠️ Parent execution ID ${parentExecutionId} not found, will create new execution`)
-            newExecution = await addExecution(appDataSource, chatflowid, agentFlowExecutedData, sessionId, workspaceId)
+            newExecution = await addExecution(appDataSource, chatflowid, agentFlowExecutedData, sessionId, workspaceId, userId)
             parentExecutionId = newExecution.id
         }
     } else {
@@ -2094,7 +2100,8 @@ export const executeAgentFlow = async ({
                 orgId,
                 workspaceId,
                 subscriptionId,
-                productId
+                productId,
+                userId
             })
 
             if (executionResult.agentFlowExecutedData) {

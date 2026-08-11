@@ -185,6 +185,7 @@ export interface IExecution {
     updatedDate: Date
     stoppedDate: Date
     workspaceId: string
+    userId?: string
 }
 
 export type ScheduleInputMode = 'text' | 'form' | 'none'
@@ -465,6 +466,9 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     workspaceId: string
     subscriptionId: string
     productId: string
+    /** The authenticated user who triggered this run, if any. Undefined for
+     * unauthenticated/API-key/public-chatbot invocations — there is no principal to attribute. */
+    userId?: string
     baseURL: string
     isInternal: boolean
     isEvaluation?: boolean

@@ -45,6 +45,7 @@ import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermi
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddWebhookSecretToChatFlow1776240000003 } from './1776240000003-AddWebhookSecretToChatFlow'
+import { AddUserIdToExecution1778000000002 } from './1778000000002-AddUserIdToExecution'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
 
@@ -119,6 +120,7 @@ export const mariadbMigrations = [
     AddReasonContentToChatMessage1764759496768,
     AddCustomMcpServer1766000000000,
     AddWebhookSecretToChatFlow1776240000003,
+    AddUserIdToExecution1778000000002,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000
 ]

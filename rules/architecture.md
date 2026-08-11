@@ -190,6 +190,17 @@ billing scaffolding already exists in the codebase, unused) — see
 | `packages/server/.env` | Local config (gitignored) |
 | `packages/server/src/DataSource.ts` | TypeORM connection config |
 
+**Update (2026-08-11):** the flow-execution path now threads the triggering user's identity
+(`userId`, from `req.user?.id`) end-to-end — `IExecuteFlowParams` → `executeFlow` → `buildFlow`
+(`utils/index.ts`)/`buildAgentGraph`/`executeAgentFlow` (`buildAgentflow.ts`) → every node's
+`init()`/`run()` options bag — and onto a new nullable `Execution.userId` column. Previously
+`req.user` was read only at the HTTP route to resolve `workspaceId` and then discarded; no
+execution-time code path knew who (if anyone — public/API-key-triggered runs have no principal)
+triggered a given run. This is foundation-only plumbing for the 🔴 "agent principal model" /
+"least-privilege per-agent tool allowlist" / "centralized tool-call policy" epics in
+§2 of `rules/epics-feature-status.md` — no enforcement exists yet, this just makes the identity
+available for those epics to consume.
+
 ---
 
 ## 7. Deployment

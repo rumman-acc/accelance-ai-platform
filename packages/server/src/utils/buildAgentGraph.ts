@@ -53,7 +53,8 @@ export const buildAgentGraph = async ({
     baseURL,
     signal,
     orgId,
-    workspaceId
+    workspaceId,
+    userId
 }: {
     agentflow: IChatFlow
     flowConfig: IFlowConfig
@@ -75,6 +76,7 @@ export const buildAgentGraph = async ({
     signal?: AbortController
     orgId: string
     workspaceId?: string
+    userId?: string
 }): Promise<any> => {
     try {
         const chatflowid = flowConfig.chatflowid
@@ -86,6 +88,7 @@ export const buildAgentGraph = async ({
         const options = {
             orgId,
             workspaceId,
+            userId,
             chatId,
             sessionId,
             chatflowid,

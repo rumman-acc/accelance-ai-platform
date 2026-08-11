@@ -319,7 +319,8 @@ export const executeFlow = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    productId
+    productId,
+    userId
 }: IExecuteFlowParams) => {
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
@@ -501,7 +502,8 @@ export const executeFlow = async ({
             orgId,
             workspaceId,
             subscriptionId,
-            productId
+            productId,
+            userId
         })
     }
 
@@ -596,6 +598,7 @@ export const executeFlow = async ({
         orgId,
         workspaceId,
         subscriptionId,
+        userId,
         updateStorageUsage,
         checkStorage
     })
@@ -624,7 +627,8 @@ export const executeFlow = async ({
             baseURL,
             signal,
             orgId,
-            workspaceId
+            workspaceId,
+            userId
         })
 
         if (streamResults) {
@@ -1078,7 +1082,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             orgId,
             workspaceId,
             subscriptionId,
-            productId
+            productId,
+            userId: req.user?.id
         }
 
         if (process.env.MODE === MODE.QUEUE) {
