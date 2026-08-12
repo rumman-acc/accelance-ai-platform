@@ -207,6 +207,33 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 reactFlowInstance.setNodes(response.data.nodes)
                 reactFlowInstance.setEdges(response.data.edges)
                 onConfirm()
+
+                if (response.data.warnings && response.data.warnings.length > 0) {
+                    enqueueSnackbar({
+                        message: (
+                            <div>
+                                <Typography sx={{ color: 'white', fontWeight: 'bold' }}>Important -- needs your attention:</Typography>
+                                <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px' }}>
+                                    {response.data.warnings.map((warning, index) => (
+                                        <li key={index} style={{ color: 'white' }}>
+                                            {warning}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ),
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'error',
+                            persist: true,
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                }
             } else {
                 enqueueSnackbar({
                     message: response.error || 'Failed to generate agent swarm',
@@ -270,9 +297,9 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 <DialogContent>
                     {loading ? (
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                            <img src={generatorGIF} alt='Generating Agent Swarm' style={{ maxWidth: '100%', height: 'auto' }} />
+                            <img src={generatorGIF} alt='Building Agent Swarm' style={{ maxWidth: '100%', height: 'auto' }} />
                             <Typography variant='h5' sx={{ mt: 2 }}>
-                                Generating your Agent Swarm...
+                                Building your Agent Swarm...
                             </Typography>
                             <Box sx={{ width: '100%', mt: 2 }}>
                                 <LinearProgress
