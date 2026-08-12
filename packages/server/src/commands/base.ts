@@ -54,6 +54,16 @@ export abstract class BaseCommand extends Command {
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
         LANGCHAIN_PROJECT: Flags.string(),
+        LANGSMITH_TRACING: Flags.string(),
+        LANGSMITH_API_KEY: Flags.string(),
+        LANGSMITH_ENDPOINT: Flags.string(),
+        LANGSMITH_PROJECT: Flags.string(),
+
+        // Langfuse tracing
+        LANGFUSE_SECRET_KEY: Flags.string(),
+        LANGFUSE_PUBLIC_KEY: Flags.string(),
+        LANGFUSE_BASE_URL: Flags.string(),
+        LANGFUSE_RELEASE: Flags.string(),
 
         // Model list config
         MODEL_LIST_CONFIG_JSON: Flags.string(),

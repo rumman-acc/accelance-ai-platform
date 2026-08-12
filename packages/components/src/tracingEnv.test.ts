@@ -1,4 +1,5 @@
 import {
+    getLangFuseEnvConfig,
     getLangSmithEnvConfig,
     resetTracingEnvCache,
     TRACING_ENV_PROVIDERS,
@@ -14,7 +15,11 @@ const ENV_KEYS = [
     'LANGSMITH_ENDPOINT',
     'LANGCHAIN_ENDPOINT',
     'LANGSMITH_PROJECT',
-    'LANGCHAIN_PROJECT'
+    'LANGCHAIN_PROJECT',
+    'LANGFUSE_SECRET_KEY',
+    'LANGFUSE_PUBLIC_KEY',
+    'LANGFUSE_BASE_URL',
+    'LANGFUSE_RELEASE'
 ] as const
 
 const clearEnv = () => {
@@ -122,8 +127,39 @@ describe('getLangSmithEnvConfig', () => {
     })
 })
 
+describe('getLangFuseEnvConfig', () => {
+    it('returns undefined when no keys are set', () => {
+        expect(getLangFuseEnvConfig()).toBeUndefined()
+    })
+
+    it('returns undefined when only one key is set', () => {
+        process.env.LANGFUSE_SECRET_KEY = 'sk'
+        expect(getLangFuseEnvConfig()).toBeUndefined()
+
+        clearEnv()
+        resetTracingEnvCache()
+        process.env.LANGFUSE_PUBLIC_KEY = 'pk'
+        expect(getLangFuseEnvConfig()).toBeUndefined()
+    })
+
+    it('returns config when both keys are set', () => {
+        process.env.LANGFUSE_SECRET_KEY = 'sk'
+        process.env.LANGFUSE_PUBLIC_KEY = 'pk'
+        process.env.LANGFUSE_BASE_URL = 'https://cloud.langfuse.com'
+        process.env.LANGFUSE_RELEASE = 'v1'
+
+        expect(getLangFuseEnvConfig()).toEqual({
+            secretKey: 'sk',
+            publicKey: 'pk',
+            baseUrl: 'https://cloud.langfuse.com',
+            release: 'v1'
+        })
+    })
+})
+
 describe('memoized getEnvConfig via TRACING_ENV_PROVIDERS', () => {
     const langSmith = TRACING_ENV_PROVIDERS.find((p) => p.name === 'langSmith')!
+    const langFuse = TRACING_ENV_PROVIDERS.find((p) => p.name === 'langFuse')!
 
     it('caches the resolved config across calls', () => {
         process.env.LANGSMITH_TRACING = 'true'
@@ -158,6 +194,17 @@ describe('memoized getEnvConfig via TRACING_ENV_PROVIDERS', () => {
         resetTracingEnvCache()
         expect(langSmith.getEnvConfig()).toBeUndefined()
     })
+
+    it('caches Langfuse config across calls too', () => {
+        process.env.LANGFUSE_SECRET_KEY = 'sk-1'
+        process.env.LANGFUSE_PUBLIC_KEY = 'pk-1'
+        const first = langFuse.getEnvConfig()
+        expect(first).toMatchObject({ secretKey: 'sk-1', publicKey: 'pk-1' })
+
+        process.env.LANGFUSE_SECRET_KEY = 'sk-2'
+        const second = langFuse.getEnvConfig()
+        expect(second).toMatchObject({ secretKey: 'sk-1', publicKey: 'pk-1' })
+    })
 })
 
 describe('TRACING_ENV_PROVIDERS langSmith.buildProviderEntry', () => {
@@ -188,6 +235,38 @@ describe('TRACING_ENV_PROVIDERS langSmith.buildProviderEntry', () => {
     })
 })
 
+describe('TRACING_ENV_PROVIDERS langFuse.buildProviderEntry', () => {
+    const langFuse = TRACING_ENV_PROVIDERS.find((p) => p.name === 'langFuse')!
+
+    it('returns full provider entry when endpoint and release are present', () => {
+        const entry = langFuse.buildProviderEntry({
+            secretKey: 'sk',
+            publicKey: 'pk',
+            baseUrl: 'https://cloud.langfuse.com',
+            release: '2026.08.11'
+        })
+        expect(entry).toEqual({
+            providerConfig: { release: '2026.08.11', status: true },
+            credentialData: {
+                langFuseSecretKey: 'sk',
+                langFusePublicKey: 'pk',
+                langFuseEndpoint: 'https://cloud.langfuse.com'
+            }
+        })
+    })
+
+    it('omits optional endpoint and release when missing', () => {
+        const entry = langFuse.buildProviderEntry({ secretKey: 'sk', publicKey: 'pk' })
+        expect(entry).toEqual({
+            providerConfig: { status: true },
+            credentialData: {
+                langFuseSecretKey: 'sk',
+                langFusePublicKey: 'pk'
+            }
+        })
+    })
+})
+
 describe('tracingEnvEnabled', () => {
     it('returns false when no tracing env is configured', () => {
         expect(tracingEnvEnabled()).toBe(false)
@@ -196,6 +275,12 @@ describe('tracingEnvEnabled', () => {
     it('returns true when LangSmith tracing env is configured', () => {
         process.env.LANGSMITH_TRACING = 'true'
         process.env.LANGSMITH_API_KEY = 'k'
+        expect(tracingEnvEnabled()).toBe(true)
+    })
+
+    it('returns true when Langfuse env is configured', () => {
+        process.env.LANGFUSE_SECRET_KEY = 'sk'
+        process.env.LANGFUSE_PUBLIC_KEY = 'pk'
         expect(tracingEnvEnabled()).toBe(true)
     })
 })
@@ -226,6 +311,26 @@ describe('applyEnvTracingProviders', () => {
                 langSmithApiKey: 'k',
                 langSmithEndpoint: 'https://e.example.com'
             }
+        })
+    })
+
+    it('injects Langfuse provider config and credentials when env is set and analytic has no entry', () => {
+        process.env.LANGFUSE_SECRET_KEY = 'sk'
+        process.env.LANGFUSE_PUBLIC_KEY = 'pk'
+        process.env.LANGFUSE_BASE_URL = 'https://cloud.langfuse.com'
+        process.env.LANGFUSE_RELEASE = 'global-release'
+
+        const analytic: Record<string, any> = {}
+        const result = applyEnvTracingProviders(analytic)
+
+        expect(result.analytic.langFuse).toEqual({
+            release: 'global-release',
+            status: true
+        })
+        expect(result.envCredentials.langFuse).toEqual({
+            langFuseSecretKey: 'sk',
+            langFusePublicKey: 'pk',
+            langFuseEndpoint: 'https://cloud.langfuse.com'
         })
     })
 

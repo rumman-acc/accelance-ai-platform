@@ -73,6 +73,23 @@ export const getLangSmithEnvConfig = (): { apiKey: string; endpoint?: string; pr
     return { apiKey, endpoint, projectName }
 }
 
+/**
+ * Reads Langfuse env vars and returns a config object when both keys are present.
+ * Unlike LangSmith, Langfuse does not rely on LangChain auto-tracing flags here; Flowise
+ * owns the callback wiring centrally once credentials are available.
+ */
+export const getLangFuseEnvConfig = (): { secretKey: string; publicKey: string; baseUrl?: string; release?: string } | undefined => {
+    const secretKey = getEnvironmentVariable('LANGFUSE_SECRET_KEY')
+    const publicKey = getEnvironmentVariable('LANGFUSE_PUBLIC_KEY')
+
+    if (!secretKey || !publicKey) return undefined
+
+    const baseUrl = getEnvironmentVariable('LANGFUSE_BASE_URL')
+    const release = getEnvironmentVariable('LANGFUSE_RELEASE')
+
+    return { secretKey, publicKey, baseUrl, release }
+}
+
 export const TRACING_ENV_PROVIDERS: TracingEnvProvider[] = [
     {
         name: 'langSmith',
@@ -82,6 +99,21 @@ export const TRACING_ENV_PROVIDERS: TracingEnvProvider[] = [
             credentialData: {
                 langSmithApiKey: cfg.apiKey,
                 ...(cfg.endpoint ? { langSmithEndpoint: cfg.endpoint } : {})
+            }
+        })
+    },
+    {
+        name: 'langFuse',
+        getEnvConfig: memoizeEnvConfig('langFuse', getLangFuseEnvConfig),
+        buildProviderEntry: (cfg) => ({
+            providerConfig: {
+                ...(cfg.release ? { release: cfg.release } : {}),
+                status: true
+            },
+            credentialData: {
+                langFuseSecretKey: cfg.secretKey,
+                langFusePublicKey: cfg.publicKey,
+                ...(cfg.baseUrl ? { langFuseEndpoint: cfg.baseUrl } : {})
             }
         })
     }
