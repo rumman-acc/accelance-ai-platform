@@ -176,10 +176,10 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 /**
  * Deterministic post-generation safety net -- catches what prompt engineering (generateNodesEdges,
  * generateSelectedTools) doesn't reliably get right on its own:
- * 1. Forces every agentAgentflow/llmAgentflow node onto the model+credential the user picked to
- *    generate this flow with (config.selectedChatModel) -- unconditionally. Not a repair for a
- *    missing value; a deliberate consistency rule, since the generating LLM is otherwise free to
- *    put a different provider on different nodes.
+ * 1. Forces every agentAgentflow/llmAgentflow/conditionAgentAgentflow (router) node onto the
+ *    model+credential the user picked to generate this flow with (config.selectedChatModel) --
+ *    unconditionally. Not a repair for a missing value; a deliberate consistency rule, since the
+ *    generating LLM is otherwise free to put a different provider on different nodes.
  * 2. Flags a toolAgentflow node whose bound tool doesn't match what its proposing agent
  *    selected -- a backstop for findProposingAgentTools()'s reuse logic above, independent of
  *    whether that logic covers every graph shape.
@@ -199,19 +199,29 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
  *    user exactly what still needs configuring, rather than the generated flow silently failing
  *    the first time a tool actually runs.
  */
+// Every agentflow node type whose inputs carry its own model selection, keyed by node.data.name,
+// mapped to the input field that holds the model name (the companion `${field}Config` object
+// follows the same naming convention for all three).
+const MODEL_FIELD_BY_NODE_NAME: Record<string, string> = {
+    agentAgentflow: 'agentModel',
+    llmAgentflow: 'llmModel',
+    conditionAgentAgentflow: 'conditionAgentModel'
+}
+
 export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Record<string, any>): string[] => {
     const warnings: string[] = []
 
-    // 1. Force every agentAgentflow/llmAgentflow node onto the exact model+credential the user
-    // picked to generate this flow with (config.selectedChatModel) -- unconditionally, not just
-    // when empty. The phase-1 LLM is free to put a different provider on different nodes (seen
-    // in practice: it once picked Gemini for one node while the user had selected Anthropic in
-    // the generation dialog), which is surprising and not what "the model I picked to build this"
-    // implies. This is a deliberate consistency choice, not a bug repair, so it doesn't warn.
+    // 1. Force every agentAgentflow/llmAgentflow/conditionAgentAgentflow (router) node onto the
+    // exact model+credential the user picked to generate this flow with (config.selectedChatModel)
+    // -- unconditionally, not just when empty. The phase-1 LLM is free to put a different provider
+    // on different nodes (seen in practice: it once picked Gemini for one node while the user had
+    // selected Anthropic in the generation dialog), which is surprising and not what "the model I
+    // picked to build this" implies. This is a deliberate consistency choice, not a bug repair, so
+    // it doesn't warn.
     const selectedChatModel = config.selectedChatModel as { name?: string; inputs?: Record<string, any> } | undefined
     if (selectedChatModel?.name) {
         for (const node of nodes) {
-            const modelField = node.data.name === 'agentAgentflow' ? 'agentModel' : node.data.name === 'llmAgentflow' ? 'llmModel' : null
+            const modelField = node.data.name ? MODEL_FIELD_BY_NODE_NAME[node.data.name] : undefined
             if (!modelField) continue
             if (!node.data.inputs) node.data.inputs = {}
             node.data.inputs[modelField] = selectedChatModel.name
@@ -225,7 +235,7 @@ export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Reco
         // requires it), but if a node still ends up modelless, that's worth surfacing rather
         // than shipping a silently broken node.
         for (const node of nodes) {
-            const modelField = node.data.name === 'agentAgentflow' ? 'agentModel' : node.data.name === 'llmAgentflow' ? 'llmModel' : null
+            const modelField = node.data.name ? MODEL_FIELD_BY_NODE_NAME[node.data.name] : undefined
             if (modelField && !node.data.inputs?.[modelField]) {
                 warnings.push(`"${node.data.label || node.id}" has no model selected and none was available to default to.`)
             }
