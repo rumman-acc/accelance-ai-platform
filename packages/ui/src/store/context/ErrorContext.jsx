@@ -35,7 +35,10 @@ export const ErrorProvider = ({ children }) => {
         } else if (err?.response?.status === 403) {
             navigate('/unauthorized')
         } else if (err?.response?.status === 401) {
-            if (ErrorMessage.INVALID_MISSING_TOKEN === err?.response?.data?.message) {
+            const message = err?.response?.data?.message
+            const shouldLogout = message === ErrorMessage.INVALID_MISSING_TOKEN || message === ErrorMessage.REFRESH_TOKEN_EXPIRED
+
+            if (shouldLogout) {
                 store.dispatch(logoutSuccess())
                 navigate('/login')
             } else {
@@ -47,11 +50,7 @@ export const ErrorProvider = ({ children }) => {
                         redirectTo: err.response.data.redirectTo
                     })
                 } else {
-                    const currentPath = window.location.pathname
-                    if (currentPath !== '/signin' && currentPath !== '/login') {
-                        store.dispatch(logoutSuccess())
-                        navigate('/login')
-                    }
+                    setError(err)
                 }
             }
         } else setError(err)

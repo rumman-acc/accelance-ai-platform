@@ -11,6 +11,13 @@ const apiClient = axios.create({
     withCredentials: true
 })
 
+const shouldClearClientAuth = (error) => {
+    if (error?.response?.status !== 401) return false
+
+    const message = error?.response?.data?.message
+    return message === ErrorMessage.INVALID_MISSING_TOKEN || message === ErrorMessage.REFRESH_TOKEN_EXPIRED
+}
+
 apiClient.interceptors.response.use(
     function (response) {
         return response
@@ -31,6 +38,9 @@ apiClient.interceptors.response.use(
                     error = refreshError
                 }
             }
+        }
+
+        if (shouldClearClientAuth(error)) {
             localStorage.removeItem('username')
             localStorage.removeItem('password')
             AuthUtils.removeCurrentUser()

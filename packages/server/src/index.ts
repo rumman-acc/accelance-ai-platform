@@ -84,6 +84,12 @@ export class App {
     async initDatabase() {
         // Initialize database
         try {
+            await getEncryptionKey()
+            logger.info('🔑 [server]: Encryption key initialized successfully')
+
+            await initAuthSecrets()
+            logger.info('🔐 [server]: Auth initialized successfully')
+
             await this.AppDataSource.initialize()
             logger.info('📦 [server]: Data Source initialized successfully')
 
