@@ -40,6 +40,23 @@ Now, examine these workflow examples to understand how nodes are typically conne
 {marketplaceTemplates}
 </workflow_examples>
 
+Of the available tools, the following are write-capable -- they can send, create, modify, or
+delete something outside this workflow (e.g. sending an email, deleting a file, modifying a
+calendar event), as opposed to only reading/searching/listing:
+
+<write_capable_tools>
+{writeCapableTools}
+</write_capable_tools>
+
+SAFETY RULE (non-optional, apply regardless of whether the user's request mentions approval,
+review, or safety): if the workflow you design would invoke any tool listed in
+<write_capable_tools> to perform a mutating action, you MUST first classify whether the
+requested action is read-only or mutating (a conditionAgentAgentflow or conditionAgentflow node)
+and gate the mutating path behind a humanInputAgentflow approval node before the mutating tool
+call happens. Read-only use of the same tools (listing, searching, getting) does not need this
+gate. Only skip this entire rule if the user's own request explicitly asks for fully autonomous,
+unsupervised execution with no review step.
+
 To create this workflow, follow these steps and wrap your thought process in <workflow_planning> tags inside your thinking block:
 
 1. List out all the key components of the user request.

@@ -248,6 +248,46 @@ in the graph. So the two wrap sites are: `utils/index.ts` `buildFlow` (right aft
 `buildAgentGraph.ts` needed no changes — it only consumes tool instances `buildFlow` already
 wrapped. `ToolCallAudit` (new entity) logs every allow/deny; DLP content redaction was not built.
 
+**Update (2026-08-12):** the AgentFlow V2 natural-language "Generate" feature
+(`packages/server/src/services/agentflowv2-generator`, `packages/components/src/
+agentflowv2Generator.ts`) had two real bugs, found by actually generating a flow and inspecting
+the saved JSON rather than assuming the feature worked: (1) `generateSelectedTools` kept one
+flat `selectedTools` array across the whole generation run and told the model to never reuse an
+already-selected tool — this silently breaks any propose(agent)→approve(HITL)→execute
+(toolAgentflow) flow, since the execute step needs to reuse whichever tool its proposing agent
+already claimed, and was getting forced onto an unrelated one instead; (2) the master prompt had
+no baseline instruction to gate write-capable tool calls behind human approval, so safety
+structure only appeared when the user's own prompt spelled it out in detail — a vague prompt
+would produce a fully autonomous, ungated agent. Fixed via: a deterministic graph lookup
+(`findProposingAgentTools`) that reuses the proposing agent's tool directly instead of asking an
+LLM to guess correctly; a new naming-convention tool-action-risk classifier
+(`packages/components/src/toolActionRisk.ts`) feeding a non-optional safety rule into the
+generation prompt; and a third pipeline phase, `validateAndRepairFlow`, running after tool
+selection and edge cleanup — repairs empty `agentModel`/`llmModel` fields (the LLM's phase-1
+graph output inconsistently omits these; there is no separate model-selection call to catch it
+otherwise) and returns `warnings: string[]` on the response for anything it can't safely
+auto-fix (e.g. a write-capable tool with no HITL node anywhere in the flow). One structural
+finding worth remembering: `getAllAgentflowv2Marketplaces()` strips `node.data` from every
+few-shot template before it reaches the prompt (`agentflowv2-generator/index.ts:134-139`) — the
+generating model never sees which tool/model any example node used, only graph layout. Fixing
+tool-selection behavior via a better example template is therefore structurally impossible in
+this pipeline; it has to be fixed in the deterministic/prompt logic, which is why the fix took
+the shape it did.
+
+**Update (2026-08-12, cont'd):** `findProposingAgentTools` initially only walked 1-2 hops back
+(direct agent, or agent→HITL-gate), matching the exact shape the first bug reproduced with. A
+second real generation run produced a *different* shape for the same intent — the execute step
+was a full `agentAgentflow` node rather than a `toolAgentflow`, and its immediate predecessor was
+a tool-less `llmAgentflow` "draft the action" step, with the actual tool-bearing agent one hop
+further back, before a `conditionAgentAgentflow` read/write split. That run happened to come out
+correct anyway (the underlying model ignored its own "don't reuse" instruction), which is not a
+guarantee — the same unfixed flaw was still there, just not triggered that time. Generalized the
+walk into a proper backward BFS that keeps traversing through non-gate intermediate nodes until
+it finds the nearest upstream `agentAgentflow` with tools already selected, and applied the same
+deterministic reuse to the `agentAgentflow`-as-executor case (simpler than the `toolAgentflow`
+case here, since there's no single-tool constraint — the full set gets copied, no LLM call
+needed at all when a proposer is found).
+
 ---
 
 ## 7. Deployment
