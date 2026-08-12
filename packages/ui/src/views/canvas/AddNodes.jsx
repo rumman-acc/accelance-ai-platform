@@ -30,6 +30,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { FixedSizeList } from 'react-window'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -70,6 +71,12 @@ const blacklistForChatflowCanvas = {
     Memory: agentMemoryNodes
 }
 
+// Virtualized node-list row height (px) and the max viewport height before a category's
+// list scrolls internally -- keeps a single huge category (e.g. an aggregator's full
+// catalog) from rendering thousands of DOM nodes or pushing the popover off-screen.
+const NODE_ROW_HEIGHT = 72
+const NODE_LIST_MAX_HEIGHT = 350
+
 const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerated }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -89,6 +96,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
     const ps = useRef()
+    const searchDebounceRef = useRef(null)
 
     const scrollTop = () => {
         const curr = ps.current
@@ -234,7 +242,10 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
 
     const filterSearch = (value, newTabValue) => {
         setSearchValue(value)
-        setTimeout(() => {
+        if (searchDebounceRef.current) {
+            clearTimeout(searchDebounceRef.current)
+        }
+        searchDebounceRef.current = setTimeout(() => {
             if (value) {
                 const returnData = getSearchedNodes(value)
                 groupByCategory(returnData, newTabValue ?? tabValue, true)
@@ -243,7 +254,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                 groupByCategory(nodesData, newTabValue ?? tabValue)
                 scrollTop()
             }
-        }, 500)
+        }, 250)
     }
 
     const groupByTags = (nodes, newTabValue = 0) => {
@@ -366,6 +377,143 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
         return <foundIcon.icon size={30} color={node.color} />
     }
 
+    const renderNodeRow = (node, style, isLast) => (
+        <div
+            key={node.name}
+            onDragStart={(event) => onDragStart(event, node)}
+            draggable
+            style={{
+                ...style,
+                boxSizing: 'border-box',
+                borderBottom: isLast ? 'none' : `1px solid ${theme.palette.divider}`
+            }}
+        >
+            <ListItemButton
+                sx={{
+                    p: 0,
+                    height: '100%',
+                    borderRadius: `${customization.borderRadius}px`,
+                    cursor: 'move'
+                }}
+            >
+                <ListItem alignItems='center'>
+                    {node.color && !node.icon ? (
+                        <ListItemAvatar>
+                            <div
+                                style={{
+                                    width: 50,
+                                    height: 'auto',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                {renderIcon(node)}
+                            </div>
+                        </ListItemAvatar>
+                    ) : (
+                        <ListItemAvatar>
+                            <div
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: '50%',
+                                    backgroundColor: 'white'
+                                }}
+                            >
+                                <img
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 10,
+                                        objectFit: 'contain'
+                                    }}
+                                    alt={node.name}
+                                    src={`${baseURL}/api/node-icon/${node.name}`}
+                                />
+                            </div>
+                        </ListItemAvatar>
+                    )}
+                    <ListItemText
+                        sx={{ ml: 1 }}
+                        primary={
+                            <>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <span>{node.label}</span>
+                                    &nbsp;
+                                    {node.badge && (
+                                        <Chip
+                                            sx={{
+                                                width: 'max-content',
+                                                fontWeight: 700,
+                                                fontSize: '0.65rem',
+                                                background:
+                                                    node.badge === 'DEPRECATING' ? theme.palette.warning.main : theme.palette.teal.main,
+                                                color: node.badge !== 'DEPRECATING' ? 'white' : 'inherit'
+                                            }}
+                                            size='small'
+                                            label={node.badge}
+                                        />
+                                    )}
+                                </div>
+                                {node.author && (
+                                    <span
+                                        style={{
+                                            fontSize: '0.65rem',
+                                            fontWeight: 700
+                                        }}
+                                    >
+                                        By {node.author}
+                                    </span>
+                                )}
+                            </>
+                        }
+                        secondary={
+                            node.description ? (
+                                <span
+                                    style={{
+                                        display: 'block',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                    title={node.description}
+                                >
+                                    {node.description}
+                                </span>
+                            ) : null
+                        }
+                    />
+                </ListItem>
+            </ListItemButton>
+        </div>
+    )
+
+    const VirtualizedNodeList = ({ categoryNodes }) => {
+        const listHeight = Math.min(categoryNodes.length * NODE_ROW_HEIGHT, NODE_LIST_MAX_HEIGHT)
+        return (
+            <FixedSizeList
+                height={listHeight}
+                width='100%'
+                itemCount={categoryNodes.length}
+                itemSize={NODE_ROW_HEIGHT}
+                itemData={categoryNodes}
+            >
+                {({ index, style, data }) => renderNodeRow(data[index], style, index === data.length - 1)}
+            </FixedSizeList>
+        )
+    }
+
+    VirtualizedNodeList.propTypes = {
+        categoryNodes: PropTypes.array.isRequired
+    }
+
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
             anchorRef.current.focus()
@@ -377,6 +525,15 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
     useEffect(() => {
         if (node) setOpen(false)
     }, [node])
+
+    useEffect(
+        () => () => {
+            if (searchDebounceRef.current) {
+                clearTimeout(searchDebounceRef.current)
+            }
+        },
+        []
+    )
 
     useEffect(() => {
         if (nodesData) {
@@ -615,6 +772,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                             onChange={handleAccordionChange(category)}
                                                             key={category}
                                                             disableGutters
+                                                            TransitionProps={{ unmountOnExit: true }}
                                                         >
                                                             <AccordionSummary
                                                                 expandIcon={<ExpandMoreIcon />}
@@ -653,112 +811,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                                     <Typography variant='h5'>{category}</Typography>
                                                                 )}
                                                             </AccordionSummary>
-                                                            <AccordionDetails>
-                                                                {nodes[category].map((node, index) => (
-                                                                    <div
-                                                                        key={node.name}
-                                                                        onDragStart={(event) => onDragStart(event, node)}
-                                                                        draggable
-                                                                    >
-                                                                        <ListItemButton
-                                                                            sx={{
-                                                                                p: 0,
-                                                                                borderRadius: `${customization.borderRadius}px`,
-                                                                                cursor: 'move'
-                                                                            }}
-                                                                        >
-                                                                            <ListItem alignItems='center'>
-                                                                                {node.color && !node.icon ? (
-                                                                                    <ListItemAvatar>
-                                                                                        <div
-                                                                                            style={{
-                                                                                                width: 50,
-                                                                                                height: 'auto',
-                                                                                                display: 'flex',
-                                                                                                alignItems: 'center',
-                                                                                                justifyContent: 'center'
-                                                                                            }}
-                                                                                        >
-                                                                                            {renderIcon(node)}
-                                                                                        </div>
-                                                                                    </ListItemAvatar>
-                                                                                ) : (
-                                                                                    <ListItemAvatar>
-                                                                                        <div
-                                                                                            style={{
-                                                                                                width: 50,
-                                                                                                height: 50,
-                                                                                                borderRadius: '50%',
-                                                                                                backgroundColor: 'white'
-                                                                                            }}
-                                                                                        >
-                                                                                            <img
-                                                                                                style={{
-                                                                                                    width: '100%',
-                                                                                                    height: '100%',
-                                                                                                    padding: 10,
-                                                                                                    objectFit: 'contain'
-                                                                                                }}
-                                                                                                alt={node.name}
-                                                                                                src={`${baseURL}/api/node-icon/${node.name}`}
-                                                                                            />
-                                                                                        </div>
-                                                                                    </ListItemAvatar>
-                                                                                )}
-                                                                                <ListItemText
-                                                                                    sx={{ ml: 1 }}
-                                                                                    primary={
-                                                                                        <>
-                                                                                            <div
-                                                                                                style={{
-                                                                                                    display: 'flex',
-                                                                                                    flexDirection: 'row',
-                                                                                                    alignItems: 'center'
-                                                                                                }}
-                                                                                            >
-                                                                                                <span>{node.label}</span>
-                                                                                                &nbsp;
-                                                                                                {node.badge && (
-                                                                                                    <Chip
-                                                                                                        sx={{
-                                                                                                            width: 'max-content',
-                                                                                                            fontWeight: 700,
-                                                                                                            fontSize: '0.65rem',
-                                                                                                            background:
-                                                                                                                node.badge === 'DEPRECATING'
-                                                                                                                    ? theme.palette.warning
-                                                                                                                          .main
-                                                                                                                    : theme.palette.teal
-                                                                                                                          .main,
-                                                                                                            color:
-                                                                                                                node.badge !== 'DEPRECATING'
-                                                                                                                    ? 'white'
-                                                                                                                    : 'inherit'
-                                                                                                        }}
-                                                                                                        size='small'
-                                                                                                        label={node.badge}
-                                                                                                    />
-                                                                                                )}
-                                                                                            </div>
-                                                                                            {node.author && (
-                                                                                                <span
-                                                                                                    style={{
-                                                                                                        fontSize: '0.65rem',
-                                                                                                        fontWeight: 700
-                                                                                                    }}
-                                                                                                >
-                                                                                                    By {node.author}
-                                                                                                </span>
-                                                                                            )}
-                                                                                        </>
-                                                                                    }
-                                                                                    secondary={node.description}
-                                                                                />
-                                                                            </ListItem>
-                                                                        </ListItemButton>
-                                                                        {index === nodes[category].length - 1 ? null : <Divider />}
-                                                                    </div>
-                                                                ))}
+                                                            <AccordionDetails sx={{ p: 0 }}>
+                                                                <VirtualizedNodeList categoryNodes={nodes[category]} />
                                                             </AccordionDetails>
                                                         </Accordion>
                                                     ))}
