@@ -8,6 +8,11 @@ import { isWriteCapableToolNode } from './toolActionRisk'
 
 const ToolType = z.array(z.string()).describe('List of tools')
 
+// Key AgentFlow V2's dynamic model/tool config objects use to hold a selected credential id
+// (see Tool.ts: `selectedToolConfig['FLOWISE_CREDENTIAL_ID']`, and the llmModelConfig shape
+// built in generateSelectedTools/validateAndRepairFlow below).
+const FLOWISE_CREDENTIAL_ID_KEY = 'FLOWISE_CREDENTIAL_ID'
+
 // Define a more specific NodePosition schema
 const NodePositionType = z.object({
     x: z.number().describe('X coordinate of the node position'),
@@ -171,8 +176,10 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 /**
  * Deterministic post-generation safety net -- catches what prompt engineering (generateNodesEdges,
  * generateSelectedTools) doesn't reliably get right on its own:
- * 1. Repairs agentAgentflow/llmAgentflow nodes the generating LLM left with no model selected,
- *    defaulting to the model the user picked to generate this flow (config.selectedChatModel).
+ * 1. Forces every agentAgentflow/llmAgentflow node onto the model+credential the user picked to
+ *    generate this flow with (config.selectedChatModel) -- unconditionally. Not a repair for a
+ *    missing value; a deliberate consistency rule, since the generating LLM is otherwise free to
+ *    put a different provider on different nodes.
  * 2. Flags a toolAgentflow node whose bound tool doesn't match what its proposing agent
  *    selected -- a backstop for findProposingAgentTools()'s reuse logic above, independent of
  *    whether that logic covers every graph shape.
@@ -183,6 +190,11 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
  *    time doesn't distinguish (an agent's tool binding exposes all of a tool's actions, not just
  *    the read-only ones, even when its own role is meant to be read-only or propose-only). This
  *    whole-flow check is intentionally coarse to avoid false-flagging a correctly-built
+ * 4. Lists every bound tool that declares a credential field but has none set -- true for
+ *    essentially every tool node the generator creates, since initNode() unconditionally clears
+ *    credential (see below). Surfaced as one combined warning so the caller (UI) can tell the
+ *    user exactly what still needs configuring, rather than the generated flow silently failing
+ *    the first time a tool actually runs.
  *    propose/approve/execute flow (whose read and propose agents legitimately have write-capable
  *    tools bound without being preceded by a gate themselves) while still catching the case with
  *    no safety structure anywhere.
@@ -190,23 +202,33 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Record<string, any>): string[] => {
     const warnings: string[] = []
 
-    // 1. Repair empty model selections.
+    // 1. Force every agentAgentflow/llmAgentflow node onto the exact model+credential the user
+    // picked to generate this flow with (config.selectedChatModel) -- unconditionally, not just
+    // when empty. The phase-1 LLM is free to put a different provider on different nodes (seen
+    // in practice: it once picked Gemini for one node while the user had selected Anthropic in
+    // the generation dialog), which is surprising and not what "the model I picked to build this"
+    // implies. This is a deliberate consistency choice, not a bug repair, so it doesn't warn.
     const selectedChatModel = config.selectedChatModel as { name?: string; inputs?: Record<string, any> } | undefined
-    for (const node of nodes) {
-        const modelField = node.data.name === 'agentAgentflow' ? 'agentModel' : node.data.name === 'llmAgentflow' ? 'llmModel' : null
-        if (!modelField) continue
-        if (!node.data.inputs) node.data.inputs = {}
-        if (!node.data.inputs[modelField] && selectedChatModel?.name) {
+    if (selectedChatModel?.name) {
+        for (const node of nodes) {
+            const modelField = node.data.name === 'agentAgentflow' ? 'agentModel' : node.data.name === 'llmAgentflow' ? 'llmModel' : null
+            if (!modelField) continue
+            if (!node.data.inputs) node.data.inputs = {}
             node.data.inputs[modelField] = selectedChatModel.name
             node.data.inputs[`${modelField}Config`] = {
                 ...(selectedChatModel.inputs || {}),
                 [modelField]: selectedChatModel.name
             }
-            warnings.push(
-                `"${node.data.label || node.id}" had no model selected -- defaulted to the model used to generate this flow (${
-                    selectedChatModel.name
-                }).`
-            )
+        }
+    } else {
+        // No selectedChatModel to fall back on at all -- this shouldn't happen (the route
+        // requires it), but if a node still ends up modelless, that's worth surfacing rather
+        // than shipping a silently broken node.
+        for (const node of nodes) {
+            const modelField = node.data.name === 'agentAgentflow' ? 'agentModel' : node.data.name === 'llmAgentflow' ? 'llmModel' : null
+            if (modelField && !node.data.inputs?.[modelField]) {
+                warnings.push(`"${node.data.label || node.id}" has no model selected and none was available to default to.`)
+            }
         }
     }
 
@@ -226,13 +248,31 @@ export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Reco
         }
     }
 
-    // 3. Whole-flow "any HITL gate at all" check.
+    // 3 & 4. Whole-flow checks: any HITL gate at all, and which bound tools still need a
+    // credential picked (every tool node the generator creates comes out with credential
+    // cleared -- see initNode's unconditional `nodeData.credential = ''` -- so this fires for
+    // essentially every generated flow that uses a tool; that's expected, not a bug).
     const componentNodes = (config.componentNodes || {}) as Record<string, any>
     const boundToolNames = new Set<string>()
+    const toolNeedsCredentialButHasNone = new Set<string>()
     for (const node of nodes) {
         const agentTools = (node.data.inputs?.agentTools as AgentToolConfig[] | undefined) || []
-        agentTools.forEach((t) => t.agentSelectedTool && boundToolNames.add(t.agentSelectedTool))
-        if (node.data.inputs?.toolAgentflowSelectedTool) boundToolNames.add(node.data.inputs.toolAgentflowSelectedTool)
+        for (const t of agentTools) {
+            if (!t.agentSelectedTool) continue
+            boundToolNames.add(t.agentSelectedTool)
+            const hasCredentialField = !!componentNodes[t.agentSelectedTool]?.credential
+            const hasCredentialSet = !!(t.agentSelectedToolConfig as Record<string, any>)?.[FLOWISE_CREDENTIAL_ID_KEY]
+            if (hasCredentialField && !hasCredentialSet) toolNeedsCredentialButHasNone.add(t.agentSelectedTool)
+        }
+        const boundTool = node.data.inputs?.toolAgentflowSelectedTool
+        if (boundTool) {
+            boundToolNames.add(boundTool)
+            const hasCredentialField = !!componentNodes[boundTool]?.credential
+            const hasCredentialSet = !!(node.data.inputs?.toolAgentflowSelectedToolConfig as Record<string, any>)?.[
+                FLOWISE_CREDENTIAL_ID_KEY
+            ]
+            if (hasCredentialField && !hasCredentialSet) toolNeedsCredentialButHasNone.add(boundTool)
+        }
     }
     const hasWriteCapableTool = Array.from(boundToolNames).some((name) => isWriteCapableToolNode(componentNodes[name]))
     const hasHumanInputNode = nodes.some((n) => n.data.name === 'humanInputAgentflow')
@@ -240,6 +280,12 @@ export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Reco
         warnings.push(
             'This flow uses at least one tool capable of mutating actions (sending, creating, deleting, etc.) but has no human-in-the-loop approval node anywhere -- review whether autonomous write access is intended before deploying.'
         )
+    }
+    if (toolNeedsCredentialButHasNone.size > 0) {
+        const names = Array.from(toolNeedsCredentialButHasNone)
+            .map((name) => componentNodes[name]?.label || name)
+            .join(', ')
+        warnings.push(`The following tools need a credential selected before they'll work: ${names}.`)
     }
 
     return warnings
