@@ -58,7 +58,21 @@ export const NATIVE_CONNECTOR_NAMES = new Set([
     'oneDriveTool',
     'segmentTool',
     'amplitudeTool',
-    'mixpanelTool'
+    'mixpanelTool',
+    // Batch 3, added 2026-08-12 (market-leader round -- see epics-feature-status.md)
+    'azureBlobStorageTool',
+    'azureKeyVaultTool',
+    'azureDevOpsTool',
+    'entraIdTool',
+    'sharePointTool',
+    'excelOnlineTool',
+    'plannerTool',
+    'serviceNowTool',
+    'confluenceTool',
+    'oktaTool',
+    'jiraServiceManagementTool',
+    'claudeAgentTool',
+    'gptAgentTool'
 ])
 
 // User-driven/custom mechanisms — surfaced on the Custom Tools / Custom MCP Servers
