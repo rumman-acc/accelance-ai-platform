@@ -310,29 +310,49 @@ const updateEdges = (edges: Edge[], nodes: Node[]): Edge[] => {
 }
 
 /**
- * If `node` is a toolAgentflow fed (directly or via a humanInputAgentflow approval gate) by an
- * agentAgentflow that already selected its own tools, return that agent's tool names. This is
- * the propose(agent)->approve(HITL)->execute(toolAgentflow) shape -- the execute step MUST reuse
- * whichever tool the proposing agent proposed, not pick an unrelated one. Returns [] when this
- * node isn't in that shape (e.g. independent toolAgentflow nodes keep today's dedup behavior).
+ * If `node` is the execute step of a propose(agent)->approve(HITL)->execute shape -- either
+ * directly fed by an agentAgentflow, or fed via a humanInputAgentflow approval gate's approved
+ * ('true') branch -- walk backward from there to find the nearest upstream agentAgentflow node
+ * that already has tools selected, and return its tool names. The execute step MUST reuse those
+ * tools, not pick unrelated ones.
+ *
+ * The backward walk (not just a 1-2 hop lookup) matters because the generator doesn't always put
+ * the tool-bearing agent immediately before the gate -- e.g. propose can be a plain llmAgentflow
+ * "draft the action" step (no tools of its own) with the real tool-bearing agent further
+ * upstream, before a conditionAgentAgentflow read/write split. Only the hop immediately feeding
+ * `node` needs to be a HITL-approved-branch or direct-agent edge; hops beyond that just need to
+ * lead somewhere, since they're the propose/classification chain, not additional gates.
+ *
+ * Returns [] when `node` isn't in this shape at all (e.g. an independent agentAgentflow or
+ * toolAgentflow keeps today's dedup behavior).
  */
 export const findProposingAgentTools = (node: Node, nodes: Node[], edges: Edge[]): string[] => {
+    const nodeById = new Map(nodes.map((n) => [n.id, n]))
     const inboundEdge = edges.find((e) => e.target === node.id)
     if (!inboundEdge) return []
 
-    // Direct: agent -> toolAgentflow (no HITL gate in between)
-    let sourceNode = nodes.find((n) => n.id === inboundEdge.source)
+    const immediateSource = nodeById.get(inboundEdge.source)
+    const viaApprovedGate = immediateSource?.data.name === 'humanInputAgentflow' && inboundEdge.sourceHandle.includes('true')
+    const directFromAgent = immediateSource?.data.name === 'agentAgentflow'
+    if (!viaApprovedGate && !directFromAgent) return [] // not this shape -- keep today's dedup default
 
-    // Via HITL gate on its approved ('true') branch: agent -> humanInputAgentflow -> toolAgentflow
-    if (sourceNode?.data.name === 'humanInputAgentflow') {
-        if (!inboundEdge.sourceHandle.includes('true')) return [] // only the approved branch reuses tools
-        const gateInboundEdge = edges.find((e) => e.target === sourceNode!.id)
-        sourceNode = gateInboundEdge ? nodes.find((n) => n.id === gateInboundEdge.source) : undefined
+    const visited = new Set<string>([node.id])
+    const queue: string[] = [inboundEdge.source]
+    while (queue.length > 0) {
+        const currentId = queue.shift()!
+        if (visited.has(currentId)) continue
+        visited.add(currentId)
+
+        const current = nodeById.get(currentId)
+        if (current?.data.name === 'agentAgentflow') {
+            const agentTools = (current.data.inputs?.agentTools as AgentToolConfig[] | undefined) || []
+            const tools = agentTools.map((t) => t.agentSelectedTool).filter(Boolean)
+            if (tools.length > 0) return tools
+        }
+
+        edges.filter((e) => e.target === currentId).forEach((e) => queue.push(e.source))
     }
-
-    if (sourceNode?.data.name !== 'agentAgentflow') return []
-    const agentTools = (sourceNode.data.inputs?.agentTools as AgentToolConfig[] | undefined) || []
-    return agentTools.map((t) => t.agentSelectedTool).filter(Boolean)
+    return []
 }
 
 const generateSelectedTools = async (
@@ -351,6 +371,25 @@ const generateSelectedTools = async (
         }
 
         if (node.data.name === 'agentAgentflow') {
+            const proposingAgentTools = findProposingAgentTools(node, nodes, edges)
+
+            if (proposingAgentTools.length > 0) {
+                // This agent IS the execute step of a propose->approve->execute shape -- reuse
+                // the proposing agent's tools directly rather than asking an LLM to pick again
+                // (which is exactly what "must NOT reuse an already-selected tool" would break,
+                // same failure mode as the toolAgentflow case above).
+                selectedTools.push(...proposingAgentTools)
+                const existingTools = node.data.inputs.agentTools || []
+                node.data.inputs.agentTools = [
+                    ...existingTools,
+                    ...proposingAgentTools.map((tool) => ({
+                        agentSelectedTool: tool,
+                        agentSelectedToolConfig: { agentSelectedTool: tool }
+                    }))
+                ]
+                continue
+            }
+
             const sysPrompt = `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select the tools that are needed to achieve the given task.
 
 Here are the tools to choose from:

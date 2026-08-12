@@ -274,6 +274,20 @@ tool-selection behavior via a better example template is therefore structurally 
 this pipeline; it has to be fixed in the deterministic/prompt logic, which is why the fix took
 the shape it did.
 
+**Update (2026-08-12, cont'd):** `findProposingAgentTools` initially only walked 1-2 hops back
+(direct agent, or agent→HITL-gate), matching the exact shape the first bug reproduced with. A
+second real generation run produced a *different* shape for the same intent — the execute step
+was a full `agentAgentflow` node rather than a `toolAgentflow`, and its immediate predecessor was
+a tool-less `llmAgentflow` "draft the action" step, with the actual tool-bearing agent one hop
+further back, before a `conditionAgentAgentflow` read/write split. That run happened to come out
+correct anyway (the underlying model ignored its own "don't reuse" instruction), which is not a
+guarantee — the same unfixed flaw was still there, just not triggered that time. Generalized the
+walk into a proper backward BFS that keeps traversing through non-gate intermediate nodes until
+it finds the nearest upstream `agentAgentflow` with tools already selected, and applied the same
+deterministic reuse to the `agentAgentflow`-as-executor case (simpler than the `toolAgentflow`
+case here, since there's no single-tool constraint — the full set gets copied, no LLM call
+needed at all when a proposer is found).
+
 ---
 
 ## 7. Deployment
