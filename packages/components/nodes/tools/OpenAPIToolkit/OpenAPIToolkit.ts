@@ -231,6 +231,46 @@ class OpenAPIToolkit_Tools implements INode {
                 ]
             }
         },
+        // Not a dropdown-options loader like the others -- invoked directly from the canvas
+        // "Save to My Tools" button (see NodeInputHandler.jsx) via the same /node-load-method
+        // endpoint. Returns one flattened, database-savable tool definition per selected
+        // endpoint: {name, description, schema, func} where `schema` matches the flat
+        // `Tool` entity format (see utils.convertSchemaToZod) and `func` is generated code
+        // that performs the actual fetch -- the same shape the "Custom Tools" tab already
+        // stores and the CustomTool node already executes. No new entity, no new node type.
+        exportSelectedEndpointsAsTools: async (nodeData: INodeData, options: ICommonObject): Promise<any[]> => {
+            const inputType = nodeData.inputs?.inputType as string
+            const openApiFile = nodeData.inputs?.openApiFile as string
+            const openApiLink = nodeData.inputs?.openApiLink as string
+            const selectedServer = nodeData.inputs?.selectedServer as string
+            const _headers = nodeData.inputs?.headers as string
+            const headers = typeof _headers === 'object' ? _headers : _headers ? JSON.parse(_headers) : {}
+
+            const specData: any = await this.loadOpenApiSpec({ inputType, openApiFile, openApiLink }, options)
+            if (!specData) throw new Error('Failed to load OpenAPI spec')
+            const _data: any = await $RefParser.dereference(specData)
+
+            let baseUrl: string
+            if (selectedServer && selectedServer !== 'error') {
+                baseUrl = selectedServer
+            } else {
+                baseUrl = _data.servers?.[0]?.url
+            }
+            if (!baseUrl) throw new Error('OpenAPI spec does not contain a server URL')
+
+            const _selected = nodeData.inputs?.selectedEndpoints
+            let selected: string[] = []
+            if (_selected) {
+                try {
+                    selected = typeof _selected === 'string' ? JSON.parse(_selected) : _selected
+                } catch (e) {
+                    selected = []
+                }
+            }
+            if (!selected.length) throw new Error('Select at least one endpoint before saving')
+
+            return exportEndpointsAsFlatTools(_data.paths, baseUrl, headers, selected)
+        },
         listEndpoints: async (nodeData: INodeData, options: ICommonObject) => {
             try {
                 const inputType = nodeData.inputs?.inputType as string
@@ -561,6 +601,171 @@ const getTools = (
         }
     }
     return tools
+}
+
+// Matches a safe JS identifier. Any OpenAPI parameter name that doesn't match this gets a
+// generated fallback ($param1, $param2, ...) rather than being interpolated as-is into
+// generated code -- defense in depth against a malformed/malicious spec smuggling something
+// like `); maliciousCode(` through a parameter name, even though the generated code only ever
+// runs inside the existing sandboxed CustomTool executor.
+const SAFE_IDENTIFIER = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/
+
+// The `Tool` entity's schema format only supports flat, top-level primitive fields (see
+// utils.convertSchemaToZod) -- no nested objects/arrays. Anything richer degrades to a
+// string field with a note, rather than being dropped, so the LLM can still pass it (as a
+// JSON string) instead of losing the parameter entirely.
+const mapToFlatFieldType = (schema: any): { type: 'string' | 'number' | 'boolean' | 'date'; note?: string } => {
+    if (!schema) return { type: 'string' }
+    if (schema.type === 'number' || schema.type === 'integer') return { type: 'number' }
+    if (schema.type === 'boolean') return { type: 'boolean' }
+    if (schema.type === 'string' && schema.format === 'date') return { type: 'date' }
+    if (schema.type === 'string') return { type: 'string' }
+    if (schema.type === 'array' || schema.type === 'object' || schema.enum) {
+        return { type: 'string', note: '(pass as a JSON string)' }
+    }
+    return { type: 'string' }
+}
+
+interface FlatField {
+    key: string
+    property: string
+    description: string
+    type: 'string' | 'number' | 'boolean' | 'date'
+    required: boolean
+    in: 'path' | 'query' | 'body'
+}
+
+const buildFlatFields = (spec: any): FlatField[] => {
+    const fields: FlatField[] = []
+    const usedKeys = new Set<string>()
+    let anonCounter = 0
+
+    const toKey = (rawName: string): string => {
+        let key = SAFE_IDENTIFIER.test(rawName) ? rawName : `param${++anonCounter}`
+        while (usedKeys.has(key)) key = `${key}_${++anonCounter}`
+        usedKeys.add(key)
+        return key
+    }
+
+    for (const param of spec.parameters || []) {
+        if (param.in !== 'path' && param.in !== 'query') continue
+        const { type, note } = mapToFlatFieldType(param.schema)
+        fields.push({
+            key: toKey(param.name),
+            property: param.name,
+            description: [param.description, note].filter(Boolean).join(' '),
+            type,
+            required: param.in === 'path' ? true : !!param.required,
+            in: param.in
+        })
+    }
+
+    if (spec.requestBody) {
+        const content =
+            spec.requestBody.content?.['application/json'] ||
+            spec.requestBody.content?.['application/x-www-form-urlencoded'] ||
+            spec.requestBody.content?.['multipart/form-data']
+        const bodySchema = content?.schema
+        if (bodySchema?.properties) {
+            const requiredList: string[] = bodySchema.required || []
+            for (const propName in bodySchema.properties) {
+                const { type, note } = mapToFlatFieldType(bodySchema.properties[propName])
+                fields.push({
+                    key: toKey(propName),
+                    property: propName,
+                    description: [bodySchema.properties[propName]?.description, note].filter(Boolean).join(' '),
+                    type,
+                    required: requiredList.includes(propName),
+                    in: 'body'
+                })
+            }
+        }
+    }
+
+    return fields
+}
+
+const buildGeneratedFunc = (path: string, method: string, headers: ICommonObject, fields: FlatField[]): string => {
+    const pathFields = fields.filter((f) => f.in === 'path')
+    const queryFields = fields.filter((f) => f.in === 'query')
+    const bodyFields = fields.filter((f) => f.in === 'body')
+
+    const pathSubstitutions = pathFields
+        .map((f) => `    url = url.replace(${JSON.stringify(`{${f.property}}`)}, encodeURIComponent($${f.key} ?? ''));`)
+        .join('\n')
+
+    const queryAppends = queryFields
+        .map(
+            (f) =>
+                `    if ($${f.key} !== undefined && $${f.key} !== null && $${f.key} !== '') queryParams.append(${JSON.stringify(
+                    f.property
+                )}, $${f.key});`
+        )
+        .join('\n')
+
+    const bodyObjectEntries = bodyFields.map((f) => `${JSON.stringify(f.property)}: $${f.key}`).join(', ')
+
+    const hasBody = bodyFields.length > 0 && method.toUpperCase() !== 'GET'
+
+    return `const fetch = require('node-fetch');
+let url = ${JSON.stringify(path)};
+${pathSubstitutions}
+const queryParams = new URLSearchParams();
+${queryAppends}
+const qs = queryParams.toString();
+if (qs) url += (url.includes('?') ? '&' : '?') + qs;
+const options = {
+    method: ${JSON.stringify(method.toUpperCase())},
+    headers: ${JSON.stringify({ 'Content-Type': 'application/json', ...headers })}
+};
+${hasBody ? `options.body = JSON.stringify({ ${bodyObjectEntries} });` : ''}
+try {
+    const response = await fetch(url, options);
+    const text = await response.text();
+    if (!response.ok) {
+        return \`Error \${response.status}: \${text}\`;
+    }
+    return text;
+} catch (error) {
+    return 'Error: ' + (error && error.message ? error.message : String(error));
+}
+`
+}
+
+const exportEndpointsAsFlatTools = (paths: any, baseUrl: string, headers: ICommonObject, selectedOperationIds: string[]): any[] => {
+    const results: any[] = []
+    for (const path in paths) {
+        const methods = paths[path]
+        for (const method in methods) {
+            if (!['get', 'post', 'put', 'delete', 'patch'].includes(method)) continue
+            const spec = methods[method]
+            const operationId = spec.operationId || `${method.toUpperCase()} ${path}`
+            if (!selectedOperationIds.includes(operationId)) continue
+
+            const fields = buildFlatFields(spec)
+            const schema = fields.map((f) => ({
+                // `property` becomes both the zod object key AND the `$<property>` sandbox
+                // variable name the generated func below reads from (see CustomTool/core.ts
+                // -- it exposes every top-level tool arg as `$<key>`). Must be the sanitized
+                // `key`, not the raw OpenAPI param name, or the two would silently diverge
+                // whenever the raw name isn't a valid JS identifier.
+                property: f.key,
+                description:
+                    f.key !== f.property ? `${f.description || f.property} (API parameter: ${f.property})` : f.description || f.property,
+                type: f.type,
+                required: f.required
+            }))
+            const func = buildGeneratedFunc(`${baseUrl}${path}`, method, headers, fields)
+
+            results.push({
+                name: operationId,
+                description: spec.description || spec.summary || operationId,
+                schema: JSON.stringify(schema),
+                func
+            })
+        }
+    }
+    return results
 }
 
 module.exports = { nodeClass: OpenAPIToolkit_Tools }

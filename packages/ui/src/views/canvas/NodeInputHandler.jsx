@@ -84,6 +84,8 @@ import PromptGeneratorDialog from '@/ui-component/dialog/PromptGeneratorDialog'
 import assistantsApi from '@/api/assistants'
 import chatflowsApi from '@/api/chatflows'
 import documentstoreApi from '@/api/documentstore'
+import nodesApi from '@/api/nodes'
+import toolsApi from '@/api/tools'
 
 // utils
 import {
@@ -91,7 +93,8 @@ import {
     getInputVariables,
     getCustomConditionOutputs,
     isValidConnection,
-    getAvailableNodesForVariable
+    getAvailableNodesForVariable,
+    generateRandomGradient
 } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 
@@ -633,6 +636,65 @@ const NodeInputHandler = ({
 
         setSaveMcpServerDialogProps({ type: 'ADD', data: prefill })
         setShowSaveMcpServerDialog(true)
+    }
+
+    const saveOpenApiEndpointsAsTools = async () => {
+        const selectedEndpoints = data.inputs?.selectedEndpoints
+        const hasSelection = Array.isArray(selectedEndpoints) ? selectedEndpoints.length > 0 : !!selectedEndpoints
+        if (!hasSelection) {
+            enqueueSnackbar({
+                message: 'Select at least one endpoint under "Available Endpoints" before saving.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'warning' }
+            })
+            return
+        }
+
+        try {
+            const resp = await nodesApi.executeNodeLoadMethod('openAPIToolkit', {
+                ...data,
+                loadMethod: 'exportSelectedEndpointsAsTools'
+            })
+            const exportedTools = resp?.data || []
+            if (!exportedTools.length) {
+                enqueueSnackbar({
+                    message: 'No tools could be generated from the selected endpoints.',
+                    options: { key: new Date().getTime() + Math.random(), variant: 'warning' }
+                })
+                return
+            }
+
+            let savedCount = 0
+            let failedCount = 0
+            for (const tool of exportedTools) {
+                try {
+                    await toolsApi.createNewTool({
+                        name: tool.name,
+                        description: tool.description,
+                        color: generateRandomGradient(),
+                        schema: tool.schema,
+                        func: tool.func
+                    })
+                    savedCount++
+                } catch (e) {
+                    failedCount++
+                }
+            }
+
+            enqueueSnackbar({
+                message:
+                    savedCount > 0
+                        ? `Saved ${savedCount} endpoint${savedCount === 1 ? '' : 's'} to My Tools.${
+                              failedCount ? ` ${failedCount} failed.` : ''
+                          } Find them under the Custom Tools tab, or attach via the Custom Tool node in any flow.`
+                        : `Failed to save ${failedCount} endpoint${failedCount === 1 ? '' : 's'} to My Tools.`,
+                options: { key: new Date().getTime() + Math.random(), variant: savedCount > 0 ? 'success' : 'error' }
+            })
+        } catch (e) {
+            enqueueSnackbar({
+                message: `Failed to generate tools from the selected endpoints: ${e?.response?.data?.message || e.message}`,
+                options: { key: new Date().getTime() + Math.random(), variant: 'error' }
+            })
+        }
     }
 
     const handleNvidiaNIMDialogComplete = (containerData) => {
@@ -1456,6 +1518,11 @@ const NodeInputHandler = ({
                                         </IconButton>
                                     )}
                                 </div>
+                                {inputParam.name === 'selectedEndpoints' && data.name === 'openAPIToolkit' && (
+                                    <Button variant='outlined' size='small' sx={{ mt: 1 }} onClick={saveOpenApiEndpointsAsTools}>
+                                        Save to My Tools
+                                    </Button>
+                                )}
                             </>
                         )}
                         {inputParam.type === 'timePicker' && (
