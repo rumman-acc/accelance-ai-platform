@@ -16,6 +16,7 @@ import { useTheme } from '@mui/material/styles'
 import assistantsApi from '@/api/assistants'
 import { baseURL, FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 import { initNode, showHideInputParams } from '@/utils/genericHelper'
+import { getLayoutedElements, getRevealSteps } from '@/utils/agentflowAutoLayout'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import useApi from '@/hooks/useApi'
 
@@ -204,9 +205,23 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             })
 
             if (response.data && response.data.nodes && response.data.edges) {
-                reactFlowInstance.setNodes(response.data.nodes)
-                reactFlowInstance.setEdges(response.data.edges)
+                const { nodes: layoutedNodes } = getLayoutedElements(response.data.nodes, response.data.edges)
+                const revealSteps = getRevealSteps(layoutedNodes, response.data.edges)
+
                 onConfirm()
+                reactFlowInstance.setNodes([])
+                reactFlowInstance.setEdges([])
+
+                for (const step of revealSteps) {
+                    if (step.type === 'node') {
+                        reactFlowInstance.setNodes((nds) => [...nds, step.item])
+                    } else {
+                        reactFlowInstance.setEdges((eds) => [...eds, step.item])
+                    }
+                    // eslint-disable-next-line no-await-in-loop
+                    await new Promise((resolve) => setTimeout(resolve, 150))
+                    reactFlowInstance.fitView({ padding: 0.3, duration: 150 })
+                }
 
                 if (response.data.warnings && response.data.warnings.length > 0) {
                     enqueueSnackbar({

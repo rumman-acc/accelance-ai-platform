@@ -1330,6 +1330,9 @@ importers:
       '@codemirror/view':
         specifier: ^6.26.3
         version: 6.26.3
+      '@dagrejs/dagre':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@emotion/cache':
         specifier: ^11.4.0
         version: 11.11.0
@@ -4053,6 +4056,12 @@ packages:
 
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
+
+  '@dagrejs/dagre@3.1.1':
+    resolution: {integrity: sha512-zroZB1dFOFiGgv4Xcrn1DckB1o4aOikPqD2NDQPV0WM//CXGcS6xiD0rNkqHmw6FEg4tabt4nxPLwgCWT+Vb2A==}
+
+  '@dagrejs/graphlib@4.0.5':
+    resolution: {integrity: sha512-7xrBTqIts3o+PMUZX97wSc+7TUbW+/rULzGNCTP6yooNVDXbzw4Wutg/H/xOutTB/c/k0YqOAavgPh4/Zk9PFA==}
 
   '@datastax/astra-db-ts@1.5.0':
     resolution: {integrity: sha512-Z9pEVyyHfglh8XAKrIASxdvORdei4pLUKDDGarqYvBkA9B9rKdqqdN+4I42Dz8paU5uscu8FwM5mc+Ly/U6jfA==}
@@ -26515,6 +26524,12 @@ snapshots:
       colorspace: 1.1.4
       enabled: 2.0.0
       kuler: 2.0.0
+
+  '@dagrejs/dagre@3.1.1':
+    dependencies:
+      '@dagrejs/graphlib': 4.0.5
+
+  '@dagrejs/graphlib@4.0.5': {}
 
   '@datastax/astra-db-ts@1.5.0':
     dependencies:
