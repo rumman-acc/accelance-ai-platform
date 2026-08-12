@@ -30,7 +30,35 @@ export const NATIVE_CONNECTOR_NAMES = new Set([
     'twilioTool',
     'airtableTool',
     'docusignTool',
-    'shopifyTool'
+    'shopifyTool',
+    // Batch 2, added 2026-08-11 (native-first product direction -- see epics-feature-status.md)
+    'zendeskTool',
+    'intercomTool',
+    'freshdeskTool',
+    'asanaTool',
+    'trelloTool',
+    'mondayTool',
+    'clickupTool',
+    'mailchimpTool',
+    'sendgridTool',
+    'klaviyoTool',
+    'zoomTool',
+    'telegramTool',
+    'whatsappTool',
+    'gitlabTool',
+    'bitbucketTool',
+    'circleciTool',
+    'vercelTool',
+    'datadogTool',
+    'pagerdutyTool',
+    'quickbooksTool',
+    'xeroTool',
+    'dropboxTool',
+    'boxTool',
+    'oneDriveTool',
+    'segmentTool',
+    'amplitudeTool',
+    'mixpanelTool'
 ])
 
 // User-driven/custom mechanisms — surfaced on the Custom Tools / Custom MCP Servers
