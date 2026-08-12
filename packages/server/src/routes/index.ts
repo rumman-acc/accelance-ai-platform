@@ -9,6 +9,7 @@ import chatflowsStreamingRouter from './chatflows-streaming'
 import chatflowsUploadsRouter from './chatflows-uploads'
 import componentsCredentialsRouter from './components-credentials'
 import componentsCredentialsIconRouter from './components-credentials-icon'
+import composioCatalogRouter from './composio-catalog'
 import controlTowerRouter from './control-tower'
 import credentialAccessRouter from './credential-access'
 import credentialsRouter from './credentials'
@@ -86,6 +87,7 @@ router.use('/chatmessage', chatMessageRouter)
 router.use('/chatflows-uploads', chatflowsUploadsRouter)
 router.use('/components-credentials', componentsCredentialsRouter)
 router.use('/components-credentials-icon', componentsCredentialsIconRouter)
+router.use('/composio-catalog', composioCatalogRouter)
 router.use('/control-tower', controlTowerRouter)
 router.use('/credentials', credentialsRouter)
 router.use('/credential-access', credentialAccessRouter)

@@ -10,6 +10,7 @@ import ItemCard from '@/ui-component/cards/ItemCard'
 import MCPItemCard from '@/ui-component/cards/MCPItemCard'
 import ToolDialog from './ToolDialog'
 import CustomMcpServerDialog from './CustomMcpServerDialog'
+import ComposioImportDialog from './ComposioImportDialog'
 import NativeToolsTab from './NativeToolsTab'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -29,7 +30,7 @@ import { useError } from '@/store/context/ErrorContext'
 import { gridSpacing } from '@/store/constant'
 
 // icons
-import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { IconPlus, IconFileUpload, IconLayoutGrid, IconList, IconDownload } from '@tabler/icons-react'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 
 const SEARCH_PLACEHOLDERS = [
@@ -54,6 +55,7 @@ const Tools = () => {
     const [isLoading, setLoading] = useState(true)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
+    const [showComposioDialog, setShowComposioDialog] = useState(false)
     const [view, setView] = useState(localStorage.getItem('toolsDisplayStyle') || 'card')
 
     const inputRef = useRef(null)
@@ -296,6 +298,15 @@ const Tools = () => {
                 </PermissionButton>
                 <input style={{ display: 'none' }} ref={inputRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
             </Box>
+            <PermissionButton
+                permissionId={'tools:create'}
+                variant='outlined'
+                onClick={() => setShowComposioDialog(true)}
+                startIcon={<IconDownload />}
+                sx={{ height: 40 }}
+            >
+                Import from Composio
+            </PermissionButton>
             <ButtonGroup disableElevation aria-label='outlined primary button group'>
                 <StyledPermissionButton
                     permissionId={'tools:create'}
@@ -477,6 +488,11 @@ const Tools = () => {
                 onConfirm={onCustomMcpConfirm}
                 onAuthorize={onAuthorize}
                 onCreated={onCustomMcpCreated}
+            />
+            <ComposioImportDialog
+                show={showComposioDialog}
+                onCancel={() => setShowComposioDialog(false)}
+                onImported={() => refresh(currentPage, pageLimit)}
             />
         </>
     )
