@@ -4,6 +4,7 @@ import { StructuredOutputParser } from '@langchain/core/output_parsers'
 import { isEqual, get, cloneDeep } from 'lodash'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { extractResponseContent } from './utils'
+import { isWriteCapableToolNode } from './toolActionRisk'
 
 const ToolType = z.array(z.string()).describe('List of tools')
 
@@ -154,15 +155,94 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 
         const { nodes, edges } = generateNodesData(result, config)
 
-        const updatedNodes = await generateSelectedTools(nodes, config, question, options)
+        const updatedNodes = await generateSelectedTools(nodes, edges, config, question, options)
 
         const updatedEdges = updateEdges(edges, nodes)
 
-        return { nodes: updatedNodes, edges: updatedEdges }
+        const warnings = validateAndRepairFlow(updatedNodes, updatedEdges, config)
+
+        return { nodes: updatedNodes, edges: updatedEdges, ...(warnings.length > 0 ? { warnings } : {}) }
     } catch (error) {
         console.error('Error generating AgentflowV2:', error)
         return { error: error.message || 'Unknown error occurred' }
     }
+}
+
+/**
+ * Deterministic post-generation safety net -- catches what prompt engineering (generateNodesEdges,
+ * generateSelectedTools) doesn't reliably get right on its own:
+ * 1. Repairs agentAgentflow/llmAgentflow nodes the generating LLM left with no model selected,
+ *    defaulting to the model the user picked to generate this flow (config.selectedChatModel).
+ * 2. Flags a toolAgentflow node whose bound tool doesn't match what its proposing agent
+ *    selected -- a backstop for findProposingAgentTools()'s reuse logic above, independent of
+ *    whether that logic covers every graph shape.
+ * 3. Flags the whole flow if it binds any write-capable tool (per toolActionRisk's naming-based
+ *    classifier) but contains no humanInputAgentflow node anywhere -- a coarse, whole-flow check
+ *    by design: a precise per-path "is this specific call gated" analysis would need to track
+ *    which branches actually lead to a mutating call, which the tool-binding data at generation
+ *    time doesn't distinguish (an agent's tool binding exposes all of a tool's actions, not just
+ *    the read-only ones, even when its own role is meant to be read-only or propose-only). This
+ *    whole-flow check is intentionally coarse to avoid false-flagging a correctly-built
+ *    propose/approve/execute flow (whose read and propose agents legitimately have write-capable
+ *    tools bound without being preceded by a gate themselves) while still catching the case with
+ *    no safety structure anywhere.
+ */
+export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Record<string, any>): string[] => {
+    const warnings: string[] = []
+
+    // 1. Repair empty model selections.
+    const selectedChatModel = config.selectedChatModel as { name?: string; inputs?: Record<string, any> } | undefined
+    for (const node of nodes) {
+        const modelField = node.data.name === 'agentAgentflow' ? 'agentModel' : node.data.name === 'llmAgentflow' ? 'llmModel' : null
+        if (!modelField) continue
+        if (!node.data.inputs) node.data.inputs = {}
+        if (!node.data.inputs[modelField] && selectedChatModel?.name) {
+            node.data.inputs[modelField] = selectedChatModel.name
+            node.data.inputs[`${modelField}Config`] = {
+                ...(selectedChatModel.inputs || {}),
+                [modelField]: selectedChatModel.name
+            }
+            warnings.push(
+                `"${node.data.label || node.id}" had no model selected -- defaulted to the model used to generate this flow (${
+                    selectedChatModel.name
+                }).`
+            )
+        }
+    }
+
+    // 2. toolAgentflow-vs-proposing-agent consistency backstop.
+    for (const node of nodes) {
+        if (node.data.name !== 'toolAgentflow') continue
+        const proposingTools = findProposingAgentTools(node, nodes, edges)
+        const boundTool = node.data.inputs?.toolAgentflowSelectedTool
+        if (proposingTools.length > 0 && boundTool && !proposingTools.includes(boundTool)) {
+            warnings.push(
+                `"${
+                    node.data.label || node.id
+                }" executes tool "${boundTool}", which doesn't match the tool(s) its proposing agent selected (${proposingTools.join(
+                    ', '
+                )}) -- verify this is intentional.`
+            )
+        }
+    }
+
+    // 3. Whole-flow "any HITL gate at all" check.
+    const componentNodes = (config.componentNodes || {}) as Record<string, any>
+    const boundToolNames = new Set<string>()
+    for (const node of nodes) {
+        const agentTools = (node.data.inputs?.agentTools as AgentToolConfig[] | undefined) || []
+        agentTools.forEach((t) => t.agentSelectedTool && boundToolNames.add(t.agentSelectedTool))
+        if (node.data.inputs?.toolAgentflowSelectedTool) boundToolNames.add(node.data.inputs.toolAgentflowSelectedTool)
+    }
+    const hasWriteCapableTool = Array.from(boundToolNames).some((name) => isWriteCapableToolNode(componentNodes[name]))
+    const hasHumanInputNode = nodes.some((n) => n.data.name === 'humanInputAgentflow')
+    if (hasWriteCapableTool && !hasHumanInputNode) {
+        warnings.push(
+            'This flow uses at least one tool capable of mutating actions (sending, creating, deleting, etc.) but has no human-in-the-loop approval node anywhere -- review whether autonomous write access is intended before deploying.'
+        )
+    }
+
+    return warnings
 }
 
 const updateEdges = (edges: Edge[], nodes: Node[]): Edge[] => {
@@ -229,7 +309,39 @@ const updateEdges = (edges: Edge[], nodes: Node[]): Edge[] => {
     return updatedEdges
 }
 
-const generateSelectedTools = async (nodes: Node[], config: Record<string, any>, question: string, options: ICommonObject) => {
+/**
+ * If `node` is a toolAgentflow fed (directly or via a humanInputAgentflow approval gate) by an
+ * agentAgentflow that already selected its own tools, return that agent's tool names. This is
+ * the propose(agent)->approve(HITL)->execute(toolAgentflow) shape -- the execute step MUST reuse
+ * whichever tool the proposing agent proposed, not pick an unrelated one. Returns [] when this
+ * node isn't in that shape (e.g. independent toolAgentflow nodes keep today's dedup behavior).
+ */
+export const findProposingAgentTools = (node: Node, nodes: Node[], edges: Edge[]): string[] => {
+    const inboundEdge = edges.find((e) => e.target === node.id)
+    if (!inboundEdge) return []
+
+    // Direct: agent -> toolAgentflow (no HITL gate in between)
+    let sourceNode = nodes.find((n) => n.id === inboundEdge.source)
+
+    // Via HITL gate on its approved ('true') branch: agent -> humanInputAgentflow -> toolAgentflow
+    if (sourceNode?.data.name === 'humanInputAgentflow') {
+        if (!inboundEdge.sourceHandle.includes('true')) return [] // only the approved branch reuses tools
+        const gateInboundEdge = edges.find((e) => e.target === sourceNode!.id)
+        sourceNode = gateInboundEdge ? nodes.find((n) => n.id === gateInboundEdge.source) : undefined
+    }
+
+    if (sourceNode?.data.name !== 'agentAgentflow') return []
+    const agentTools = (sourceNode.data.inputs?.agentTools as AgentToolConfig[] | undefined) || []
+    return agentTools.map((t) => t.agentSelectedTool).filter(Boolean)
+}
+
+const generateSelectedTools = async (
+    nodes: Node[],
+    edges: Edge[],
+    config: Record<string, any>,
+    question: string,
+    options: ICommonObject
+) => {
     const selectedTools: string[] = []
 
     for (let i = 0; i < nodes.length; i += 1) {
@@ -268,7 +380,32 @@ Now, select the tools that are needed to achieve the given task. You must only s
                 ]
             }
         } else if (node.data.name === 'toolAgentflow') {
-            const sysPrompt = `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select ONE tool that is needed to achieve the given task.
+            const proposingAgentTools = findProposingAgentTools(node, nodes, edges)
+
+            if (proposingAgentTools.length === 1) {
+                // Deterministic: exactly one candidate, so there's no ambiguity to hand to an
+                // LLM -- reuse it directly rather than risk a model picking something else.
+                const tool = proposingAgentTools[0]
+                selectedTools.push(tool)
+                node.data.inputs.toolAgentflowSelectedTool = tool
+                node.data.inputs.toolInputArgs = []
+                node.data.inputs.toolAgentflowSelectedToolConfig = { toolAgentflowSelectedTool: tool }
+                continue
+            }
+
+            const isReuseCase = proposingAgentTools.length > 1
+            const sysPrompt = isReuseCase
+                ? `You are a workflow orchestrator that is designed to make agent coordination and execution easy. This tool node executes an action that was already proposed and approved by an upstream agent -- your goal is to select ONE tool that matches what that agent proposed.
+
+Here are the ONLY tools you may choose from (the upstream agent's own tools -- you must pick one of these, not a different tool):
+${JSON.stringify(proposingAgentTools, null, 2)}
+
+Output Format should be ONLY one tool name inside of a list:
+For example:["${proposingAgentTools[0]}"]
+
+Now, select the ONE tool from the list above that matches the approved action.
+`
+                : `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select ONE tool that is needed to achieve the given task.
 
 Here are the tools to choose from:
 ${config.toolNodes}

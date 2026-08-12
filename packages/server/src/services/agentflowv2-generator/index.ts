@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import path from 'path'
 import * as fs from 'fs'
-import { generateAgentflowv2 as generateAgentflowv2_json } from 'accelance-components'
+import { generateAgentflowv2 as generateAgentflowv2_json, isWriteCapableToolNode } from 'accelance-components'
 import { z } from 'zod/v3'
 import { sysPrompt } from './prompt'
 import { databaseEntities } from '../../utils'
@@ -55,7 +55,11 @@ const AgentFlowV2Type = z
         description: z.string().optional(),
         usecases: z.array(z.string()).optional(),
         nodes: z.array(NodeType),
-        edges: z.array(EdgeType)
+        edges: z.array(EdgeType),
+        // Deterministic post-generation checks (e.g. a write-capable tool reachable without a
+        // HITL gate) surfaced to the caller so the UI can warn before the flow is deployed --
+        // see validateGeneratedFlow in accelance-components.
+        warnings: z.array(z.string()).optional()
     })
     .describe('Generate Agentflowv2 nodes and edges')
 
@@ -97,6 +101,24 @@ const getAllToolNodes = async () => {
         }
     }
     return JSON.stringify(toolNodes, null, 2)
+}
+
+/**
+ * Which of the platform's tool nodes expose at least one send/delete/create/modify-style
+ * action, per the naming-convention classifier in accelance-components. Used to tell the
+ * generator's safety rule which tools need a HITL gate before a mutating call -- see
+ * isWriteCapableToolNode's own doc comment for why this is a heuristic, not structured data.
+ */
+const getWriteCapableToolNames = async () => {
+    const appServer = getRunningExpressApp()
+    const nodes = appServer.nodesPool.componentNodes
+    const writeCapable: string[] = []
+    for (const node in nodes) {
+        if (nodes[node].category.includes('Tools') && isWriteCapableToolNode(nodes[node])) {
+            writeCapable.push(nodes[node].name)
+        }
+    }
+    return JSON.stringify(writeCapable, null, 2)
 }
 
 const getAllAgentflowv2Marketplaces = async () => {
@@ -186,10 +208,12 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
         const agentFlow2Nodes = await getAllAgentFlow2Nodes()
         const toolNodes = await getAllToolNodes()
         const marketplaceTemplates = await getAllAgentflowv2Marketplaces()
+        const writeCapableTools = await getWriteCapableToolNames()
 
         const prompt = sysPrompt
             .replace('{agentFlow2Nodes}', agentFlow2Nodes)
             .replace('{marketplaceTemplates}', marketplaceTemplates)
+            .replace('{writeCapableTools}', writeCapableTools)
             .replace('{userRequest}', question)
         const options: Record<string, any> = {
             appDataSource: getRunningExpressApp().AppDataSource,
