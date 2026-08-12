@@ -190,14 +190,14 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
  *    time doesn't distinguish (an agent's tool binding exposes all of a tool's actions, not just
  *    the read-only ones, even when its own role is meant to be read-only or propose-only). This
  *    whole-flow check is intentionally coarse to avoid false-flagging a correctly-built
+ *    propose/approve/execute flow (whose read and propose agents legitimately have write-capable
+ *    tools bound without being preceded by a gate themselves) while still catching the case with
+ *    no safety structure anywhere.
  * 4. Lists every bound tool that declares a credential field but has none set -- true for
  *    essentially every tool node the generator creates, since initNode() unconditionally clears
  *    credential (see below). Surfaced as one combined warning so the caller (UI) can tell the
  *    user exactly what still needs configuring, rather than the generated flow silently failing
  *    the first time a tool actually runs.
- *    propose/approve/execute flow (whose read and propose agents legitimately have write-capable
- *    tools bound without being preceded by a gate themselves) while still catching the case with
- *    no safety structure anywhere.
  */
 export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Record<string, any>): string[] => {
     const warnings: string[] = []
