@@ -8,6 +8,23 @@ import { isWriteCapableToolNode } from './toolActionRisk'
 
 const ToolType = z.array(z.string()).describe('List of tools')
 
+// Phase-1 generation (generateNodesEdges) only ever produces graph shape -- its own NodeDataType
+// schema below caps node.data to {label, name}, and phase-2 (generateNodesData/initNode) then
+// overwrites every node's inputs with the component's own generic defaults regardless of what the
+// flow is actually for. These two schemas back the per-node content-generation calls that fill in
+// the task-specific text those two phases skip: a router's branch descriptions, and an agent's
+// system instructions.
+const RouterContentType = z.object({
+    instructions: z.string().describe('General instructions for how the router should classify input into one of the scenarios below'),
+    scenarios: z.array(z.string()).describe('One scenario description per outgoing branch, in the exact order the branches were given')
+})
+
+const AgentInstructionsType = z.object({
+    instructions: z
+        .string()
+        .describe("System instructions describing this agent's specific role and responsibilities within the overall workflow")
+})
+
 // Key AgentFlow V2's dynamic model/tool config objects use to hold a selected credential id
 // (see Tool.ts: `selectedToolConfig['FLOWISE_CREDENTIAL_ID']`, and the llmModelConfig shape
 // built in generateSelectedTools/validateAndRepairFlow below).
@@ -183,7 +200,12 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
  * 2. Flags a toolAgentflow node whose bound tool doesn't match what its proposing agent
  *    selected -- a backstop for findProposingAgentTools()'s reuse logic above, independent of
  *    whether that logic covers every graph shape.
- * 3. Flags the whole flow if it binds any write-capable tool (per toolActionRisk's naming-based
+ * 3. Flags a conditionAgentAgentflow node whose scenarios/instructions are still blank --
+ *    generateSelectedTools' router-content generation is a best-effort LLM call and can fail
+ *    (model error, unparseable response, zero matched branches); this node's own runtime code
+ *    hard-errors on an empty scenario list, so a failure here is a guaranteed crash, not a
+ *    quality issue, and needs to reach the user before they hit it mid-run.
+ * 4. Flags the whole flow if it binds any write-capable tool (per toolActionRisk's naming-based
  *    classifier) but contains no humanInputAgentflow node anywhere -- a coarse, whole-flow check
  *    by design: a precise per-path "is this specific call gated" analysis would need to track
  *    which branches actually lead to a mutating call, which the tool-binding data at generation
@@ -193,7 +215,7 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
  *    propose/approve/execute flow (whose read and propose agents legitimately have write-capable
  *    tools bound without being preceded by a gate themselves) while still catching the case with
  *    no safety structure anywhere.
- * 4. Lists every bound tool that declares a credential field but has none set -- true for
+ * 5. Lists every bound tool that declares a credential field but has none set -- true for
  *    essentially every tool node the generator creates, since initNode() unconditionally clears
  *    credential (see below). Surfaced as one combined warning so the caller (UI) can tell the
  *    user exactly what still needs configuring, rather than the generated flow silently failing
@@ -258,7 +280,27 @@ export const validateAndRepairFlow = (nodes: Node[], edges: Edge[], config: Reco
         }
     }
 
-    // 3 & 4. Whole-flow checks: any HITL gate at all, and which bound tools still need a
+    // 3. Router content backstop: a conditionAgentAgentflow node whose scenarios are still blank
+    // (all-empty-string, its component default) or whose instructions are still empty means the
+    // per-node router content generation in generateSelectedTools either failed (model error,
+    // unparseable response) or found zero matching branches -- this node WILL error at runtime
+    // (the node's own code refuses to classify against an empty scenario list), so surface it
+    // now rather than let the user discover it mid-run.
+    for (const node of nodes) {
+        if (node.data.name !== 'conditionAgentAgentflow') continue
+        const scenarios = (node.data.inputs?.conditionAgentScenarios || []) as { scenario?: string }[]
+        const hasRealScenario = scenarios.some((s) => s.scenario && s.scenario.trim())
+        const hasInstructions = !!(node.data.inputs?.conditionAgentInstructions as string | undefined)?.trim()
+        if (!hasRealScenario || !hasInstructions) {
+            warnings.push(
+                `"${
+                    node.data.label || node.id
+                }" is a router with no scenarios/instructions generated -- it will fail as soon as it runs. Open the node and fill these in manually.`
+            )
+        }
+    }
+
+    // 4 & 5. Whole-flow checks: any HITL gate at all, and which bound tools still need a
     // credential picked (every tool node the generator creates comes out with credential
     // cleared -- see initNode's unconditional `nodeData.credential = ''` -- so this fires for
     // essentially every generated flow that uses a tool; that's expected, not a bug).
@@ -443,10 +485,8 @@ const generateSelectedTools = async (
                         agentSelectedToolConfig: { agentSelectedTool: tool }
                     }))
                 ]
-                continue
-            }
-
-            const sysPrompt = `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select the tools that are needed to achieve the given task.
+            } else {
+                const sysPrompt = `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select the tools that are needed to achieve the given task.
 
 Here are the tools to choose from:
 ${config.toolNodes}
@@ -459,20 +499,89 @@ For example:["googleCustomSearch", "slackMCP"]
 
 Now, select the tools that are needed to achieve the given task. You must only select tools that are in the list of tools above. You must NOT select the tools that are already in the list of selected tools.
 `
-            const tools = await _generateSelectedTools({ ...config, prompt: sysPrompt }, question, options)
-            if (Array.isArray(tools) && tools.length > 0) {
-                selectedTools.push(...tools)
+                const tools = await _generateSelectedTools({ ...config, prompt: sysPrompt }, question, options)
+                if (Array.isArray(tools) && tools.length > 0) {
+                    selectedTools.push(...tools)
 
-                const existingTools = node.data.inputs.agentTools || []
-                node.data.inputs.agentTools = [
-                    ...existingTools,
-                    ...tools.map((tool) => ({
-                        agentSelectedTool: tool,
-                        agentSelectedToolConfig: {
-                            agentSelectedTool: tool
-                        }
-                    }))
-                ]
+                    const existingTools = node.data.inputs.agentTools || []
+                    node.data.inputs.agentTools = [
+                        ...existingTools,
+                        ...tools.map((tool) => ({
+                            agentSelectedTool: tool,
+                            agentSelectedToolConfig: {
+                                agentSelectedTool: tool
+                            }
+                        }))
+                    ]
+                }
+            }
+
+            // Give this agent task-specific role instructions -- without this, agentMessages
+            // stays at its blank default and the agent runs on nothing but its label + tools,
+            // regardless of what the flow actually needs it to do.
+            const agentToolNames = (node.data.inputs.agentTools || []).map((t: AgentToolConfig) => t.agentSelectedTool)
+            const instructionsSysPrompt = `You are a workflow orchestrator building an agent step ("${
+                node.data.label || node.id
+            }") that is one part of a larger workflow for the user's overall request below.
+
+This agent has access to the following tools: ${JSON.stringify(agentToolNames)}.
+
+Write clear, specific system instructions -- as if written directly to this agent -- describing exactly this agent's role, responsibilities, and boundaries within the overall workflow. Do not write a generic "you are a helpful assistant" description; be specific to what this agent, by this name and in this position in the workflow, is actually meant to do.
+`
+            const instructionsResult = (await _generateAgentInstructions(
+                { ...config, prompt: instructionsSysPrompt },
+                question,
+                options
+            )) as { instructions?: string }
+            if (instructionsResult && typeof instructionsResult.instructions === 'string' && instructionsResult.instructions.trim()) {
+                node.data.inputs.agentMessages = [{ role: 'system', content: instructionsResult.instructions }]
+            }
+        } else if (node.data.name === 'conditionAgentAgentflow') {
+            // Branch indices come from the edges' own sourceHandle suffix (`${node.id}-output-N`)
+            // -- this convention is set by phase-1 generation itself (edges, unlike node.data,
+            // aren't stripped from the few-shot marketplace templates), so it's already reliable
+            // by the time this runs. conditionAgentScenarios' array order must match it exactly,
+            // since the node's own runtime maps scenario array index straight to output index.
+            const branchTargetLabels: { [index: number]: string[] } = {}
+            for (const edge of edges) {
+                if (edge.source !== node.id) continue
+                const match = edge.sourceHandle?.match(/-output-(\d+)$/)
+                if (!match) continue
+                const idx = parseInt(match[1], 10)
+                const targetNode = nodes.find((n) => n.id === edge.target)
+                const label = targetNode?.data?.label || edge.target
+                if (!branchTargetLabels[idx]) branchTargetLabels[idx] = []
+                branchTargetLabels[idx].push(label)
+            }
+            const sortedIndices = Object.keys(branchTargetLabels)
+                .map((k) => parseInt(k, 10))
+                .sort((a, b) => a - b)
+
+            if (sortedIndices.length > 0) {
+                const branchDescriptions = sortedIndices
+                    .map((idx) => `Branch ${idx}: leads to "${branchTargetLabels[idx].join(', ')}"`)
+                    .join('\n')
+
+                const routerLabel = node.data.label || node.id
+                const sysPrompt = `You are a workflow orchestrator building a router step ("${routerLabel}") that classifies the user's request into exactly one of several branches, for the user's overall request below.
+
+Branches, in the exact order you must output scenarios for:
+${branchDescriptions}
+
+Write:
+1. "instructions": general instructions telling this router how to classify input into one of the scenarios below.
+2. "scenarios": an array of exactly ${sortedIndices.length} short scenario descriptions, one per branch, in the exact order the branches were given above -- each describing the specific condition under which that branch should be taken.
+`
+                const routerContent = (await _generateRouterContent({ ...config, prompt: sysPrompt }, question, options)) as {
+                    instructions?: string
+                    scenarios?: string[]
+                }
+                if (routerContent && Array.isArray(routerContent.scenarios) && routerContent.scenarios.length === sortedIndices.length) {
+                    if (routerContent.instructions) {
+                        node.data.inputs.conditionAgentInstructions = routerContent.instructions
+                    }
+                    node.data.inputs.conditionAgentScenarios = routerContent.scenarios.map((s) => ({ scenario: s }))
+                }
             }
         } else if (node.data.name === 'toolAgentflow') {
             const proposingAgentTools = findProposingAgentTools(node, nodes, edges)
@@ -581,6 +690,102 @@ const _generateSelectedTools = async (config: Record<string, any>, question: str
         }
     } catch (error) {
         console.error('Error generating AgentflowV2:', error)
+        return { error: error.message || 'Unknown error occurred' }
+    }
+}
+
+const _generateRouterContent = async (config: Record<string, any>, question: string, options: ICommonObject) => {
+    try {
+        const chatModelComponent = config.componentNodes[config.selectedChatModel?.name]
+        if (!chatModelComponent) {
+            throw new Error('Chat model component not found')
+        }
+        const nodeInstanceFilePath = chatModelComponent.filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newToolNodeInstance = new nodeModule.nodeClass()
+        const model = (await newToolNodeInstance.init(config.selectedChatModel, '', options)) as BaseChatModel
+
+        const parser = StructuredOutputParser.fromZodSchema(RouterContentType as any)
+        const formatInstructions = parser.getFormatInstructions()
+
+        const messages = [
+            {
+                role: 'system',
+                content: `${config.prompt}\n\n${formatInstructions}\n\nMake sure to follow the exact JSON schema structure.`
+            },
+            {
+                role: 'user',
+                content: question
+            }
+        ]
+
+        const response = await model.invoke(messages)
+        const responseContent = extractResponseContent(response)
+        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/) || responseContent.match(/{[\s\S]*?}/)
+
+        if (jsonMatch) {
+            const jsonStr = jsonMatch[1] || jsonMatch[0]
+            try {
+                const parsedJSON = JSON.parse(jsonStr)
+                return RouterContentType.parse(parsedJSON)
+            } catch (parseError) {
+                console.error('Error parsing router content JSON from response:', parseError)
+                return { error: 'Failed to parse JSON from response', content: responseContent }
+            }
+        } else {
+            console.error('No JSON found in router content response:', responseContent)
+            return { error: 'No JSON found in response', content: responseContent }
+        }
+    } catch (error) {
+        console.error('Error generating router content:', error)
+        return { error: error.message || 'Unknown error occurred' }
+    }
+}
+
+const _generateAgentInstructions = async (config: Record<string, any>, question: string, options: ICommonObject) => {
+    try {
+        const chatModelComponent = config.componentNodes[config.selectedChatModel?.name]
+        if (!chatModelComponent) {
+            throw new Error('Chat model component not found')
+        }
+        const nodeInstanceFilePath = chatModelComponent.filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newToolNodeInstance = new nodeModule.nodeClass()
+        const model = (await newToolNodeInstance.init(config.selectedChatModel, '', options)) as BaseChatModel
+
+        const parser = StructuredOutputParser.fromZodSchema(AgentInstructionsType as any)
+        const formatInstructions = parser.getFormatInstructions()
+
+        const messages = [
+            {
+                role: 'system',
+                content: `${config.prompt}\n\n${formatInstructions}\n\nMake sure to follow the exact JSON schema structure.`
+            },
+            {
+                role: 'user',
+                content: question
+            }
+        ]
+
+        const response = await model.invoke(messages)
+        const responseContent = extractResponseContent(response)
+        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/) || responseContent.match(/{[\s\S]*?}/)
+
+        if (jsonMatch) {
+            const jsonStr = jsonMatch[1] || jsonMatch[0]
+            try {
+                const parsedJSON = JSON.parse(jsonStr)
+                return AgentInstructionsType.parse(parsedJSON)
+            } catch (parseError) {
+                console.error('Error parsing agent instructions JSON from response:', parseError)
+                return { error: 'Failed to parse JSON from response', content: responseContent }
+            }
+        } else {
+            console.error('No JSON found in agent instructions response:', responseContent)
+            return { error: 'No JSON found in response', content: responseContent }
+        }
+    } catch (error) {
+        console.error('Error generating agent instructions:', error)
         return { error: error.message || 'Unknown error occurred' }
     }
 }

@@ -40,7 +40,7 @@ field)
 | Sequential Agents (explicit State-machine style) | ✅ Done | `nodes/sequentialagents/{Agent,Condition,LLMNode,Loop,State,ToolNode}` | Formal state-machine loop driver (RECEIVED → ... → DONE) — the kind of thing most from-scratch builds spend real effort designing |
 | Classic single agents (ToolAgent, ReAct, XMLAgent, OpenAI Assistants, LlamaIndex) | ✅ Done | `nodes/agents/` | Single-agent execution tier |
 | Classic Chains (LLMChain, ConversationalRetrievalQAChain, ApiChain, SqlDatabaseChain, GraphCypherQAChain, etc.) | ✅ Done | `nodes/chains/` (11 chain types) | Not commonly named as a first-class layer elsewhere — bonus capability |
-| AI-assisted agent generation from a prompt/spec | ✅ Done | `packages/server/src/services/agentflowv2-generator` | "SOP-document → agent" style generation (watsonx-style pattern) |
+| AI-assisted agent generation from a prompt/spec | 🟡 Built, real bugs found via live testing (2026-08-12/13), several fixed | `packages/server/src/services/agentflowv2-generator`, `packages/components/src/agentflowv2Generator.ts` — see `rules/architecture.md`'s "Update (2026-08-12/13)" notes and `rules/known-issues.md` #009. Fixed so far: propose→approve→execute tool reuse, baseline HITL-by-default safety rule, model/credential consistency across all model-bearing node types (incl. the router), and per-node LLM content generation for router scenarios/instructions + agent system prompts (previously left blank, causing the router to hard-crash and agents to run role-less). Not yet stress-tested against a wide variety of prompts/graph shapes beyond the specific cases hit so far — treat as "built, actively being hardened," not "done" | "SOP-document → agent" style generation (watsonx-style pattern) |
 | Agent Library/Registry (reusable, standalone Agent entity independent of a specific flow) | 🔴 To be built — planned, not started (2026-08-11) | none — agents inside an Agent Swarm (`nodes/agentflow/Agent/`) are inline JSON in that flow's `ChatFlow.flowData` blob, not independently addressable; `Assistant` entity is the unrelated OpenAI Assistants wrapper; `AgentAsTool` only reuses whole flows, not individual agent nodes. **Plan**: new `Agent` entity (`id, name, description, workspaceId, config JSON, version, createdBy`) + `/agents` list page (mirrors Tools page conventions) + "Save to/Load from Agent Library" actions on the Agentflow V2 Agent node, snapshot-based (not live-linked — editing a library entry doesn't retroactively change flows already using it; bound nodes get an explicit Sync action). Snapshot approach means **zero flow-execution-engine changes** — the library is purely an authoring/governance layer, since a bound node's `data.inputs` is still plain JSON at runtime. Est. ~4 days (entity+CRUD ~1d, list page ~1d, canvas save/load/sync UX ~1–1.5d, QA ~0.5d). Live-sync mode, Worker/Sequential-agent node support, and a "who uses this Agent" impact view are phase 2 (~2–3d), not MVP. **Open question before locking the schema**: `feature/tool-governance-phase-0-identity` is already threading per-user `CredentialAccess` grants through flow execution — a first-class `Agent` entity may be the right place to scope credential access per-agent (add `agentId` to `CredentialAccess`) rather than per-flow; decide with that epic's owner before phase 1 ships, to avoid a breaking migration later | Agent marketplace/registry pattern (Agentforce Agent Library, watsonx Orchestrate skill catalog) — needs a new `Agent` entity + list page + reference-vs-inline binding on the Agent node |
 
 ## 2. Tool / Integration Execution Layer
@@ -165,7 +165,7 @@ field)
 | Epic | Status | Accelance evidence | Reference Pattern |
 | --- | --- | --- | --- |
 | Low-code visual flow builder (drag-and-drop canvas) | ✅ Done & configured | `packages/ui` canvas | Low-code agent IDE |
-| AI-assisted agent generation from a prompt | ✅ Done | `services/agentflowv2-generator` | "SOP-document → agent" generation |
+| AI-assisted agent generation from a prompt | 🟡 Built, real bugs found via live testing, several fixed | `services/agentflowv2-generator` — see section 2's fuller row and `rules/known-issues.md` #009 | "SOP-document → agent" generation |
 | Evaluations framework (LLM-as-judge, datasets, cost tracking) | 🟡 Built, not configured | `services/{evaluations,dataset,evaluator}` | Pre-deployment evaluation (journey completion, tool-call accuracy) |
 | Pre-publish evaluation gate (block go-live on failing eval) | 🔴 To build | none — eval results don't currently block anything | "Publish only validated agents" gating |
 | Marketplace: global static templates | 🟡 Built, not configured (generic content only) | `marketplaces/{chatflows,agentflowsv2,tools}` | Agent/template registry |
@@ -307,7 +307,7 @@ is newly estimated on the same reduced basis.
 
 **Classic Chains** — 11 pre-agentflow chain types (LLMChain, ConversationalRetrievalQAChain, ApiChain, SqlDatabaseChain, GraphCypherQAChain, etc.) — a capability most comparable stacks don't name at all. **Effort: 0 days.**
 
-**AI-assisted agent generation** — Generate a working agentflow from a natural-language prompt/spec. Already built; not yet used for any real solution design. **Effort: 0 days (0.5 day to try it against a first real spec).**
+**AI-assisted agent generation** — Generate a working agentflow from a natural-language prompt/spec. Built, but live testing (2026-08-12/13) found and fixed several real bugs (tool reuse, safety-by-default, model consistency, router/agent content generation — see `rules/known-issues.md` #009); still being hardened against a wider range of prompts. **Effort: 0 days for what's fixed; ongoing as new failure modes surface from real use.**
 
 ### 2. Tool / Integration Execution Layer
 
@@ -435,7 +435,7 @@ is newly estimated on the same reduced basis.
 
 **Low-code visual builder** — Core product, already in daily use. **Effort: 0 days.**
 
-**AI-assisted agent generation** — Same item as section 1. **Effort: 0 days.**
+**AI-assisted agent generation** — Same item as section 1; see that row for current status (built, being hardened against real bugs found via live testing). **Effort: 0 days for what's fixed so far.**
 
 **Evaluations framework** — LLM-as-judge, datasets, cost tracking all exist; never exercised. **Effort: 2 days** to create a first dataset/evaluator for a real flow.
 

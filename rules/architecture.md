@@ -289,6 +289,29 @@ deterministic reuse to the `agentAgentflow`-as-executor case (simpler than the `
 case here, since there's no single-tool constraint — the full set gets copied, no LLM call
 needed at all when a proposer is found).
 
+**Update (2026-08-12/13):** two more gaps found via live testing, both in the same
+`agentflowv2Generator.ts` pipeline. (1) `validateAndRepairFlow`'s model-forcing step only handled
+`agentAgentflow`/`llmAgentflow` — it missed `conditionAgentAgentflow` (the router/condition-agent
+node), which has its own `conditionAgentModel`/`conditionAgentModelConfig` fields; extended the
+`MODEL_FIELD_BY_NODE_NAME` map to cover it. (2) Much larger: phase-1 generation
+(`generateNodesEdges`) only ever produces graph *shape* — its own `NodeDataType` zod schema caps
+`data` to `{label, name}` — and phase-2 (`generateNodesData`/`initNode`) then overwrites every
+node's `inputs` with the component's own generic schema defaults, regardless of what the flow is
+actually for. For most node types this is a silent quality gap (an `agentAgentflow` ships with an
+empty `agentMessages` system prompt and just runs on its label + tools). For
+`conditionAgentAgentflow` it's a hard crash: its default `conditionAgentScenarios` is two blank
+`{scenario: ''}` entries and `conditionAgentInstructions` is `''`, and the node's own runtime
+correctly refuses to classify against that and errors immediately. Fixed by adding two new
+per-node LLM content-generation calls inside `generateSelectedTools` (same pattern as its existing
+tool-selection calls): one for `conditionAgentAgentflow` nodes that derives the branch count/order
+directly from the node's own outgoing edges (`${node.id}-output-N` sourceHandle suffix — reliable
+because edges, unlike node.data, aren't stripped from the few-shot templates) and asks the model
+for a scenario per branch plus routing instructions; one for `agentAgentflow` nodes that asks the
+model for role-specific system instructions given the node's label, position, and selected tools.
+`validateAndRepairFlow` gained a matching backstop warning if a router's scenarios/instructions
+are still blank after generation (model error/unparseable response/zero matched branches), so a
+guaranteed-to-crash node is surfaced before the user hits it mid-run rather than after.
+
 ---
 
 ## 7. Deployment
