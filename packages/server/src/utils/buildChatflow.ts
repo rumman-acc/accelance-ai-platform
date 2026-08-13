@@ -72,6 +72,7 @@ import { OMIT_QUEUE_JOB_DATA } from './constants'
 import { executeAgentFlow } from './buildAgentflow'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
 import { Organization } from '../enterprise/database/entities/organization.entity'
+import { mergeAnalyticsConfig } from '../enterprise/utils/organizationAnalytics'
 
 const shouldAutoPlayTTS = (textToSpeechConfig: string | undefined | null): boolean => {
     if (!textToSpeechConfig) return false
@@ -1059,6 +1060,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         organizationId = orgId
         const subscriptionId = org.subscriptionId as string
         const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
+        chatflow.analytic = mergeAnalyticsConfig(org.analytic, chatflow.analytic)
 
         await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
 

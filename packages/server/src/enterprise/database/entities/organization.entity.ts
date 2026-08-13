@@ -22,6 +22,9 @@ export class Organization {
     @Column({ type: 'varchar', length: 100, nullable: true })
     subscriptionId?: string
 
+    @Column({ type: 'text', nullable: true })
+    analytic?: string
+
     @CreateDateColumn()
     createdDate?: Date
 
