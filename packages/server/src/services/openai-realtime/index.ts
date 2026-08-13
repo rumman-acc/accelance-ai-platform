@@ -21,6 +21,7 @@ import { Variable } from '../../database/entities/Variable'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 import { Organization } from '../../enterprise/database/entities/organization.entity'
+import { mergeAnalyticsConfig } from '../../enterprise/utils/organizationAnalytics'
 
 const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
@@ -88,6 +89,7 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
 
     const orgId = org.id
     const subscriptionId = org.subscriptionId
+    chatflow.analytic = mergeAnalyticsConfig(org.analytic, chatflow.analytic)
 
     const reactFlowNodes = await buildFlow({
         startingNodeIds,

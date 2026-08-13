@@ -23,6 +23,7 @@ import { UsageCacheManager } from '../UsageCacheManager'
 import { v4 as uuidv4 } from 'uuid'
 import logger from '../utils/logger'
 import { IdentityManager } from '../IdentityManager'
+import { mergeAnalyticsConfig } from '../enterprise/utils/organizationAnalytics'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -174,6 +175,7 @@ async function _executeAgentflow(ctx: ScheduleExecutionContext, record: Schedule
         const orgId = org.id
         const subscriptionId = org.subscriptionId as string
         const productId = await identityManager.getProductIdFromSubscription(subscriptionId)
+        chatflow.analytic = mergeAnalyticsConfig(org.analytic, chatflow.analytic)
 
         await checkPredictions(org.id, subscriptionId, usageCacheManager)
 
