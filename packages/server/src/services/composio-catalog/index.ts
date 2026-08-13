@@ -4,11 +4,12 @@ import { getErrorMessage } from '../../errors/utils'
 import credentialsService from '../credentials'
 import toolsService from '../tools'
 
-// Composio's REST surface used here matches composio-core@0.5.39 (the version already
-// installed for the existing `Composio` node) -- confirmed by inspecting its bundled
-// client rather than assuming the newer v3 SDK's endpoints, since a saved Tool's
-// generated `func` runs in a sandboxed VM that cannot require composio-core itself
-// (only axios/node-fetch are allowlisted), so it must call the same REST paths directly.
+// Composio's v2 REST API (what composio-core@0.5.39 -- the version already installed for
+// the existing `Composio` node -- targets internally) has been fully retired in production
+// (confirmed live: 410 "This endpoint is no longer available. Please upgrade to v3 APIs.").
+// This service therefore calls the current v3/v3.1 REST surface directly instead of going
+// through composio-core, since a saved Tool's generated `func` runs in a sandboxed VM that
+// can't require composio-core anyway (only axios/node-fetch are allowlisted there).
 const COMPOSIO_BASE_URL = 'https://backend.composio.dev'
 
 const SAFE_IDENTIFIER = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/
@@ -59,28 +60,28 @@ const buildFlatFieldsFromParameters = (parameters: any): FlatComposioField[] => 
 }
 
 const buildComposioFunc = (
-    actionName: string,
+    actionSlug: string,
     apiKey: string,
     connectedAccountId: string | undefined,
     fields: FlatComposioField[]
 ): string => {
-    const inputAssignments = fields.map((f) => `    input['${f.property}'] = $${f.property};`).join('\n')
+    const inputAssignments = fields.map((f) => `    args['${f.property}'] = $${f.property};`).join('\n')
     const connectedAccountLiteral = connectedAccountId ? `'${connectedAccountId}'` : 'undefined'
     return `const fetch = require('node-fetch');
-const input = {};
+const args = {};
 ${inputAssignments}
 const options = {
     method: 'POST',
     headers: {
-        'X-API-KEY': '${apiKey}',
+        'x-api-key': '${apiKey}',
         'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-        connectedAccountId: ${connectedAccountLiteral},
-        input
+        connected_account_id: ${connectedAccountLiteral},
+        arguments: args
     })
 };
-const response = await fetch('${COMPOSIO_BASE_URL}/api/v2/actions/${actionName}/execute', options);
+const response = await fetch('${COMPOSIO_BASE_URL}/api/v3/tools/execute/${actionSlug}', options);
 const responseText = await response.text();
 if (!response.ok) {
     throw new Error('Composio API Error ' + response.status + ': ' + responseText);
@@ -101,12 +102,11 @@ const searchActions = async (credentialId: string, workspaceId: string, query: s
     try {
         const apiKey = await getComposioApiKey(credentialId, workspaceId)
         const params = new URLSearchParams()
-        if (query) params.set('useCase', query)
-        params.set('usecaseLimit', '30')
-        params.set('showEnabledOnly', 'true')
+        if (query) params.set('query', query)
+        params.set('limit', '30')
 
-        const response = await fetch(`${COMPOSIO_BASE_URL}/api/v2/actions?${params.toString()}`, {
-            headers: { 'X-API-KEY': apiKey }
+        const response = await fetch(`${COMPOSIO_BASE_URL}/api/v3.1/tools?${params.toString()}`, {
+            headers: { 'x-api-key': apiKey }
         })
         if (!response.ok) {
             const text = await response.text()
@@ -115,12 +115,11 @@ const searchActions = async (credentialId: string, workspaceId: string, query: s
         const data: any = await response.json()
         const items = Array.isArray(data?.items) ? data.items : []
         return items.map((item: any) => ({
-            name: item.name,
-            displayName: item.displayName || item.name,
+            name: item.slug,
+            displayName: item.name || item.slug,
             description: item.description,
-            appName: item.appName,
-            appKey: item.appKey,
-            logo: item.logo,
+            appName: item.toolkit?.slug,
+            logo: item.toolkit?.logo,
             noAuth: item.no_auth === true,
             tags: item.tags || []
         }))
@@ -135,10 +134,10 @@ const searchActions = async (credentialId: string, workspaceId: string, query: s
 const listConnections = async (credentialId: string, workspaceId: string, appName: string) => {
     try {
         const apiKey = await getComposioApiKey(credentialId, workspaceId)
-        const params = new URLSearchParams({ appNames: appName.toLowerCase() })
+        const params = new URLSearchParams({ toolkit_slug: appName.toLowerCase(), status: 'ACTIVE' })
 
-        const response = await fetch(`${COMPOSIO_BASE_URL}/api/v1/connectedAccounts?${params.toString()}`, {
-            headers: { 'X-API-KEY': apiKey }
+        const response = await fetch(`${COMPOSIO_BASE_URL}/api/v3/connected_accounts?${params.toString()}`, {
+            headers: { 'x-api-key': apiKey }
         })
         if (!response.ok) {
             const text = await response.text()
@@ -146,13 +145,11 @@ const listConnections = async (credentialId: string, workspaceId: string, appNam
         }
         const data: any = await response.json()
         const items = Array.isArray(data?.items) ? data.items : []
-        return items
-            .filter((c: any) => c.status === 'ACTIVE')
-            .map((c: any) => ({
-                id: c.id,
-                label: c.clientUniqueUserId || c.id,
-                createdAt: c.createdAt
-            }))
+        return items.map((c: any) => ({
+            id: c.id,
+            label: c.userId || c.user_id || c.id,
+            createdAt: c.createdAt || c.created_at
+        }))
     } catch (error) {
         throw new InternalAccelanceError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -171,24 +168,31 @@ const importAction = async (
     try {
         const apiKey = await getComposioApiKey(credentialId, workspaceId)
 
-        const response = await fetch(`${COMPOSIO_BASE_URL}/api/v2/actions/${actionName}`, {
-            headers: { 'X-API-KEY': apiKey }
+        const params = new URLSearchParams({ tool_slugs: actionName, limit: '1' })
+        const response = await fetch(`${COMPOSIO_BASE_URL}/api/v3.1/tools?${params.toString()}`, {
+            headers: { 'x-api-key': apiKey }
         })
         if (!response.ok) {
             const text = await response.text()
             throw new Error(`Composio API Error ${response.status}: ${text}`)
         }
-        const action: any = await response.json()
+        const data: any = await response.json()
+        const action: any = Array.isArray(data?.items) ? data.items[0] : undefined
+        if (!action) {
+            throw new InternalAccelanceError(StatusCodes.NOT_FOUND, `Composio action ${actionName} not found`)
+        }
 
         if (action.no_auth !== true && !connectedAccountId) {
             throw new InternalAccelanceError(
                 StatusCodes.PRECONDITION_FAILED,
-                `${action.appName || actionName} requires a connected account. Please select one, or connect it on app.composio.dev first.`
+                `${
+                    action.toolkit?.slug || actionName
+                } requires a connected account. Please select one, or connect it on app.composio.dev first.`
             )
         }
 
-        const fields = buildFlatFieldsFromParameters(action.parameters)
-        const func = buildComposioFunc(actionName, apiKey, connectedAccountId, fields)
+        const fields = buildFlatFieldsFromParameters(action.input_parameters)
+        const func = buildComposioFunc(action.slug, apiKey, connectedAccountId, fields)
         const schema = fields.map((f) => ({
             property: f.property,
             description: f.description,
@@ -197,10 +201,10 @@ const importAction = async (
         }))
 
         const toolBody = {
-            name: action.displayName || action.name,
-            description: action.description || `Composio action: ${action.name}`,
+            name: action.name || action.slug,
+            description: action.description || `Composio action: ${action.slug}`,
             color: '#6366f1',
-            iconSrc: action.logo || undefined,
+            iconSrc: action.toolkit?.logo || undefined,
             schema: JSON.stringify(schema),
             func,
             workspaceId
