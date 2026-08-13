@@ -11,6 +11,7 @@ import { useTheme, darken } from '@mui/material/styles'
 import LogoSection from '../LogoSection'
 import ProfileSection from './ProfileSection'
 import OrgWorkspaceBreadcrumbs from '@/layout/MainLayout/Header/OrgWorkspaceBreadcrumbs'
+import SectionNav from '@/layout/MainLayout/Header/SectionNav'
 import PricingDialog from '@/ui-component/subscription/PricingDialog'
 
 // assets
@@ -174,6 +175,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     </ButtonBase>
                 )}
             </Box>
+            {isAuthenticated && <SectionNav />}
             <Box sx={{ flexGrow: 1 }} />
             {(isEnterpriseLicensed || isCloud) && isAuthenticated && <OrgWorkspaceBreadcrumbs />}
             {isCloud && currentUser?.isOrganizationAdmin && (

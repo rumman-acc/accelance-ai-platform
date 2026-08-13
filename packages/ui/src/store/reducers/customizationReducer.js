@@ -14,7 +14,11 @@ export const initialState = {
     // palette. Toggle removed from Header (migration-checklist.md row 1) — forcing false here too so
     // a stale `isDarkMode=true` in an existing user's localStorage can't strand them in dark mode with
     // no way back. See DESIGN_SPEC.md Section 9 — logged as open, not silently dropped.
-    isDarkMode: false
+    isDarkMode: false,
+    // Which top-level menu group (menu-items/dashboard.js) the sidebar currently shows — driven by
+    // the header's section nav. Persisted so a refresh doesn't drop the user back to "Build";
+    // overridden on route change by useMenuSections' route->section sync.
+    activeMenuSection: localStorage.getItem('activeMenuSection') || 'primary'
 }
 
 // ==============================|| CUSTOMIZATION REDUCER ||============================== //
@@ -52,6 +56,12 @@ const customizationReducer = (state = initialState, action) => {
             return {
                 ...state,
                 isDarkMode: action.isDarkMode
+            }
+        case actionTypes.SET_ACTIVE_MENU_SECTION:
+            localStorage.setItem('activeMenuSection', action.activeMenuSection)
+            return {
+                ...state,
+                activeMenuSection: action.activeMenuSection
             }
         default:
             return state

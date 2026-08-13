@@ -24,7 +24,9 @@ import {
     IconFileDatabase,
     IconShieldLock,
     IconListCheck,
-    IconGauge
+    IconGauge,
+    IconLayoutGrid,
+    IconFlask
 } from '@tabler/icons-react'
 
 // constant
@@ -53,7 +55,9 @@ const icons = {
     IconFileDatabase,
     IconShieldLock,
     IconListCheck,
-    IconGauge
+    IconGauge,
+    IconLayoutGrid,
+    IconFlask
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -65,8 +69,11 @@ const dashboard = {
     children: [
         {
             id: 'primary',
-            title: '',
+            title: 'Studio',
+            icon: icons.IconLayoutGrid,
             type: 'group',
+            // Item to jump to when this section is picked from the header's section nav.
+            defaultItemId: 'controlTower',
             children: [
                 {
                     id: 'controlTower',
@@ -172,7 +179,9 @@ const dashboard = {
         {
             id: 'evaluations',
             title: 'Evaluations',
+            icon: icons.IconFlask,
             type: 'group',
+            defaultItemId: 'evaluations',
             children: [
                 {
                     id: 'datasets',
@@ -209,7 +218,9 @@ const dashboard = {
         {
             id: 'management',
             title: 'User & Workspace Management',
+            icon: icons.IconUsersGroup,
             type: 'group',
+            defaultItemId: 'users',
             children: [
                 {
                     id: 'sso',
@@ -266,7 +277,9 @@ const dashboard = {
         {
             id: 'others',
             title: 'Others',
+            icon: icons.IconSettings,
             type: 'group',
+            defaultItemId: 'account',
             children: [
                 // {
                 //     id: 'files',

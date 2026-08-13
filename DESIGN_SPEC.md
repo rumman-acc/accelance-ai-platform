@@ -558,6 +558,36 @@ Anything the design conversation hasn't resolved yet — flagged here so Claude 
     four row-18 components (`card.jsx`, `agent-status.jsx`, `approval-card.jsx`, `input.jsx`) plus
     row-1's `button.jsx`/`icon.jsx` now carry `Implemented:` pointers to their code. Still pending a
     real design-conversation review pass, not a substitute for one.
+- **US English copy sweep (2026-08-13):** at the user's request, a platform-wide audit found 10
+  genuine British-spelling occurrences in user-facing `packages/ui` copy (no i18n layer exists —
+  strings are inline JSX), all in the auth/org-signup flow ("organisation" → "organization", 9
+  occurrences across `signIn.jsx`/`register.jsx`/`organization/index.jsx`) and account settings
+  ("cancelled" → "canceled", 1 occurrence in `account/index.jsx`); fixed directly since they're pure
+  copy, not covered elsewhere in this file. AI/ML jargon and product terminology were explicitly
+  excluded from the sweep per the user's direction. This also surfaces a **stale mention in Section 1**
+  (line ~26, "An organisation's own users") that Claude Code cannot edit directly — flagging for the
+  design conversation to correct to "organization" for consistency with the rest of the app.
+- **Sidebar restructured into header-driven sections (2026-08-13), at the user's request — a
+  composition not yet in the source Claude Design project:** the sidebar previously stacked all ~20
+  items across its 4 `menu-items/dashboard.js` groups (Build/"primary", Evaluations, User &
+  Workspace Management, Others) at once, making it long and scrollable. Those group titles moved
+  into a new `SectionNav` in the header (`layout/MainLayout/Header/SectionNav/`); the sidebar now
+  renders only the active group's items, picked from a shared `useMenuSections` hook (also drives a
+  same-styled tab row atop the drawer on mobile, where there's no header room). Checked the design
+  system first (`components/navigation/TopNav.jsx`/`Sidebar.jsx` in the Claude Design project via
+  DesignSync): both exist individually — TopNav's hover/active state (bold + blue underline
+  fade-in) and Sidebar's (left blue bar + tint) — but no mockup combines "section tabs switching a
+  filtered sidebar"; the one working example (`ui_kits/agent-console`) uses a flat, ungrouped
+  sidebar. So this reuses those two components' existing validated states/tokens (via
+  `theme.palette.primary`, not the design system's literal `#0052CC`, since the app's real shipped
+  brand is Envoy per the tokens.json reconciliation above) rather than inventing new styling — see
+  `design-system/components/component-inventory.md`'s Navigation section for the
+  `status: draft — pending design review` entry. Picking a section also now navigates to a
+  per-group default item (`defaultItemId` in `dashboard.js`: Studio → Control Tower, Evaluations →
+  Evaluations, User & Workspace Management → Users, Others → Account Settings), at the user's
+  request, rather than only filtering the list in place. The "Build" group was renamed **"Studio"**
+  at the user's request — Section 2's "Group 1 — Build" label above is now stale; flagging rather
+  than editing Section 2 directly per this file's header rule.
 
 ## 10. Changelog
 

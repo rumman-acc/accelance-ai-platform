@@ -1,27 +1,34 @@
+import PropTypes from 'prop-types'
+
 // material-ui
-import { Box, Typography } from '@mui/material'
+import { Box } from '@mui/material'
 
 // project imports
 import NavGroup from './NavGroup'
-import { menuItems } from '@/menu-items'
+import SectionTabs from '@/layout/MainLayout/Header/SectionNav/SectionTabs'
+import { useMenuSections } from '@/hooks/useMenuSections'
 
 // ==============================|| SIDEBAR MENU LIST ||============================== //
+// Shows only the active section's items (see useMenuSections/SectionNav) instead of every
+// group stacked and scrollable. Below `md` there's no room for the header's SectionNav, so
+// the same section tabs render inline at the top of the drawer instead.
+const MenuList = ({ showSectionTabs }) => {
+    const { groups, activeGroup, activeSection, setActiveSection } = useMenuSections()
 
-const MenuList = () => {
-    const navItems = menuItems.items.map((item) => {
-        switch (item.type) {
-            case 'group':
-                return <NavGroup key={item.id} item={item} />
-            default:
-                return (
-                    <Typography key={item.id} variant='h6' color='error' align='center'>
-                        Menu Items Error
-                    </Typography>
-                )
-        }
-    })
+    if (!activeGroup) return null
 
-    return <Box>{navItems}</Box>
+    return (
+        <Box>
+            {showSectionTabs && groups.length > 1 && (
+                <SectionTabs groups={groups} activeSection={activeSection} onSelect={setActiveSection} variant='drawer' />
+            )}
+            <NavGroup item={activeGroup} />
+        </Box>
+    )
+}
+
+MenuList.propTypes = {
+    showSectionTabs: PropTypes.bool
 }
 
 export default MenuList

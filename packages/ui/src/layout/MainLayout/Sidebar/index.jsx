@@ -45,13 +45,13 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                         flexDirection: 'column'
                     }}
                 >
-                    <MenuList />
+                    <MenuList showSectionTabs={!matchUpMd} />
                     <CloudMenuList />
                 </PerfectScrollbar>
             </BrowserView>
             <MobileView>
                 <Box sx={{ px: 2 }}>
-                    <MenuList />
+                    <MenuList showSectionTabs={!matchUpMd} />
                     <CloudMenuList />
                 </Box>
             </MobileView>

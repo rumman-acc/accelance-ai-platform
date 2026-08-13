@@ -90,6 +90,24 @@
 - **States:** active item = left Accelance-Blue bar + light-blue tint background
 - **Context:** internal-app nav pattern — **Recommended Standard, not yet validated against a real product** (see status note above)
 
+### SectionNav — status: draft, pending design review
+- **Implemented:** `packages/ui/src/layout/MainLayout/Header/SectionNav/` (`index.jsx` for the
+  header, `SectionTabs.jsx` shared presentational row also used atop the drawer on mobile via
+  `Sidebar/MenuList/index.jsx`); state/route-sync lives in `hooks/useMenuSections.js`
+  (migration-checklist.md, logged 2026-08-13)
+- **Anatomy:** row of icon+label tabs, one per `menu-items/dashboard.js` top-level group, in the
+  header; picking one switches which single group the Sidebar renders (instead of all groups
+  stacked at once) and navigates to that group's `defaultItemId`
+- **States:** active/hover = bold text + blue underline fade-in (reuses TopNav's link state, not a
+  new visual language)
+- **Do not confuse with TopNav** — TopNav (above) is the site/marketing nav pattern; this is
+  internal-app only
+- **Gap note:** this exact composition — section tabs in the app header driving a filtered
+  Sidebar — doesn't exist in the source Claude Design project (checked via DesignSync 2026-08-13);
+  it reuses TopNav's and Sidebar's individually-validated states/tokens rather than inventing new
+  ones. See DESIGN_SPEC.md Section 9 for the full note. Colors resolve through `theme.palette.primary`
+  (the app's real Envoy brand), not the design system's literal Accelance-Blue `#0052CC`.
+
 ## Feedback (`components/feedback/`)
 
 ### Dialog
