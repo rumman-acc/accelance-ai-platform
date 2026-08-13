@@ -308,7 +308,7 @@ const OrganizationSetupPage = () => {
                         Get started
                     </Typography>
                     <Typography sx={{ fontSize: '32px', lineHeight: 1.25, fontWeight: 500, color: theme.palette.primary.dark }}>
-                        {isEnterpriseLicensed ? 'Create your organisation' : 'Create your account'}
+                        {isEnterpriseLicensed ? 'Create your organization' : 'Create your account'}
                     </Typography>
                     {isOpenSource && (
                         <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
@@ -329,7 +329,7 @@ const OrganizationSetupPage = () => {
                             <>
                                 <Box>
                                     <Typography sx={{ mb: 1 }}>
-                                        Organisation name<span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
+                                        Organization name<span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
                                     </Typography>
                                     <Input
                                         inputParam={orgNameInput}
@@ -417,7 +417,7 @@ const OrganizationSetupPage = () => {
                                 type='submit'
                                 disabled={!!confirmPassword && password !== confirmPassword}
                             >
-                                {isEnterpriseLicensed ? 'Create organisation' : 'Sign Up'}
+                                {isEnterpriseLicensed ? 'Create organization' : 'Sign Up'}
                             </StyledButton>
                             <Typography variant='body2' sx={{ color: theme.palette.grey[600], textAlign: 'center' }}>
                                 Already set up?{' '}

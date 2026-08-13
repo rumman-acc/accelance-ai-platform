@@ -59,6 +59,6 @@
 1. Start: `cd packages/server && node bin/run start`
 2. Migrations run automatically (creates all tables)
 3. Go to `http://localhost:3002/register`
-4. Fill: Organisation Name, Your Name, Email, Password → Submit
+4. Fill: Organization Name, Your Name, Email, Password → Submit
 5. Sign in at `http://localhost:3002/signin`
 6. Create workspaces and invite teammates

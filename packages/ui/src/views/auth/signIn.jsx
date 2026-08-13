@@ -71,6 +71,7 @@ const SignInPage = () => {
     const [loading, setLoading] = useState(false)
     const [showResendButton, setShowResendButton] = useState(false)
     const [successMessage, setSuccessMessage] = useState('')
+    const [idleTimeoutMessage, setIdleTimeoutMessage] = useState('')
 
     const { authRateLimitError, setAuthRateLimitError } = useError()
 
@@ -119,6 +120,13 @@ const SignInPage = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setAuthRateLimitError, isOpenSource, organizationSlug])
+
+    useEffect(() => {
+        if (location.state?.reason === 'idle-timeout') {
+            setIdleTimeoutMessage("You've been signed out after 60 minutes of inactivity.")
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         // Parse the "user" query parameter from the URL
@@ -204,6 +212,11 @@ const SignInPage = () => {
                     {successMessage}
                 </Alert>
             )}
+            {idleTimeoutMessage && (
+                <Alert variant='filled' severity='info' onClose={() => setIdleTimeoutMessage('')}>
+                    {idleTimeoutMessage}
+                </Alert>
+            )}
             {authRateLimitError && (
                 <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
                     {authRateLimitError}
@@ -263,7 +276,7 @@ const SignInPage = () => {
                 </Typography>
                 {!organizationSlug && (
                     <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                        Enter your email and we&apos;ll take you to your organisation.
+                        Enter your email and we&apos;ll take you to your organization.
                     </Typography>
                 )}
                 {isCloud && (
@@ -279,7 +292,7 @@ const SignInPage = () => {
                     <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
                         Have an invite code?{' '}
                         <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
-                            {organizationSlug ? 'Join this organisation' : 'Sign up for an account'}
+                            {organizationSlug ? 'Join this organization' : 'Sign up for an account'}
                         </Link>
                         .
                     </Typography>
@@ -406,10 +419,10 @@ const SignInPage = () => {
                     <Divider />
                     <Stack sx={{ gap: 1, textAlign: 'center' }}>
                         <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                            No organisation yet?
+                            No organization yet?
                         </Typography>
                         <Link style={{ color: theme.palette.primary.main, fontWeight: 500 }} to='/organization-setup'>
-                            Create your organisation
+                            Create your organization
                         </Link>
                     </Stack>
                 </>

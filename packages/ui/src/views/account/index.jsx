@@ -1478,7 +1478,7 @@ const AccountSettings = () => {
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                         <Typography>
-                            This will permanently delete your account and all associated data. Your subscription will be cancelled
+                            This will permanently delete your account and all associated data. Your subscription will be canceled
                             immediately and you will be logged out. This action cannot be undone and there is no way to recover your data.
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

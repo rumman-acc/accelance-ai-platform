@@ -21,7 +21,7 @@
 **First-time flow:**
 
 1. Go to `http://localhost:3002/register`
-2. Enter Organisation Name, Your Name, Email, Password
+2. Enter Organization Name, Your Name, Email, Password
 3. Submit → org + admin user + default workspace created
 4. Redirected to login → sign in
 
@@ -96,6 +96,20 @@
 **Prevention:** Turn on `MODEL_REFRESH_ENABLED=true` with a `MODEL_REFRESH_GOOGLE_API_KEY` (and the OpenAI/Anthropic equivalents) in production so retired models drop out of dropdowns automatically instead of waiting for a user to hit a 404 first.
 
 **Follow-up — sharing one `.env` across multiple developers (same Neon DB):** Even with the mkdir fix, `SECRETKEY_PATH` only points at a *local file* — it isn't part of `.env`'s literal content, so two developers sharing an identical `.env` would still each auto-generate a different encryption key on first boot (their `.flowise/encryption.key` never existed to begin with) and be unable to decrypt each other's already-saved credentials in the shared Neon DB. Same issue applied to `TOKEN_HASH_SECRET` (also file-backed, not previously set explicitly). Fixed by adding `SECRETKEY_OVERWRITE` and `TOKEN_HASH_SECRET` as explicit literal values in `packages/server/.env` (pulled from the existing `.flowise/encryption.key` / `token_hash_secret.key` file contents) — `SECRETKEY_OVERWRITE` is checked before any file/path logic in `getEncryptionKey()`, so every machine using this exact `.env` now decrypts identically regardless of local path differences.
+
+---
+
+## #009 — User logged out every ~1 hour (idle timeout, not JWT expiry)
+
+**Symptom:** User gets signed out roughly every hour, landing back on `/login` with no explanation. Looked exactly like a broken JWT-refresh cycle since `JWT_TOKEN_EXPIRY_IN_MINUTES=60` matches the observed interval.
+
+**Root cause:** Coincidence of two unrelated 60-minute numbers. The JWT access/refresh-token/session flow (`packages/server/src/enterprise/middleware/passport/index.ts`, `packages/ui/src/api/client.js`) was verified end-to-end and is working correctly — it silently refreshes on a `TOKEN_EXPIRED` 401 and only truly expires after the 24h refresh-token lifetime. The actual cause is a separate, hardcoded client-side inactivity timer: `IDLE_TIMEOUT_MS = 60 * 60 * 1000` in `packages/ui/src/ui-component/auth/SessionTimeout.jsx`, mounted globally in `App.jsx`. If no `mousemove`/`mousedown`/`keydown`/`scroll`/`touchstart`/`click` fires for 60 minutes, it calls `POST /account/logout` and force-navigates to `/login` — confirmed via the user's Network tab (a `logout` request sitting right after a burst of normal API calls, no 401 involved anywhere in the trail).
+
+**Compounding bug:** `SessionTimeout.jsx` passed `navigate('/login', { state: { reason: 'idle-timeout' } })`, but `signIn.jsx` never read `location.state?.reason` — so the logout gave zero on-screen explanation, making it look like a random/broken session rather than an intentional idle timeout.
+
+**Fix:** Confirmed with the user this is a genuinely idle case (away from keyboard, e.g. watching a long run) and that 60 minutes is the desired duration — no timer change needed. Added an info `Alert` to `signIn.jsx` that reads `location.state?.reason === 'idle-timeout'` and shows "You've been signed out after 60 minutes of inactivity." so future idle-logouts are self-explanatory instead of looking like a bug.
+
+**Prevention:** When debugging "logged out after N minutes," check for a client-side idle/session timer before assuming it's the JWT/refresh-token chain — the two are independent and can coincidentally share the same duration. Any `navigate(..., { state: {...} })` redirect that's meant to explain *why* the user landed somewhere should be verified to actually be read on the receiving page, not just passed.
 
 ---
 

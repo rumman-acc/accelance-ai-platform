@@ -430,11 +430,11 @@ const RegisterPage = () => {
                                 type='submit'
                                 disabled={!!confirmPassword && password !== confirmPassword}
                             >
-                                {isEnterpriseLicensed ? 'Join organisation' : 'Create Account'}
+                                {isEnterpriseLicensed ? 'Join organization' : 'Create Account'}
                             </StyledButton>
                             {isEnterpriseLicensed && (
                                 <Typography variant='caption' sx={{ color: theme.palette.grey[600], textAlign: 'center' }}>
-                                    By joining you agree to your organisation&apos;s usage and data-retention policies.
+                                    By joining you agree to your organization&apos;s usage and data-retention policies.
                                 </Typography>
                             )}
                         </Stack>
