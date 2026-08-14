@@ -127,12 +127,14 @@ export class Permissions {
         workspaceCategory.addPermission(new Permission('workspace:delete', 'Delete', false, true, true))
         workspaceCategory.addPermission(new Permission('workspace:export', 'Export Data within Workspace', false, true, true))
         workspaceCategory.addPermission(new Permission('workspace:import', 'Import Data within Workspace', false, true, true))
+        workspaceCategory.addPermission(new Permission('workspace:analytics-manage', 'Manage Workspace Analytics', false, true, true))
         this.categories.push(workspaceCategory)
 
         const adminCategory = new PermissionCategory('admin')
         adminCategory.addPermission(new Permission('users:manage', 'Manage Users', false, true, true))
         adminCategory.addPermission(new Permission('roles:manage', 'Manage Roles', false, true, true))
         adminCategory.addPermission(new Permission('sso:manage', 'Manage SSO', false, true, false))
+        adminCategory.addPermission(new Permission('organization:analytics-manage', 'Manage Organization Analytics', false, true, true))
         this.categories.push(adminCategory)
 
         const loginActivityCategory = new PermissionCategory('loginActivity')

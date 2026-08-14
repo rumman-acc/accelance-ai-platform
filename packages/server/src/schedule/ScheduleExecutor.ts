@@ -175,7 +175,7 @@ async function _executeAgentflow(ctx: ScheduleExecutionContext, record: Schedule
         const orgId = org.id
         const subscriptionId = org.subscriptionId as string
         const productId = await identityManager.getProductIdFromSubscription(subscriptionId)
-        chatflow.analytic = mergeAnalyticsConfig(org.analytic, chatflow.analytic)
+        chatflow.analytic = mergeAnalyticsConfig(org.analytic, workspace.analytic, chatflow.analytic)
 
         await checkPredictions(org.id, subscriptionId, usageCacheManager)
 

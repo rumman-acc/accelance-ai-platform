@@ -1,5 +1,7 @@
 import express from 'express'
+import { IdentityManager } from '../../IdentityManager'
 import { OrganizationController } from '../controllers/organization.controller'
+import { checkPermission } from '../rbac/PermissionCheck'
 
 const router = express.Router()
 const organizationController = new OrganizationController()
@@ -9,6 +11,13 @@ router.get('/', organizationController.read)
 router.post('/', organizationController.create)
 
 router.put('/', organizationController.update)
+
+router.patch(
+    '/analytic',
+    IdentityManager.checkFeatureByPlan('feat:organization-analytics'),
+    checkPermission('organization:analytics-manage'),
+    organizationController.updateAnalytic
+)
 
 router.get('/additional-seats-quantity', organizationController.getAdditionalSeatsQuantity)
 

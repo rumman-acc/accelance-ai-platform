@@ -89,7 +89,7 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
 
     const orgId = org.id
     const subscriptionId = org.subscriptionId
-    chatflow.analytic = mergeAnalyticsConfig(org.analytic, chatflow.analytic)
+    chatflow.analytic = mergeAnalyticsConfig(org.analytic, workspace.analytic, chatflow.analytic)
 
     const reactFlowNodes = await buildFlow({
         startingNodeIds,

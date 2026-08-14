@@ -57,6 +57,19 @@ export class OrganizationController {
         }
     }
 
+    // Scoped to the org-wide analytics-provider default config only, gated by its own
+    // 'organization:analytics-manage' permission rather than the unrestricted generic update above.
+    public async updateAnalytic(req: Request, res: Response, next: NextFunction) {
+        try {
+            const organizationService = new OrganizationService()
+            const orgId = req.user?.activeOrganizationId
+            const organization = await organizationService.updateOrganizationAnalytic(orgId, req.body.analytic, req.user?.id)
+            return res.status(StatusCodes.OK).json(organization)
+        } catch (error) {
+            next(error)
+        }
+    }
+
     public async getAdditionalSeatsQuantity(req: Request, res: Response, next: NextFunction) {
         try {
             const { subscriptionId } = req.query

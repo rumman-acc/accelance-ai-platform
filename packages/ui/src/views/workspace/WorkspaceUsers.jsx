@@ -30,6 +30,7 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import InviteUsersDialog from '@/ui-component/dialog/InviteUsersDialog'
 import EditWorkspaceUserRoleDialog from '@/views/workspace/EditWorkspaceUserRoleDialog'
+import WorkspaceAnalyticsDialog from '@/views/workspace/WorkspaceAnalyticsDialog'
 
 // API
 import userApi from '@/api/user'
@@ -42,7 +43,7 @@ import useConfirm from '@/hooks/useConfirm'
 
 // icons
 import empty_datasetSVG from '@/assets/images/empty_datasets.svg'
-import { IconEdit, IconX, IconUnlink, IconUserPlus } from '@tabler/icons-react'
+import { IconEdit, IconX, IconUnlink, IconUserPlus, IconChartBar } from '@tabler/icons-react'
 
 // store
 import { useError } from '@/store/context/ErrorContext'
@@ -68,6 +69,7 @@ const WorkspaceDetails = () => {
     const [dialogProps, setDialogProps] = useState({})
     const [showWorkspaceUserRoleDialog, setShowWorkspaceUserRoleDialog] = useState(false)
     const [workspaceUserRoleDialogProps, setWorkspaceUserRoleDialogProps] = useState({})
+    const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false)
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -256,6 +258,15 @@ const WorkspaceDetails = () => {
         getAllUsersByWorkspaceIdApi.request(workspaceId)
     }
 
+    const openAnalytics = () => {
+        setShowAnalyticsDialog(true)
+    }
+
+    const onAnalyticsConfirm = (updatedWorkspace) => {
+        setShowAnalyticsDialog(false)
+        if (updatedWorkspace) setWorkspace(updatedWorkspace)
+    }
+
     const onSearchChange = (event) => {
         setSearch(event.target.value)
     }
@@ -320,6 +331,16 @@ const WorkspaceDetails = () => {
                             title={(workspace?.name || '') + ': Workspace Users'}
                             description={'Manage workspace users and permissions.'}
                         >
+                            <PermissionButton
+                                permissionId={'workspace:analytics-manage'}
+                                display={'feat:workspace-analytics'}
+                                sx={{ height: '100%' }}
+                                variant='outlined'
+                                onClick={openAnalytics}
+                                startIcon={<IconChartBar />}
+                            >
+                                Analytics
+                            </PermissionButton>
                             {workspaceUsers.length > 0 && (
                                 <>
                                     <PermissionButton
@@ -508,6 +529,14 @@ const WorkspaceDetails = () => {
                     dialogProps={workspaceUserRoleDialogProps}
                     onCancel={() => setShowWorkspaceUserRoleDialog(false)}
                     onConfirm={onConfirm}
+                />
+            )}
+            {showAnalyticsDialog && (
+                <WorkspaceAnalyticsDialog
+                    show={showAnalyticsDialog}
+                    dialogProps={{ workspace }}
+                    onCancel={() => setShowAnalyticsDialog(false)}
+                    onConfirm={onAnalyticsConfirm}
                 />
             )}
             <ConfirmDialog />

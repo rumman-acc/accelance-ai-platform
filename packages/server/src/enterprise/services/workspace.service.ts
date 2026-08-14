@@ -161,6 +161,35 @@ export class WorkspaceService {
         return updateWorkspace
     }
 
+    /**
+     * Scoped update for a workspace's analytics-provider override config, kept separate from the
+     * generic updateWorkspace so this endpoint can only ever touch the `analytic` column.
+     */
+    public async updateWorkspaceAnalytic(id: string | undefined, analytic: string | undefined, updatedBy: string | undefined) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        try {
+            const workspace = await this.readWorkspaceById(id, queryRunner)
+            if (!workspace) throw new InternalAccelanceError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
+            const user = await this.userService.readUserById(updatedBy, queryRunner)
+            if (!user) throw new InternalAccelanceError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            workspace.analytic = analytic
+            workspace.updatedBy = updatedBy
+
+            await queryRunner.startTransaction()
+            await this.saveWorkspace(workspace, queryRunner)
+            await queryRunner.commitTransaction()
+            return workspace
+        } catch (error) {
+            if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
     public async deleteWorkspaceById(queryRunner: QueryRunner, workspaceId: string) {
         const workspace = await this.readWorkspaceById(workspaceId, queryRunner)
         if (!workspace) throw new InternalAccelanceError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)

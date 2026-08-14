@@ -65,6 +65,8 @@ import { AddSSOColumns1730519457880 } from '../../../enterprise/database/migrati
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/mysql/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/mysql/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/mysql/1746862866554-ExecutionLinkWorkspaceId'
+import { AddOrganizationAnalytic1783000000000 } from '../../../enterprise/database/migrations/mysql/1783000000000-AddOrganizationAnalytic'
+import { AddWorkspaceAnalytic1784000000000 } from '../../../enterprise/database/migrations/mysql/1784000000000-AddWorkspaceAnalytic'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -132,5 +134,7 @@ export const mysqlMigrations = [
     AddToolCallAuditEntity1782000000001,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
-    AddScheduleEntities1772000000000
+    AddScheduleEntities1772000000000,
+    AddOrganizationAnalytic1783000000000,
+    AddWorkspaceAnalytic1784000000000
 ]

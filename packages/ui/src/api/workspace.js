@@ -11,6 +11,7 @@ const switchWorkspace = (id) => client.post(`/workspace/switch?id=${id}`)
 
 const createWorkspace = (body) => client.post(`/workspace`, body)
 const updateWorkspace = (body) => client.put(`/workspace`, body)
+const updateWorkspaceAnalytic = (id, body) => client.patch(`/workspace/${id}/analytic`, body)
 const deleteWorkspace = (id) => client.delete(`/workspace/${id}`)
 
 const getSharedWorkspacesForItem = (id) => client.get(`/workspace/shared/${id}`)
@@ -23,6 +24,7 @@ export default {
     getWorkspaceById,
     createWorkspace,
     updateWorkspace,
+    updateWorkspaceAnalytic,
     deleteWorkspace,
     unlinkUsers,
     linkUsers,

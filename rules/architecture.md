@@ -123,6 +123,7 @@ them — Qdrant or Neo4j.
 - Pluggable storage provider (local / S3 / GCS / Azure / ImageKit)
 - Control Tower: agent-health/execution overview dashboard, now the default landing page (`packages/ui/src/views/controltower/`, `packages/server/src/{controllers,routes,services}/control-tower/`), gated behind `executions:view`
 - Composio catalog importer: search Composio's action catalog and import specific actions as first-class `Tool` rows, without writing a hand-built connector per action (`packages/server/src/{controllers,routes,services}/composio-catalog/`, `packages/ui/src/views/tools/ComposioImportDialog.jsx`) — see `rules/epics-feature-status.md` § 2 for details
+- Analytics-provider config cascades Organization → Workspace → Agent (`Organization.analytic` / `Workspace.analytic` / `ChatFlow.analytic`, merged by `mergeAnalyticsConfig` in `packages/server/src/enterprise/utils/organizationAnalytics.ts`, most-specific wins per provider key), each level independently settable (Organization Analytics settings page, a Workspace details Analytics dialog, and a chatflow/agentflow list bulk multi-select apply) — see `rules/epics-feature-status.md` § 5 for details
 
 ### Not yet built or not yet configured
 

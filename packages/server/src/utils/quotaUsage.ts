@@ -15,7 +15,9 @@ export const ENTERPRISE_FEATURE_FLAGS = [
     'feat:users',
     'feat:workspaces',
     'feat:roles',
-    'feat:sso-config'
+    'feat:sso-config',
+    'feat:organization-analytics',
+    'feat:workspace-analytics'
 ]
 
 export const getCurrentUsage = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {

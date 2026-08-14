@@ -1060,7 +1060,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         organizationId = orgId
         const subscriptionId = org.subscriptionId as string
         const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
-        chatflow.analytic = mergeAnalyticsConfig(org.analytic, chatflow.analytic)
+        chatflow.analytic = mergeAnalyticsConfig(org.analytic, workspace.analytic, chatflow.analytic)
 
         await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
 

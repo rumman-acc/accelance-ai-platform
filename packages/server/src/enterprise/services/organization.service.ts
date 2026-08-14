@@ -141,4 +141,33 @@ export class OrganizationService {
 
         return updateOrganization
     }
+
+    /**
+     * Scoped update for the org-wide analytics-provider default config, kept separate from the
+     * generic updateOrganization so this endpoint can only ever touch the `analytic` column.
+     */
+    public async updateOrganizationAnalytic(id: string | undefined, analytic: string | undefined, updatedBy: string | undefined) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        try {
+            const organization = await this.readOrganizationById(id, queryRunner)
+            if (!organization) throw new InternalAccelanceError(StatusCodes.NOT_FOUND, OrganizationErrorMessage.ORGANIZATION_NOT_FOUND)
+            const user = await this.userService.readUserById(updatedBy, queryRunner)
+            if (!user) throw new InternalAccelanceError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            organization.analytic = analytic
+            organization.updatedBy = updatedBy
+
+            await queryRunner.startTransaction()
+            await this.saveOrganization(organization, queryRunner)
+            await queryRunner.commitTransaction()
+            return organization
+        } catch (error) {
+            if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
+        }
+    }
 }

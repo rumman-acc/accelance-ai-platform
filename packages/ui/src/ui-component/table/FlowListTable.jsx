@@ -5,6 +5,7 @@ import moment from 'moment'
 import { styled } from '@mui/material/styles'
 import {
     Box,
+    Checkbox,
     Chip,
     CircularProgress,
     Paper,
@@ -63,7 +64,11 @@ export const FlowListTable = ({
     setError,
     isAgentCanvas,
     currentPage,
-    pageLimit
+    pageLimit,
+    selectable = false,
+    selectedIds = [],
+    onToggleRow,
+    onToggleAll
 }) => {
     const { hasPermission } = useAuth()
     const isActionsAvailable = isAgentCanvas
@@ -108,6 +113,11 @@ export const FlowListTable = ({
           })
         : []
 
+    const visibleRows = sortedData.filter(filterFunction)
+    const isRowSelected = (id) => selectedIds.includes(id)
+    const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((row) => isRowSelected(row.id))
+    const someVisibleSelected = visibleRows.some((row) => isRowSelected(row.id))
+
     return (
         <>
             <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
@@ -119,6 +129,17 @@ export const FlowListTable = ({
                         }}
                     >
                         <TableRow>
+                            {selectable && (
+                                <StyledTableCell padding='checkbox' key='select'>
+                                    <Checkbox
+                                        color='primary'
+                                        checked={allVisibleSelected}
+                                        indeterminate={someVisibleSelected && !allVisibleSelected}
+                                        onChange={(event) => onToggleAll && onToggleAll(visibleRows, event.target.checked)}
+                                        inputProps={{ 'aria-label': 'select all' }}
+                                    />
+                                </StyledTableCell>
+                            )}
                             <StyledTableCell component='th' scope='row' style={{ width: isAgentCanvas ? '18%' : '20%' }} key='0'>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
                                     Name
@@ -154,7 +175,7 @@ export const FlowListTable = ({
                     <TableBody>
                         {isLoading ? (
                             <StyledTableRow>
-                                <StyledTableCell colSpan={isActionsAvailable ? 5 : 4} sx={{ border: 0 }}>
+                                <StyledTableCell colSpan={(isActionsAvailable ? 5 : 4) + (selectable ? 1 : 0)} sx={{ border: 0 }}>
                                     <Box display='flex' alignItems='center' justifyContent='center' sx={{ py: 6 }}>
                                         <CircularProgress />
                                     </Box>
@@ -162,8 +183,18 @@ export const FlowListTable = ({
                             </StyledTableRow>
                         ) : (
                             <>
-                                {sortedData.filter(filterFunction).map((row, index) => (
+                                {visibleRows.map((row, index) => (
                                     <StyledTableRow key={index}>
+                                        {selectable && (
+                                            <StyledTableCell padding='checkbox' key='select'>
+                                                <Checkbox
+                                                    color='primary'
+                                                    checked={isRowSelected(row.id)}
+                                                    onChange={(event) => onToggleRow && onToggleRow(row, event.target.checked)}
+                                                    inputProps={{ 'aria-labelledby': row.id }}
+                                                />
+                                            </StyledTableCell>
+                                        )}
                                         <StyledTableCell key='0'>
                                             <Stack direction='row' spacing={1} alignItems='center' sx={{ minWidth: 0 }}>
                                                 <Tooltip title={row.templateName || row.name}>
@@ -351,5 +382,9 @@ FlowListTable.propTypes = {
     setError: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
     currentPage: PropTypes.number,
-    pageLimit: PropTypes.number
+    pageLimit: PropTypes.number,
+    selectable: PropTypes.bool,
+    selectedIds: PropTypes.array,
+    onToggleRow: PropTypes.func,
+    onToggleAll: PropTypes.func
 }

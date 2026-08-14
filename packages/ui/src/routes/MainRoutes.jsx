@@ -69,6 +69,7 @@ const Workspaces = Loadable(lazy(() => import('@/views/workspace')))
 const WorkspaceDetails = Loadable(lazy(() => import('@/views/workspace/WorkspaceUsers')))
 const SSOConfig = Loadable(lazy(() => import('@/views/auth/ssoConfig')))
 const SSOSuccess = Loadable(lazy(() => import('@/views/auth/ssoSuccess')))
+const OrganizationAnalytics = Loadable(lazy(() => import('@/views/organization-analytics')))
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -337,6 +338,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'sso:manage'} display={'feat:sso-config'}>
                     <SSOConfig />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/organization-analytics',
+            element: (
+                <RequireAuth permission={'organization:analytics-manage'} display={'feat:organization-analytics'}>
+                    <OrganizationAnalytics />
                 </RequireAuth>
             )
         },

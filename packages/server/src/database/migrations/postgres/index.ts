@@ -58,6 +58,7 @@ import { AddSSOColumns1730519457880 } from '../../../enterprise/database/migrati
 import { AddOrganizationSlug1776300000000 } from '../../../enterprise/database/migrations/postgres/1776300000000-AddOrganizationSlug'
 import { AddOrganizationIdToLoginActivity1777000000000 } from '../../../enterprise/database/migrations/postgres/1777000000000-AddOrganizationIdToLoginActivity'
 import { AddOrganizationAnalytic1783000000000 } from '../../../enterprise/database/migrations/postgres/1783000000000-AddOrganizationAnalytic'
+import { AddWorkspaceAnalytic1784000000000 } from '../../../enterprise/database/migrations/postgres/1784000000000-AddWorkspaceAnalytic'
 import { AddUserIdToExecution1778000000000 } from './1778000000000-AddUserIdToExecution'
 import { AddCreatedByToCredential1779000000000 } from './1779000000000-AddCreatedByToCredential'
 import { AddCredentialAccessEntity1780000000000 } from './1780000000000-AddCredentialAccessEntity'
@@ -130,6 +131,7 @@ export const postgresMigrations = [
     AddOrganizationSlug1776300000000,
     AddOrganizationIdToLoginActivity1777000000000,
     AddOrganizationAnalytic1783000000000,
+    AddWorkspaceAnalytic1784000000000,
     AddUserIdToExecution1778000000000,
     AddCreatedByToCredential1779000000000,
     AddCredentialAccessEntity1780000000000,

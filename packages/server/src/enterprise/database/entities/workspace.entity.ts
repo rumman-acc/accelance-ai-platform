@@ -18,6 +18,13 @@ export class Workspace {
     @Column({ type: 'text', nullable: true })
     description?: string
 
+    /**
+     * JSON-encoded analytics-provider config, same shape as ChatFlow.analytic. Sits between
+     * Organization.analytic and ChatFlow.analytic in the cascade — see mergeAnalyticsConfig.
+     */
+    @Column({ type: 'text', nullable: true })
+    analytic?: string
+
     @Column({ nullable: false })
     organizationId?: string
     @ManyToOne(() => Organization, (organization) => organization.id)

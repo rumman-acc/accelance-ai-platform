@@ -26,7 +26,8 @@ import {
     IconListCheck,
     IconGauge,
     IconLayoutGrid,
-    IconFlask
+    IconFlask,
+    IconChartBar
 } from '@tabler/icons-react'
 
 // constant
@@ -57,7 +58,8 @@ const icons = {
     IconListCheck,
     IconGauge,
     IconLayoutGrid,
-    IconFlask
+    IconFlask,
+    IconChartBar
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -231,6 +233,16 @@ const dashboard = {
                     breadcrumbs: true,
                     display: 'feat:sso-config',
                     permission: 'sso:manage'
+                },
+                {
+                    id: 'organization-analytics',
+                    title: 'Organization Analytics',
+                    type: 'item',
+                    url: '/organization-analytics',
+                    icon: icons.IconChartBar,
+                    breadcrumbs: true,
+                    display: 'feat:organization-analytics',
+                    permission: 'organization:analytics-manage'
                 },
                 {
                     id: 'roles',

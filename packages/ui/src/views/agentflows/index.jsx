@@ -17,6 +17,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
+import BulkAnalyticsDialog from '@/ui-component/extended/BulkAnalyticsDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -30,7 +31,7 @@ import { AGENTFLOW_ICONS, baseURL } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconLayoutGrid, IconList, IconPlus, IconX } from '@tabler/icons-react'
+import { IconChartBar, IconLayoutGrid, IconList, IconPlus, IconX } from '@tabler/icons-react'
 
 // ==============================|| AGENTS ||============================== //
 
@@ -57,6 +58,24 @@ const Agentflows = () => {
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const getAgentIdsApi = useApi(controlTowerApi.getAgentIds)
     const [view, setView] = useState(localStorage.getItem('agentFlowDisplayStyle') || 'card')
+
+    /* Bulk-select — only meaningful in list view; card view has no row to check */
+    const [selectedIds, setSelectedIds] = useState([])
+    const [showBulkAnalyticsDialog, setShowBulkAnalyticsDialog] = useState(false)
+
+    const onToggleRow = (row, checked) => {
+        setSelectedIds((prev) => (checked ? [...prev, row.id] : prev.filter((id) => id !== row.id)))
+    }
+
+    const onToggleAll = (visibleRows, checked) => {
+        const visibleIds = visibleRows.map((row) => row.id)
+        setSelectedIds((prev) => (checked ? [...new Set([...prev, ...visibleIds])] : prev.filter((id) => !visibleIds.includes(id))))
+    }
+
+    const onBulkAnalyticsConfirm = () => {
+        setShowBulkAnalyticsDialog(false)
+        setSelectedIds([])
+    }
 
     // Arrived via a Control Tower stat-tile click (?health=healthy|runningNow|needsAttention) —
     // null means unfiltered, an array is the set of agentflow ids that stat bucket resolved to.
@@ -93,6 +112,7 @@ const Agentflows = () => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
         localStorage.setItem('agentFlowPageSize', pageLimit)
+        setSelectedIds([])
         refresh(page, pageLimit)
     }
 
@@ -281,6 +301,17 @@ const Agentflows = () => {
                                 <IconList />
                             </ToggleButton>
                         </ToggleButtonGroup>
+                        {view === 'list' && selectedIds.length > 0 && (
+                            <StyledPermissionButton
+                                permissionId={'agentflows:update'}
+                                variant='outlined'
+                                onClick={() => setShowBulkAnalyticsDialog(true)}
+                                startIcon={<IconChartBar />}
+                                sx={{ height: 40 }}
+                            >
+                                Configure Analytics ({selectedIds.length})
+                            </StyledPermissionButton>
+                        )}
                         <StyledPermissionButton
                             permissionId={'agentflows:create'}
                             variant='contained'
@@ -327,6 +358,10 @@ const Agentflows = () => {
                                     setError={setError}
                                     currentPage={currentPage}
                                     pageLimit={pageLimit}
+                                    selectable
+                                    selectedIds={selectedIds}
+                                    onToggleRow={onToggleRow}
+                                    onToggleAll={onToggleAll}
                                 />
                             )}
                             {/* Pagination and Page Size Controls */}
@@ -347,6 +382,14 @@ const Agentflows = () => {
                         </Stack>
                     )}
                 </Stack>
+            )}
+            {showBulkAnalyticsDialog && (
+                <BulkAnalyticsDialog
+                    show={showBulkAnalyticsDialog}
+                    dialogProps={{ chatflowIds: selectedIds }}
+                    onCancel={() => setShowBulkAnalyticsDialog(false)}
+                    onConfirm={onBulkAnalyticsConfirm}
+                />
             )}
             <ConfirmDialog />
         </MainCard>

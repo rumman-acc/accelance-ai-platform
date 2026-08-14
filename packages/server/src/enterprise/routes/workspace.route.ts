@@ -15,6 +15,13 @@ router.post('/switch', workspaceController.switchWorkspace)
 
 router.put('/', IdentityManager.checkFeatureByPlan('feat:workspaces'), checkPermission('workspace:update'), workspaceController.update)
 
+router.patch(
+    '/:id/analytic',
+    IdentityManager.checkFeatureByPlan('feat:workspace-analytics'),
+    checkPermission('workspace:analytics-manage'),
+    workspaceController.updateAnalytic
+)
+
 router.delete(
     ['/', '/:id'],
     IdentityManager.checkFeatureByPlan('feat:workspaces'),

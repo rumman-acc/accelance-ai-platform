@@ -62,6 +62,7 @@ import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/sqlite/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/sqlite/1746862866554-ExecutionLinkWorkspaceId'
 import { AddOrganizationAnalytic1783000000000 } from '../../../enterprise/database/migrations/sqlite/1783000000000-AddOrganizationAnalytic'
+import { AddWorkspaceAnalytic1784000000000 } from '../../../enterprise/database/migrations/sqlite/1784000000000-AddWorkspaceAnalytic'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -112,6 +113,7 @@ export const sqliteMigrations = [
     AddErrorToEvaluationRun1744964560174,
     ExecutionLinkWorkspaceId1746862866554,
     AddOrganizationAnalytic1783000000000,
+    AddWorkspaceAnalytic1784000000000,
     AddTextToSpeechToChatFlow1754986486669,
     ModifyChatflowType1755066758601,
     AddTextToSpeechToChatFlow1759419136055,

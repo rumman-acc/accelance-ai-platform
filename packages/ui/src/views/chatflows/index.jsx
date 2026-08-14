@@ -16,6 +16,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
+import BulkAnalyticsDialog from '@/ui-component/extended/BulkAnalyticsDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -28,7 +29,7 @@ import { baseURL } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconLayoutGrid, IconList, IconPlus } from '@tabler/icons-react'
+import { IconChartBar, IconLayoutGrid, IconList, IconPlus } from '@tabler/icons-react'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -44,6 +45,24 @@ const Chatflows = () => {
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
     const [view, setView] = useState(localStorage.getItem('chatFlowDisplayStyle') || 'card')
 
+    /* Bulk-select — only meaningful in list view; card view has no row to check */
+    const [selectedIds, setSelectedIds] = useState([])
+    const [showBulkAnalyticsDialog, setShowBulkAnalyticsDialog] = useState(false)
+
+    const onToggleRow = (row, checked) => {
+        setSelectedIds((prev) => (checked ? [...prev, row.id] : prev.filter((id) => id !== row.id)))
+    }
+
+    const onToggleAll = (visibleRows, checked) => {
+        const visibleIds = visibleRows.map((row) => row.id)
+        setSelectedIds((prev) => (checked ? [...new Set([...prev, ...visibleIds])] : prev.filter((id) => !visibleIds.includes(id))))
+    }
+
+    const onBulkAnalyticsConfirm = () => {
+        setShowBulkAnalyticsDialog(false)
+        setSelectedIds([])
+    }
+
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
     const [pageLimit, setPageLimit] = useState(() => Number(localStorage.getItem('chatFlowPageSize') || DEFAULT_ITEMS_PER_PAGE))
@@ -53,6 +72,7 @@ const Chatflows = () => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
         localStorage.setItem('chatFlowPageSize', pageLimit)
+        setSelectedIds([])
         applyFilters(page, pageLimit)
     }
 
@@ -167,6 +187,17 @@ const Chatflows = () => {
                                 <IconList />
                             </ToggleButton>
                         </ToggleButtonGroup>
+                        {view === 'list' && selectedIds.length > 0 && (
+                            <StyledPermissionButton
+                                permissionId={'chatflows:update'}
+                                variant='outlined'
+                                onClick={() => setShowBulkAnalyticsDialog(true)}
+                                startIcon={<IconChartBar />}
+                                sx={{ height: 40 }}
+                            >
+                                Configure Analytics ({selectedIds.length})
+                            </StyledPermissionButton>
+                        )}
                         <StyledPermissionButton
                             permissionId={'chatflows:create'}
                             variant='contained'
@@ -201,6 +232,10 @@ const Chatflows = () => {
                                     setError={setError}
                                     currentPage={currentPage}
                                     pageLimit={pageLimit}
+                                    selectable
+                                    selectedIds={selectedIds}
+                                    onToggleRow={onToggleRow}
+                                    onToggleAll={onToggleAll}
                                 />
                             )}
                             {/* Pagination and Page Size Controls */}
@@ -220,6 +255,14 @@ const Chatflows = () => {
                         </Stack>
                     )}
                 </Stack>
+            )}
+            {showBulkAnalyticsDialog && (
+                <BulkAnalyticsDialog
+                    show={showBulkAnalyticsDialog}
+                    dialogProps={{ chatflowIds: selectedIds }}
+                    onCancel={() => setShowBulkAnalyticsDialog(false)}
+                    onConfirm={onBulkAnalyticsConfirm}
+                />
             )}
             <ConfirmDialog />
         </MainCard>

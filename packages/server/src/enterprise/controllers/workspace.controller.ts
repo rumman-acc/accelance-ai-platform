@@ -187,6 +187,18 @@ export class WorkspaceController {
         }
     }
 
+    // Scoped to a workspace's analytics-provider override config only, gated by its own
+    // 'workspace:analytics-manage' permission rather than the generic 'workspace:update'.
+    public async updateAnalytic(req: Request, res: Response, next: NextFunction) {
+        try {
+            const workspaceService = new WorkspaceService()
+            const workspace = await workspaceService.updateWorkspaceAnalytic(req.params.id, req.body.analytic, req.user?.id)
+            return res.status(StatusCodes.OK).json(workspace)
+        } catch (error) {
+            next(error)
+        }
+    }
+
     public async delete(req: Request, res: Response, next: NextFunction) {
         let queryRunner: QueryRunner | undefined
         try {

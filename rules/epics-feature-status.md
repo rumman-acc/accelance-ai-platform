@@ -89,6 +89,7 @@ field)
 | Epic | Status | Accelance evidence | Reference Pattern |
 | --- | --- | --- | --- |
 | Langfuse / LangSmith / Arize / Phoenix tracing nodes | 🟡 Built, not configured | `nodes/analytic/{LangFuse,LangSmith,Arize,Phoenix}` | LLM observability / tracing layer |
+| Org → Workspace → Agent analytics-provider cascade + bulk apply | ✅ Done (2026-08-13) | `Organization.analytic`/`Workspace.analytic`/`ChatFlow.analytic` merged via `mergeAnalyticsConfig` (most-specific wins); UI: `views/organization-analytics`, `WorkspaceAnalyticsDialog.jsx`, bulk multi-select on chatflow/agentflow list (`BulkAnalyticsDialog.jsx`) | Hierarchical policy inheritance + bulk config apply |
 | Prometheus / OpenTelemetry metrics | 🟡 Built, not configured | `packages/server/src/metrics/{Prometheus,OpenTelemetry}.ts` | Platform metrics/monitoring |
 | Custom observability SDK | ✅ Done (exists) | `packages/observe` (separate top-level package) | No common equivalent — bonus |
 | Cost/usage dashboards per workspace | 🔴 To build | none | Per-project/user cost & usage analytics with budgets |
@@ -354,6 +355,8 @@ is newly estimated on the same reduced basis.
 ### 5. Observability & Tracing
 
 **Langfuse/LangSmith/Arize/Phoenix tracing** — Node exists; no project/API key created anywhere. **Effort: 1 day** (kept as originally sized) — this is the highest-value single item in the whole 🟡 bucket.
+
+**Org → Workspace → Agent analytics-provider cascade (2026-08-13)** — previously the only way to enable a provider (LangSmith/Langfuse/Lunary/LangWatch/Arize/Phoenix/Opik) was per-chatflow via `AnalyseFlow.jsx`, with no bulk apply and no org-wide default (an `Organization.analytic` column existed but had no UI or route). Added: a `Workspace.analytic` column (new, all 4 dialects) sitting between org and chatflow in `mergeAnalyticsConfig` (org → workspace → chatflow, most-specific wins per provider key); a dedicated `PATCH /organization/analytic` and `PATCH /workspace/:id/analytic` (new `organization:analytics-manage` / `workspace:analytics-manage` permissions + `feat:organization-analytics` / `feat:workspace-analytics` flags, scoped separately from the unrestricted generic org/workspace update endpoints); an Organization Analytics settings page; an Analytics dialog on the Workspace details page; and a multi-select "Configure Analytics" bulk action on the chatflow/agentflow list views (list view only — card view has no row to check) that fans out one PATCH per selected agent. The provider schema/accordion UI was extracted out of `AnalyseFlow.jsx` into a shared `AnalyticsConfigForm`/`analyticProviders` so all four surfaces (chatflow, workspace, org, bulk) stay in sync. Also backfilled a pre-existing gap: the `Organization.analytic` migration only existed for postgres/sqlite, not mysql/mariadb.
 
 **Prometheus/OpenTelemetry metrics** — Server-side plumbing exists; `ENABLE_METRICS` is unset. **Effort: 1 day** to turn on and point at a collector; **+2 days** if a real Grafana-style dashboard is wanted on top, since the code only exposes metrics, it doesn't visualize them.
 
