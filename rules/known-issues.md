@@ -136,3 +136,15 @@
 **Not yet fixed — same root cause, different node:** the existing native `Composio` tool node (`packages/components/nodes/tools/Composio/Composio.ts`) still uses `composio-core@0.5.39`'s `LangchainToolSet`, which targets the same now-dead v2 surface internally. It is very likely broken in production the same way this feature was, for any workspace actually using it. Not yet investigated or fixed — flagged here so it isn't rediscovered from scratch.
 
 **Prevention:** when a REST integration is scaffolded by reading an installed SDK's bundled client to infer "the real endpoints" (as this feature was, since the SDK's behavior is more trustworthy than prose docs for exact paths/params), the SDK's *version* still matters — an old, unmaintained SDK can target endpoints its own vendor has since retired. Cross-check the SDK-inferred endpoints against current API docs (or a live, unauthenticated request) before trusting them, especially for any third-party integration where the installed package hasn't been bumped recently.
+
+---
+
+## #011 — Custom MCP server security validator blocked the single most common real-world stdio launch pattern
+
+**Symptom:** Any Custom MCP server config using `npx -y <package>` — the documented launch command for the large majority of community stdio-based MCP servers — was rejected by `validateMCPServerConfig` with "contains flag '-y' that is not allowed for command 'npx'", even though the config was otherwise completely benign.
+
+**Root cause:** `packages/components/nodes/tools/MCP/core.ts`'s `validateCommandFlags` listed `-y`/`--yes` in `npx`'s dangerous-flags array, in the same bucket as genuine arbitrary-code-execution flags (`-c`, `--call`, `--shell-auto-fallback`). `-y` only auto-confirms npm's "install this package?" prompt — it doesn't enable code execution beyond what launching the named package already does, and a non-interactively spawned process can't answer that prompt anyway (no TTY), so blocking `-y` didn't add real protection while making `npx` effectively unusable for any real server. Found while designing the MCP registry browser feature (2026-08-14), which depends on `npx -y` working for the majority of registry entries.
+
+**Fix:** removed `-y`/`--yes` from `npx`'s dangerous-flags list, keeping the genuinely dangerous ones blocked. Also added `uvx` (the modern Python-package runner most pypi-based MCP servers actually use) to the command allowlist, since it was missing entirely.
+
+**Prevention:** when adding a flag to a command-allowlist/denylist-style security check, verify it's actually a *capability* the flag grants (code execution, filesystem access, network access) rather than just a *behavior* (skips a prompt, changes output format) — the two get conflated easily under a "looks scary" heuristic, and the cost of over-blocking (a whole command becomes unusable) can be as real as the cost of under-blocking.

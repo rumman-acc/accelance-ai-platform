@@ -83,6 +83,7 @@ import PromptGeneratorDialog from '@/ui-component/dialog/PromptGeneratorDialog'
 // API
 import assistantsApi from '@/api/assistants'
 import chatflowsApi from '@/api/chatflows'
+import customMcpServersApi from '@/api/custommcpservers'
 import documentstoreApi from '@/api/documentstore'
 import nodesApi from '@/api/nodes'
 import toolsApi from '@/api/tools'
@@ -603,7 +604,7 @@ const NodeInputHandler = ({
         setAsyncOptionEditDialog('')
     }
 
-    const saveMcpServerFromConfig = () => {
+    const saveMcpServerFromConfig = async () => {
         const rawConfig = data.inputs?.mcpServerConfig
         let parsedConfig
         try {
@@ -616,26 +617,52 @@ const NodeInputHandler = ({
             return
         }
 
-        if (!parsedConfig?.url) {
+        if (parsedConfig?.url) {
+            const prefill = {
+                name: data.inputs?.mcpServerName || data.label || 'New MCP Server',
+                serverUrl: parsedConfig.url
+            }
+            if (parsedConfig.headers && Object.keys(parsedConfig.headers).length > 0) {
+                prefill.authType = 'CUSTOM_HEADERS'
+                prefill.authConfig = { headers: parsedConfig.headers }
+            }
+            setSaveMcpServerDialogProps({ type: 'ADD', data: prefill })
+            setShowSaveMcpServerDialog(true)
+            return
+        }
+
+        if (!parsedConfig?.command) {
             enqueueSnackbar({
-                message:
-                    'Only remote (URL-based) MCP servers can be saved to your reusable MCP servers list. Stdio command-based servers must stay inline in this flow.',
-                options: { key: new Date().getTime() + Math.random(), variant: 'warning' }
+                message: 'MCP Server Config must include either a "url" or a "command".',
+                options: { key: new Date().getTime() + Math.random(), variant: 'error' }
             })
             return
         }
 
-        const prefill = {
-            name: data.inputs?.mcpServerName || data.label || 'New MCP Server',
-            serverUrl: parsedConfig.url
+        // Stdio (command-based) configs run third-party code locally -- save immediately (no further
+        // review needed, the config is already fully known) rather than opening the URL-oriented dialog.
+        try {
+            const created = await customMcpServersApi.createCustomMcpServer({
+                name: data.inputs?.mcpServerName || data.label || 'New MCP Server',
+                transportType: 'stdio',
+                command: parsedConfig.command,
+                args: Array.isArray(parsedConfig.args) ? parsedConfig.args : [],
+                env: parsedConfig.env && typeof parsedConfig.env === 'object' ? parsedConfig.env : undefined
+            })
+            const serverId = created?.data?.id
+            if (serverId) {
+                await customMcpServersApi.authorizeCustomMcpServer(serverId)
+            }
+            enqueueSnackbar({
+                message: 'Saved to My MCP Servers. This server runs third-party code on our infrastructure -- review it on the Tools page.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'success' }
+            })
+        } catch (error) {
+            enqueueSnackbar({
+                message: `Failed to save MCP server: ${error.response?.data?.message || error.message}`,
+                options: { key: new Date().getTime() + Math.random(), variant: 'error', persist: true }
+            })
         }
-        if (parsedConfig.headers && Object.keys(parsedConfig.headers).length > 0) {
-            prefill.authType = 'CUSTOM_HEADERS'
-            prefill.authConfig = { headers: parsedConfig.headers }
-        }
-
-        setSaveMcpServerDialogProps({ type: 'ADD', data: prefill })
-        setShowSaveMcpServerDialog(true)
     }
 
     const saveOpenApiEndpointsAsTools = async () => {

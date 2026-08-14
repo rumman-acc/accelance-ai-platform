@@ -1,6 +1,6 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { MCPToolkit } from '../core'
+import { MCPToolkit, validateMCPServerConfig } from '../core'
 import { decryptCredentialData } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
 
@@ -60,17 +60,21 @@ class CustomMcpServerTool implements INode {
                 })
 
                 return mcpServers.map((server: any) => {
-                    let maskedUrl: string
-                    try {
-                        const parsed = new URL(server.serverUrl)
-                        maskedUrl = parsed.pathname && parsed.pathname !== '/' ? `${parsed.origin}/************` : parsed.origin
-                    } catch {
-                        maskedUrl = '************'
+                    let description: string
+                    if (server.transportType === 'stdio') {
+                        description = server.command ? `${server.command} (local process)` : 'local process'
+                    } else {
+                        try {
+                            const parsed = new URL(server.serverUrl)
+                            description = parsed.pathname && parsed.pathname !== '/' ? `${parsed.origin}/************` : parsed.origin
+                        } catch {
+                            description = '************'
+                        }
                     }
                     return {
                         label: server.name,
                         name: server.id,
-                        description: maskedUrl
+                        description
                     }
                 })
             } catch (error) {
@@ -142,22 +146,41 @@ class CustomMcpServerTool implements INode {
             throw new Error(`MCP server "${serverRecord.name}" is not authorized. Please authorize it in the Tools page first.`)
         }
 
-        // Build headers from encrypted authConfig — only when authType explicitly requires them
-        let headers: Record<string, string> = {}
-        if (serverRecord.authType === 'CUSTOM_HEADERS' && serverRecord.authConfig) {
-            try {
-                const decrypted = await decryptCredentialData(serverRecord.authConfig)
-                if (decrypted?.headers && typeof decrypted.headers === 'object') {
-                    headers = decrypted.headers as Record<string, string>
-                }
-            } catch {
-                // authConfig decryption failed — proceed without headers
-            }
-        }
+        let serverParams: any
+        let transport: 'stdio' | 'sse'
 
-        const serverParams: any = {
-            url: serverRecord.serverUrl,
-            ...(Object.keys(headers).length > 0 ? { headers } : {})
+        if (serverRecord.transportType === 'stdio') {
+            const args = serverRecord.args ? JSON.parse(serverRecord.args) : []
+            let env: Record<string, string> | undefined
+            if (serverRecord.env) {
+                try {
+                    env = (await decryptCredentialData(serverRecord.env)) as Record<string, string>
+                } catch {
+                    // env decryption failed — launch without it
+                }
+            }
+            // Re-validate at execution time too, not just at save time (defense in depth).
+            validateMCPServerConfig({ command: serverRecord.command, args, env })
+            serverParams = { command: serverRecord.command, args, ...(env ? { env } : {}) }
+            transport = 'stdio'
+        } else {
+            // Build headers from encrypted authConfig — only when authType explicitly requires them
+            let headers: Record<string, string> = {}
+            if (serverRecord.authType === 'CUSTOM_HEADERS' && serverRecord.authConfig) {
+                try {
+                    const decrypted = await decryptCredentialData(serverRecord.authConfig)
+                    if (decrypted?.headers && typeof decrypted.headers === 'object') {
+                        headers = decrypted.headers as Record<string, string>
+                    }
+                } catch {
+                    // authConfig decryption failed — proceed without headers
+                }
+            }
+            serverParams = {
+                url: serverRecord.serverUrl,
+                ...(Object.keys(headers).length > 0 ? { headers } : {})
+            }
+            transport = 'sse'
         }
 
         if (options.cachePool) {
@@ -168,7 +191,7 @@ class CustomMcpServerTool implements INode {
             }
         }
 
-        const toolkit = new MCPToolkit(serverParams, 'sse')
+        const toolkit = new MCPToolkit(serverParams, transport)
         await toolkit.initialize()
 
         const tools = toolkit.tools ?? []

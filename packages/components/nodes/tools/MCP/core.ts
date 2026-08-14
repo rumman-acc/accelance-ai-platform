@@ -286,10 +286,14 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
             '-c', // Execute shell commands
             '--call', // Execute shell commands
             '--shell-auto-fallback', // Shell execution fallback
-            '-y', // Auto-confirms installation prompts
-            '--yes', // Auto-confirms installation prompts
             '--node-options' // Passes arbitrary Node flags to underlying process, bypassing node flag blocklist
         ],
+        // '-y'/'--yes' (auto-confirm the install prompt) is intentionally NOT blocked: it only skips an
+        // interactive confirmation that a non-interactive spawned process can't answer anyway, it doesn't
+        // enable code execution beyond what launching the named package already does. Nearly every real-world
+        // community MCP server's documented launch command is exactly `npx -y <package>` -- blocking it made
+        // `npx` unusable in practice while providing no actual security benefit over the flags above.
+        uvx: [],
         node: [
             '-e', // Execute JavaScript code
             '--eval', // Execute JavaScript code
@@ -378,7 +382,7 @@ export const validateMCPServerConfig = (serverParams: any): void => {
     }
 
     // Command allowlist - only allow specific safe commands
-    const allowedCommands = ['node', 'npx', 'python', 'python3', 'docker']
+    const allowedCommands = ['node', 'npx', 'python', 'python3', 'docker', 'uvx']
 
     if (serverParams.command && !allowedCommands.includes(serverParams.command)) {
         throw new Error(`Command '${serverParams.command}' is not allowed. Allowed commands: ${allowedCommands.join(', ')}`)

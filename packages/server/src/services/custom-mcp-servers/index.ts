@@ -1,11 +1,11 @@
 ﻿import { StatusCodes } from 'http-status-codes'
 import { CustomMcpServer } from '../../database/entities/CustomMcpServer'
-import { CustomMcpServerAuthType, CustomMcpServerStatus, ICustomMcpServerResponse } from '../../Interface'
+import { CustomMcpServerAuthType, CustomMcpServerStatus, CustomMcpServerTransportType, ICustomMcpServerResponse } from '../../Interface'
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { encryptCredentialData, decryptCredentialData } from '../../utils'
-import { MCPToolkit, checkDenyList, isValidURL, validateCustomHeaders } from 'accelance-components'
+import { MCPToolkit, checkDenyList, isValidURL, validateCustomHeaders, validateMCPServerConfig } from 'accelance-components'
 import { getAppVersion } from '../../utils'
 import logger from '../../utils/logger'
 import { ACCELANCE_COUNTER_STATUS, ACCELANCE_METRIC_COUNTERS } from '../../Interface.Metrics'
@@ -72,6 +72,26 @@ const assertValidHeaders = (headers: unknown): void => {
     }
 }
 
+const assertValidStdioConfig = (command: unknown, args: unknown, env: unknown): void => {
+    if (!command || typeof command !== 'string') {
+        throw new InternalAccelanceError(StatusCodes.BAD_REQUEST, 'A stdio MCP server requires a "command"')
+    }
+    const argsArray = Array.isArray(args) ? args : []
+    try {
+        validateMCPServerConfig({ command, args: argsArray, env: env && typeof env === 'object' ? env : undefined })
+    } catch (err) {
+        throw new InternalAccelanceError(StatusCodes.BAD_REQUEST, getErrorMessage(err))
+    }
+}
+
+const maskEnv = (env: Record<string, any>): Record<string, string> => {
+    const masked: Record<string, string> = {}
+    for (const key of Object.keys(env)) {
+        masked[key] = REDACTED_VALUE
+    }
+    return masked
+}
+
 /**
  * Returns only the origin + '/**' to avoid leaking token-bearing path segments
  * e.g. https://api.test-server.com/mcp/server/w5pqFCYcsp6TAzaJ → https://api.test-server.com/********
@@ -88,25 +108,39 @@ const maskServerUrl = (url: string): string => {
     }
 }
 
-const sanitizeCustomMcpServer = ({ authConfig: _authConfig, ...rest }: CustomMcpServer) => ({
+const sanitizeCustomMcpServer = ({ authConfig: _authConfig, env: _env, ...rest }: CustomMcpServer) => ({
     ...rest,
-    serverUrl: maskServerUrl(rest.serverUrl)
+    serverUrl: rest.serverUrl ? maskServerUrl(rest.serverUrl) : undefined,
+    env: _env ? '(configured)' : undefined
 })
 
 const createCustomMcpServer = async (requestBody: any, orgId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const newRecord = new CustomMcpServer()
-        if (requestBody.serverUrl) await assertSafeServerUrl(requestBody.serverUrl)
 
-        // Encrypt authConfig if present
-        if (requestBody.authConfig && typeof requestBody.authConfig === 'object') {
-            if (requestBody.authType === CustomMcpServerAuthType.CUSTOM_HEADERS) {
-                assertValidHeaders((requestBody.authConfig as Record<string, any>).headers)
-            }
-            requestBody.authConfig = await encryptCredentialData(requestBody.authConfig)
+        if (requestBody.transportType === CustomMcpServerTransportType.STDIO) {
+            assertValidStdioConfig(requestBody.command, requestBody.args, requestBody.env)
+            requestBody.args = JSON.stringify(Array.isArray(requestBody.args) ? requestBody.args : [])
+            requestBody.env = requestBody.env && typeof requestBody.env === 'object' ? await encryptCredentialData(requestBody.env) : null
+            requestBody.serverUrl = null
+            requestBody.authConfig = null
         } else {
-            requestBody.authConfig = null // explicitly set to null to avoid saving non-decrypted values or empty objects/strings in the database
+            requestBody.transportType = CustomMcpServerTransportType.URL
+            if (requestBody.serverUrl) await assertSafeServerUrl(requestBody.serverUrl)
+            requestBody.command = null
+            requestBody.args = null
+            requestBody.env = null
+
+            // Encrypt authConfig if present
+            if (requestBody.authConfig && typeof requestBody.authConfig === 'object') {
+                if (requestBody.authType === CustomMcpServerAuthType.CUSTOM_HEADERS) {
+                    assertValidHeaders((requestBody.authConfig as Record<string, any>).headers)
+                }
+                requestBody.authConfig = await encryptCredentialData(requestBody.authConfig)
+            } else {
+                requestBody.authConfig = null // explicitly set to null to avoid saving non-decrypted values or empty objects/strings in the database
+            }
         }
         Object.assign(newRecord, requestBody)
 
@@ -177,7 +211,20 @@ const getCustomMcpServerById = async (id: string, workspaceId: string): Promise<
         if (!dbResponse) {
             throw new InternalAccelanceError(StatusCodes.NOT_FOUND, `Custom MCP server ${id} not found`)
         }
-        const result: ICustomMcpServerResponse = { ...dbResponse, authConfig: undefined, serverUrl: maskServerUrl(dbResponse.serverUrl) }
+        const result: ICustomMcpServerResponse = {
+            ...dbResponse,
+            authConfig: undefined,
+            env: undefined,
+            serverUrl: dbResponse.serverUrl ? maskServerUrl(dbResponse.serverUrl) : undefined
+        }
+        if (dbResponse.env) {
+            try {
+                const decryptedEnv = await decryptCredentialData(dbResponse.env)
+                result.env = decryptedEnv && typeof decryptedEnv === 'object' ? maskEnv(decryptedEnv) : {}
+            } catch {
+                result.env = {}
+            }
+        }
         if (dbResponse.authConfig) {
             try {
                 const decrypted = await decryptCredentialData(dbResponse.authConfig)
@@ -220,20 +267,56 @@ const updateCustomMcpServer = async (id: string, requestBody: any, workspaceId: 
             throw new InternalAccelanceError(StatusCodes.NOT_FOUND, `Custom MCP server ${id} not found`)
         }
 
-        if (requestBody.serverUrl === maskServerUrl(record.serverUrl)) {
-            requestBody.serverUrl = record.serverUrl
-        } else if (requestBody.serverUrl && requestBody.serverUrl.includes(REDACTED_VALUE)) {
-            throw new InternalAccelanceError(
-                StatusCodes.BAD_REQUEST,
-                'Server URL still contains the masked placeholder. Send the full URL, or omit serverUrl from the request to keep the existing value.'
-            )
-        } else if (requestBody.serverUrl) {
-            await assertSafeServerUrl(requestBody.serverUrl)
+        const targetTransportType = requestBody.transportType || record.transportType || CustomMcpServerTransportType.URL
+
+        if (targetTransportType === CustomMcpServerTransportType.STDIO) {
+            const command = requestBody.command ?? record.command
+            const args = requestBody.args !== undefined ? requestBody.args : record.args ? JSON.parse(record.args) : []
+            assertValidStdioConfig(command, args, requestBody.env && typeof requestBody.env === 'object' ? requestBody.env : undefined)
+            requestBody.command = command
+            requestBody.args = JSON.stringify(Array.isArray(args) ? args : [])
+            requestBody.serverUrl = null
+            requestBody.authType = CustomMcpServerAuthType.NONE
+            requestBody.authConfig = null
+
+            if (requestBody.env && typeof requestBody.env === 'object') {
+                let mergedEnv: Record<string, string> = { ...requestBody.env }
+                if (record.env) {
+                    try {
+                        const existingEnv = (await decryptCredentialData(record.env)) as Record<string, string>
+                        mergedEnv = {}
+                        for (const [key, value] of Object.entries(requestBody.env as Record<string, string>)) {
+                            mergedEnv[key] = value === REDACTED_VALUE && key in existingEnv ? existingEnv[key] : value
+                        }
+                    } catch {
+                        // existing env couldn't be decrypted — fall back to whatever the client sent
+                    }
+                }
+                requestBody.env = await encryptCredentialData(mergedEnv)
+            }
+        } else {
+            requestBody.transportType = CustomMcpServerTransportType.URL
+            requestBody.command = null
+            requestBody.args = null
+            requestBody.env = null
+
+            if (record.serverUrl && requestBody.serverUrl === maskServerUrl(record.serverUrl)) {
+                requestBody.serverUrl = record.serverUrl
+            } else if (requestBody.serverUrl && requestBody.serverUrl.includes(REDACTED_VALUE)) {
+                throw new InternalAccelanceError(
+                    StatusCodes.BAD_REQUEST,
+                    'Server URL still contains the masked placeholder. Send the full URL, or omit serverUrl from the request to keep the existing value.'
+                )
+            } else if (requestBody.serverUrl) {
+                await assertSafeServerUrl(requestBody.serverUrl)
+            }
         }
 
         // Merge authConfig: clear it when switching to no authentication; otherwise preserve
         // existing encrypted header values when client sends redacted placeholders
-        if (requestBody.authType === CustomMcpServerAuthType.NONE) {
+        if (targetTransportType === CustomMcpServerTransportType.STDIO) {
+            // handled above
+        } else if (requestBody.authType === CustomMcpServerAuthType.NONE) {
             requestBody.authConfig = null
         } else if (requestBody.authConfig && typeof requestBody.authConfig === 'object') {
             if (requestBody.authConfig.headers && typeof requestBody.authConfig.headers === 'object' && record.authConfig) {
@@ -306,30 +389,49 @@ const authorizeCustomMcpServer = async (id: string, workspaceId: string): Promis
             throw new InternalAccelanceError(StatusCodes.NOT_FOUND, `Custom MCP server ${id} not found`)
         }
 
-        // Build headers from decrypted authConfig — only when authType explicitly requires them
-        let headers: Record<string, string> = {}
-        if (record.authType === CustomMcpServerAuthType.CUSTOM_HEADERS && record.authConfig) {
-            try {
-                const decrypted = await decryptCredentialData(record.authConfig)
-                if (decrypted && typeof decrypted === 'object') {
-                    // Support CUSTOM_HEADERS format: { headers: { key: value } }
-                    if (decrypted.headers && typeof decrypted.headers === 'object') {
-                        headers = decrypted.headers as Record<string, string>
-                    }
-                }
-            } catch {
-                // authConfig decryption failed — proceed without headers
-            }
-        }
-
-        const serverParams: any = {
-            url: record.serverUrl,
-            ...(Object.keys(headers).length > 0 ? { headers } : {})
-        }
-
         let toolkit: MCPToolkit | null = null
         try {
-            toolkit = new MCPToolkit(serverParams, 'sse')
+            let serverParams: any
+            let transport: 'stdio' | 'sse'
+
+            if (record.transportType === CustomMcpServerTransportType.STDIO) {
+                const args = record.args ? JSON.parse(record.args) : []
+                let env: Record<string, string> | undefined
+                if (record.env) {
+                    try {
+                        env = (await decryptCredentialData(record.env)) as Record<string, string>
+                    } catch {
+                        // env decryption failed — launch without it
+                    }
+                }
+                // Re-validate at authorize time too (defense in depth), not just at save time.
+                validateMCPServerConfig({ command: record.command, args, env })
+                serverParams = { command: record.command, args, ...(env ? { env } : {}) }
+                transport = 'stdio'
+            } else {
+                // Build headers from decrypted authConfig — only when authType explicitly requires them
+                let headers: Record<string, string> = {}
+                if (record.authType === CustomMcpServerAuthType.CUSTOM_HEADERS && record.authConfig) {
+                    try {
+                        const decrypted = await decryptCredentialData(record.authConfig)
+                        if (decrypted && typeof decrypted === 'object') {
+                            // Support CUSTOM_HEADERS format: { headers: { key: value } }
+                            if (decrypted.headers && typeof decrypted.headers === 'object') {
+                                headers = decrypted.headers as Record<string, string>
+                            }
+                        }
+                    } catch {
+                        // authConfig decryption failed — proceed without headers
+                    }
+                }
+                serverParams = {
+                    url: record.serverUrl,
+                    ...(Object.keys(headers).length > 0 ? { headers } : {})
+                }
+                transport = 'sse'
+            }
+
+            toolkit = new MCPToolkit(serverParams, transport)
             const timeoutMs = getAuthorizeTimeoutMs()
             await withTimeout(toolkit.initialize(), timeoutMs, `MCP server handshake exceeded ${timeoutMs}ms`)
 

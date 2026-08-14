@@ -11,6 +11,7 @@ import MCPItemCard from '@/ui-component/cards/MCPItemCard'
 import ToolDialog from './ToolDialog'
 import CustomMcpServerDialog from './CustomMcpServerDialog'
 import ComposioImportDialog from './ComposioImportDialog'
+import McpRegistryDialog from './McpRegistryDialog'
 import NativeToolsTab from './NativeToolsTab'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -30,7 +31,7 @@ import { useError } from '@/store/context/ErrorContext'
 import { gridSpacing } from '@/store/constant'
 
 // icons
-import { IconPlus, IconFileUpload, IconLayoutGrid, IconList, IconDownload } from '@tabler/icons-react'
+import { IconPlus, IconFileUpload, IconLayoutGrid, IconList, IconDownload, IconServer } from '@tabler/icons-react'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 
 const SEARCH_PLACEHOLDERS = [
@@ -56,6 +57,7 @@ const Tools = () => {
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
     const [showComposioDialog, setShowComposioDialog] = useState(false)
+    const [showMcpRegistryDialog, setShowMcpRegistryDialog] = useState(false)
     const [view, setView] = useState(localStorage.getItem('toolsDisplayStyle') || 'card')
 
     const inputRef = useRef(null)
@@ -324,6 +326,15 @@ const Tools = () => {
     const renderMcpServersToolbar = () => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {viewToggle(mcpTotal === 0)}
+            <PermissionButton
+                permissionId={'tools:create'}
+                variant='outlined'
+                onClick={() => setShowMcpRegistryDialog(true)}
+                startIcon={<IconServer />}
+                sx={{ height: 40 }}
+            >
+                Browse MCP Registry
+            </PermissionButton>
             <ButtonGroup disableElevation aria-label='outlined primary button group'>
                 <StyledPermissionButton
                     permissionId={'tools:create'}
@@ -493,6 +504,11 @@ const Tools = () => {
                 show={showComposioDialog}
                 onCancel={() => setShowComposioDialog(false)}
                 onImported={() => refresh(currentPage, pageLimit)}
+            />
+            <McpRegistryDialog
+                show={showMcpRegistryDialog}
+                onCancel={() => setShowMcpRegistryDialog(false)}
+                onImported={() => refreshCustomMcp(mcpCurrentPage, mcpPageLimit)}
             />
         </>
     )

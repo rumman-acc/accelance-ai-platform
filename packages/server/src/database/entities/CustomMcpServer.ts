@@ -10,8 +10,23 @@ export class CustomMcpServer implements ICustomMcpServer {
     @Column()
     name: string
 
-    @Column({ type: 'text' })
-    serverUrl: string
+    @Column({ type: 'text', nullable: true })
+    serverUrl?: string
+
+    // 'url' (remote/SSE/streamable-HTTP, uses serverUrl/authConfig) or 'stdio' (local process, uses command/args/env)
+    @Column({ default: 'url' })
+    transportType: string
+
+    @Column({ nullable: true })
+    command?: string
+
+    // JSON-stringified string[]
+    @Column({ nullable: true, type: 'text' })
+    args?: string
+
+    // Encrypted JSON-stringified Record<string, string> (same encryptCredentialData helper as authConfig)
+    @Column({ nullable: true, type: 'text' })
+    env?: string
 
     @Column({ nullable: true })
     iconSrc?: string

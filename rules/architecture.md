@@ -123,6 +123,7 @@ them — Qdrant or Neo4j.
 - Pluggable storage provider (local / S3 / GCS / Azure / ImageKit)
 - Control Tower: agent-health/execution overview dashboard, now the default landing page (`packages/ui/src/views/controltower/`, `packages/server/src/{controllers,routes,services}/control-tower/`), gated behind `executions:view`
 - Composio catalog importer: search Composio's action catalog and import specific actions as first-class `Tool` rows, without writing a hand-built connector per action (`packages/server/src/{controllers,routes,services}/composio-catalog/`, `packages/ui/src/views/tools/ComposioImportDialog.jsx`) — see `rules/epics-feature-status.md` § 2 for details
+- MCP registry browser: search the official public MCP registry and add any server (remote or local-process) directly to `CustomMcpServer`, no hand-written node per server (`packages/server/src/{controllers,routes,services}/mcp-registry/`, `packages/ui/src/views/tools/McpRegistryDialog.jsx`) — `CustomMcpServer` now supports both `url` and `stdio` transport types; see `rules/epics-feature-status.md` § 2 for details
 
 ### Not yet built or not yet configured
 

@@ -52,6 +52,10 @@ const createCustomMcpServer = async (req: Request, res: Response, next: NextFunc
         if (body.color !== undefined) mcpBody.color = body.color
         if (body.authType !== undefined) mcpBody.authType = body.authType
         if (body.authConfig !== undefined) mcpBody.authConfig = body.authConfig
+        if (body.transportType !== undefined) mcpBody.transportType = body.transportType
+        if (body.command !== undefined) mcpBody.command = body.command
+        if (body.args !== undefined) mcpBody.args = body.args
+        if (body.env !== undefined) mcpBody.env = body.env
         mcpBody.workspaceId = workspaceId
 
         const apiResponse = await customMcpServersService.createCustomMcpServer(mcpBody, orgId)

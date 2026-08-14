@@ -273,10 +273,15 @@ export enum CustomMcpServerAuthType {
     CUSTOM_HEADERS = 'CUSTOM_HEADERS'
 }
 
+export enum CustomMcpServerTransportType {
+    URL = 'url',
+    STDIO = 'stdio'
+}
+
 export interface ICustomMcpServer {
     id: string
     name: string
-    serverUrl: string
+    serverUrl?: string
     iconSrc?: string
     color?: string
     authType: string
@@ -287,10 +292,15 @@ export interface ICustomMcpServer {
     createdDate: Date
     updatedDate: Date
     workspaceId: string
+    transportType: string
+    command?: string
+    args?: string
+    env?: string
 }
 
-export interface ICustomMcpServerResponse extends Omit<ICustomMcpServer, 'authConfig'> {
+export interface ICustomMcpServerResponse extends Omit<ICustomMcpServer, 'authConfig' | 'env'> {
     authConfig?: Record<string, any>
+    env?: Record<string, any>
 }
 
 export interface IComponentNodes {

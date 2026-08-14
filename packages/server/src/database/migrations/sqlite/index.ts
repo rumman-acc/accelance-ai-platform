@@ -46,6 +46,7 @@ import { AddCreatedByToCredential1779000000003 } from './1779000000003-AddCreate
 import { AddCredentialAccessEntity1780000000003 } from './1780000000003-AddCredentialAccessEntity'
 import { AddAgentToolPolicyEntity1781000000003 } from './1781000000003-AddAgentToolPolicyEntity'
 import { AddToolCallAuditEntity1782000000003 } from './1782000000003-AddToolCallAuditEntity'
+import { AddCustomMcpServerStdioTransport1790000000000 } from './1790000000000-AddCustomMcpServerStdioTransport'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
@@ -126,5 +127,6 @@ export const sqliteMigrations = [
     AddToolCallAuditEntity1782000000003,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
-    AddScheduleEntities1772000000000
+    AddScheduleEntities1772000000000,
+    AddCustomMcpServerStdioTransport1790000000000
 ]

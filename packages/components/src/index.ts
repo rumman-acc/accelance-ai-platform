@@ -5,7 +5,7 @@ const envPath = path.join(__dirname, '..', '..', '.env')
 dotenv.config({ path: envPath, override: true })
 
 export * from '../evaluation/EvaluationRunner'
-export { MCPToolkit } from '../nodes/tools/MCP/core'
+export { MCPToolkit, validateMCPServerConfig } from '../nodes/tools/MCP/core'
 export * from './agentflowv2Generator'
 export * from './followUpPrompts'
 export * from './handler'
