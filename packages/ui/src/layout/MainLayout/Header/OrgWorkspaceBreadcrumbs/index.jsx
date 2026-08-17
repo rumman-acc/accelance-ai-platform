@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
@@ -88,8 +89,31 @@ const StyledBreadcrumb = styled(Chip)(({ theme, isDarkMode }) => {
     }
 })
 
-const OrgWorkspaceBreadcrumbs = () => {
+// Pill-chip look matching ControlTower.dc.html (transparent bg, hairline border, rounded-pill) —
+// applied as an sx override on top of the existing StyledBreadcrumb rather than a rewrite, so the
+// org/workspace switching logic below (unchanged) still owns the actual chip.
+const ACCELANCE_CHIP_SX = {
+    background: 'transparent',
+    border: '1px solid var(--accelance-charcoal-100)',
+    borderRadius: 'var(--accelance-radius-pill)',
+    color: 'var(--accelance-charcoal-600)',
+    fontFamily: 'var(--accelance-font-primary)',
+    fontSize: 13,
+    fontWeight: 400,
+    height: 34,
+    '&:hover, &:focus': {
+        background: 'transparent',
+        borderColor: 'var(--accelance-azure-200)'
+    },
+    '&:active': {
+        boxShadow: 'none',
+        background: 'transparent'
+    }
+}
+
+const OrgWorkspaceBreadcrumbs = ({ variant }) => {
     const navigate = useNavigate()
+    const chipSx = variant === 'accelance' ? ACCELANCE_CHIP_SX : undefined
 
     const user = useSelector((state) => state.auth.user)
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
@@ -305,13 +329,21 @@ const OrgWorkspaceBreadcrumbs = () => {
                             </MenuItem>
                         ))}
                     </StyledMenu>
-                    <Breadcrumbs aria-label='breadcrumb'>
+                    <Breadcrumbs
+                        aria-label='breadcrumb'
+                        sx={
+                            variant === 'accelance'
+                                ? { '& .MuiBreadcrumbs-separator': { color: 'var(--accelance-charcoal-200)' } }
+                                : undefined
+                        }
+                    >
                         <StyledBreadcrumb
                             isDarkMode={customization.isDarkMode}
                             label={assignedOrganizations.find((org) => org.id === activeOrganizationId)?.name || 'Organization'}
                             deleteIcon={<IconChevronDown size={16} />}
                             onDelete={handleOrgClick}
                             onClick={handleOrgClick}
+                            sx={chipSx}
                         />
                         <StyledBreadcrumb
                             isDarkMode={customization.isDarkMode}
@@ -319,6 +351,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                             deleteIcon={<IconChevronDown size={16} />}
                             onDelete={handleWorkspaceClick}
                             onClick={handleWorkspaceClick}
+                            sx={chipSx}
                         />
                     </Breadcrumbs>
                 </>
@@ -433,6 +466,8 @@ const OrgWorkspaceBreadcrumbs = () => {
     )
 }
 
-OrgWorkspaceBreadcrumbs.propTypes = {}
+OrgWorkspaceBreadcrumbs.propTypes = {
+    variant: PropTypes.oneOf(['accelance'])
+}
 
 export default OrgWorkspaceBreadcrumbs

@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
 import { List, Typography } from '@mui/material'
 
 // project imports
@@ -12,8 +11,11 @@ import { useAuth } from '@/hooks/useAuth'
 // ==============================|| SIDEBAR MENU LIST GROUP ||============================== //
 // Renders a single menu-items/dashboard.js group (the one the header's SectionNav has made
 // active) — the group switching/filtering itself lives in useMenuSections, shared with SectionNav.
+// No repeated group-title caption here (dropped 2026-08-13, at the user's request) — the header's
+// SectionNav tab already names the active section right above this list, so a second "Studio"
+// label directly under it was pure redundant clutter, a leftover from when the sidebar stacked
+// all 4 groups at once and needed a caption to tell them apart.
 const NavGroup = ({ item }) => {
-    const theme = useTheme()
     const { hasPermission, hasDisplay } = useAuth()
 
     const shouldDisplayMenu = (menu) => {
@@ -47,16 +49,7 @@ const NavGroup = ({ item }) => {
     if (visibleChildren.length === 0) return null
 
     return (
-        <List
-            subheader={
-                item.title && (
-                    <Typography variant='caption' sx={{ ...theme.typography.menuCaption }} display='block' gutterBottom>
-                        {item.title}
-                    </Typography>
-                )
-            }
-            sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
-        >
+        <List sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
             {visibleChildren.map((menu) => listItems(menu))}
         </List>
     )

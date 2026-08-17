@@ -1,0 +1,12 @@
+/* Verbatim, see colors.css header comment for provenance. */
+:root {
+    --accelance-shadow-box: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    --accelance-shadow-box-mobile: 0px 2px 2px 0px rgba(0, 0, 0, 0.25);
+    --accelance-shadow-sectional: -5px -1px 15px 0px rgba(0, 0, 0, 0.25);
+
+    --accelance-radius-box: 24px;
+    --accelance-radius-box-mobile: 16px;
+    --accelance-radius-button: 12px;
+    --accelance-radius-button-mobile: 8px;
+    --accelance-radius-pill: 999px;
+}

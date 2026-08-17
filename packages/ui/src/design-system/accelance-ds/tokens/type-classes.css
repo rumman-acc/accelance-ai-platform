@@ -1,0 +1,121 @@
+/* Namespaced `.acc-*` type utility classes only — deliberately NOT the source design system's
+   full base.css, which also sets bare-element rules (body, a, a:hover, :focus-visible,
+   *{box-sizing}) that would leak this new design system's font/link-color choices onto every
+   still-MUI page app-wide. Those rules are applied scoped to the new shell/pages that actually
+   use this design system instead (inline, same as the source .dc.html mockups do it). Mirrors
+   the Figma typescale names 1:1 — see colors.css header comment for provenance. */
+.acc-display-1 {
+    font-size: var(--accelance-display-1-size);
+    line-height: var(--accelance-display-1-lh);
+    font-weight: var(--accelance-display-1-weight);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+.acc-display-2 {
+    font-size: var(--accelance-display-2-size);
+    line-height: var(--accelance-display-2-lh);
+    font-weight: var(--accelance-display-2-weight);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+.acc-heading-1 {
+    font-size: var(--accelance-heading-1-size);
+    line-height: var(--accelance-heading-1-lh);
+    font-weight: var(--accelance-heading-1-weight);
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+.acc-heading-2 {
+    font-size: var(--accelance-heading-2-size);
+    line-height: var(--accelance-heading-2-lh);
+    font-weight: var(--accelance-heading-2-weight);
+    margin: 0;
+}
+.acc-heading-3 {
+    font-size: var(--accelance-heading-3-size);
+    line-height: var(--accelance-heading-3-lh);
+    font-weight: var(--accelance-heading-3-weight);
+    margin: 0;
+}
+.acc-section-heading {
+    font-size: var(--accelance-section-heading-size);
+    line-height: var(--accelance-section-heading-lh);
+    font-weight: var(--accelance-section-heading-weight);
+    margin: 0;
+}
+.acc-subsection-heading {
+    font-size: var(--accelance-subsection-heading-size);
+    line-height: var(--accelance-subsection-heading-lh);
+    font-weight: var(--accelance-subsection-heading-weight);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+}
+.acc-tab-text {
+    font-size: var(--accelance-tab-text-size);
+    line-height: var(--accelance-tab-text-lh);
+    font-weight: var(--accelance-tab-text-weight);
+    margin: 0;
+}
+.acc-body-1 {
+    font-size: var(--accelance-body-1-size);
+    line-height: var(--accelance-body-1-lh);
+    font-weight: var(--accelance-body-1-weight);
+    margin: 0;
+}
+.acc-body-2 {
+    font-size: var(--accelance-body-2-size);
+    line-height: var(--accelance-body-2-lh);
+    font-weight: var(--accelance-body-2-weight);
+    margin: 0;
+}
+.acc-body-3 {
+    font-size: var(--accelance-body-3-size);
+    line-height: var(--accelance-body-3-lh);
+    font-weight: var(--accelance-body-3-weight);
+    margin: 0;
+}
+
+.acc-text-gradient {
+    background: var(--accelance-gradient-text-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.acc-text-gradient-brand {
+    background: var(--accelance-gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+@media (max-width: 768px) {
+    .acc-display-1 {
+        font-size: var(--accelance-display-1-size-mobile);
+        line-height: var(--accelance-display-1-lh-mobile);
+    }
+    .acc-display-2 {
+        font-size: var(--accelance-display-2-size-mobile);
+        line-height: var(--accelance-display-2-lh-mobile);
+    }
+    .acc-heading-1 {
+        font-size: var(--accelance-heading-1-size-mobile);
+        line-height: var(--accelance-heading-1-lh-mobile);
+    }
+    .acc-heading-2 {
+        font-size: var(--accelance-heading-2-size-mobile);
+        line-height: var(--accelance-heading-2-lh-mobile);
+    }
+    .acc-heading-3 {
+        font-size: var(--accelance-heading-3-size-mobile);
+        line-height: var(--accelance-heading-3-lh-mobile);
+    }
+    .acc-body-1 {
+        font-size: var(--accelance-body-1-size-mobile);
+        line-height: var(--accelance-body-1-lh-mobile);
+    }
+    .acc-body-2 {
+        font-size: var(--accelance-body-2-size-mobile);
+        line-height: var(--accelance-body-2-lh-mobile);
+    }
+}

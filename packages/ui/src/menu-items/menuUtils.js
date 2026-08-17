@@ -16,20 +16,34 @@ export const isMenuItemVisible = (menu, hasPermission, hasDisplay) => {
     return true
 }
 
-// Returns only the groups (and, within each, only the children) the current user can see.
+// Returns only the groups (and, within each, only the children) the current user can see, with
+// each group's defaultItemId (menu-items/dashboard.js) sorted to the top of its list — it's the
+// item a section tab jumps to, so it should also be the first thing you see for that section.
 export const getVisibleMenuGroups = (hasPermission, hasDisplay) =>
     getMenuGroups()
-        .map((group) => ({
-            ...group,
-            children: group.children.filter((child) => isMenuItemVisible(child, hasPermission, hasDisplay))
-        }))
+        .map((group) => {
+            const children = group.children.filter((child) => isMenuItemVisible(child, hasPermission, hasDisplay))
+            const defaultIndex = children.findIndex((child) => child.id === group.defaultItemId)
+            if (defaultIndex > 0) {
+                const [defaultChild] = children.splice(defaultIndex, 1)
+                children.unshift(defaultChild)
+            }
+            return { ...group, children }
+        })
         .filter((group) => group.children.length > 0)
 
 // Which group owns the current route, matched by the first path segment against each
 // child item's url (e.g. '/document-stores/abc' -> '/document-stores' -> that item's group).
 export const findGroupIdForPath = (groups, pathname) => {
     const pathSegment = pathname.split('/')[1]
-    if (!pathSegment) return null
+    // Root ('/') renders the default landing page directly without changing the URL
+    // (routes/DefaultRedirect.jsx) — mirror NavItem's own existing root-path convention
+    // (Sidebar/MenuList/NavItem/index.jsx forces 'controlTower' selected at '/') so the section
+    // nav doesn't get stuck showing whatever group was last active before a refresh.
+    if (!pathSegment) {
+        const owningGroup = groups.find((group) => group.children.some((child) => child.id === 'controlTower'))
+        return owningGroup?.id ?? null
+    }
     const owningGroup = groups.find((group) => group.children.some((child) => child.url?.split('/')[1] === pathSegment))
     return owningGroup?.id ?? null
 }

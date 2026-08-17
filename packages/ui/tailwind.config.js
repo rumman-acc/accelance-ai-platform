@@ -18,12 +18,17 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                primary: { DEFAULT: '#0052CC', dark: '#003A8F' },
+                // Envoy brand (design-system/tokens.json, reconciled 2026-08-10) — this file
+                // still had the superseded Accelance Blue #0052CC until now, meaning every
+                // Tailwind page (landing, register, login) was rendering off-brand relative to
+                // the rest of the app's MUI theme. Kept the same token names, only fixed values.
+                primary: { DEFAULT: '#0F74BD', dark: '#062667' },
+                secondaryAccent: { DEFAULT: '#13BA2F', dark: '#0C8F22', light: '#C1FFC5' },
                 success: '#1A7A4A',
                 alert: '#D5680B',
                 compliance: '#0891B5',
                 body: '#6B6B6B',
-                tint: '#C8D8EC',
+                tint: '#D5E4FE',
                 'off-white': '#F8FAFC',
                 border: '#E2E8F0',
                 muted: '#94A3B8',
@@ -66,7 +71,7 @@ module.exports = {
                 elevated: '0 4px 12px rgba(0,0,0,0.15)'
             },
             backgroundImage: {
-                'brand-gradient': 'linear-gradient(135deg, #0052CC 0%, #003A8F 100%)'
+                'brand-gradient': 'linear-gradient(135deg, #0F74BD 0%, #062667 100%)'
             },
             maxWidth: {
                 grid: '1200px'

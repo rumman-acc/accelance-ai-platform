@@ -1,0 +1,14 @@
+/* Verbatim, see colors.css header comment for provenance. Proposed — no motion spec existed in
+   the brand handoff. */
+:root {
+    --accelance-duration-fast: 120ms;
+    --accelance-duration-base: 200ms;
+    --accelance-duration-slow: 320ms;
+    --accelance-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+    --accelance-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --accelance-transition-interactive: background-color var(--accelance-duration-base) var(--accelance-ease-standard),
+        color var(--accelance-duration-base) var(--accelance-ease-standard),
+        border-color var(--accelance-duration-base) var(--accelance-ease-standard),
+        box-shadow var(--accelance-duration-base) var(--accelance-ease-standard),
+        transform var(--accelance-duration-fast) var(--accelance-ease-standard);
+}

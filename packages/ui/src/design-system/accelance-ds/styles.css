@@ -1,0 +1,15 @@
+/* Entry point for the newer "ee18bc52" Accelance design system (see tokens/colors.css header for
+   provenance and DESIGN_SPEC.md Section 9 for the reconciliation note against the older
+   design-system/tokens.json). Deliberately imports only variable definitions + namespaced
+   classes — never the source's own base.css, which sets bare `body`/`a` rules that would leak
+   into every still-MUI page. Pages/shell built against this system apply body-level styling
+   (font-family, colors) scoped to their own root element instead, same as the source .dc.html
+   mockups do. */
+@import './tokens/fonts.css';
+@import './tokens/colors.css';
+@import './tokens/gradients.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/elevation.css';
+@import './tokens/motion.css';
+@import './tokens/type-classes.css';

@@ -1,0 +1,99 @@
+/* Hover states for the new Accelance ("ee18bc52") app shell — kept as real CSS classes rather
+   than JS-driven inline-style hover state, since inline styles can't express :hover. Matches the
+   `style-hover="..."` attributes in the source ControlTower.dc.html mockup 1:1. */
+.acc-nav-item {
+    transition: var(--accelance-transition-interactive);
+    text-decoration: none;
+}
+.acc-nav-item:hover {
+    background: var(--accelance-charcoal-50);
+    color: var(--accelance-azure-400);
+}
+
+.acc-section-tab {
+    transition: var(--accelance-transition-interactive);
+    text-decoration: none;
+}
+.acc-section-tab:hover {
+    color: var(--accelance-azure-400);
+}
+
+.acc-pill {
+    transition: var(--accelance-transition-interactive);
+}
+.acc-pill:hover {
+    border-color: var(--accelance-azure-200);
+}
+
+.acc-icon-button {
+    transition: var(--accelance-transition-interactive);
+}
+.acc-icon-button:hover {
+    background: var(--accelance-azure-100);
+}
+
+.acc-stat-tile {
+    transition: var(--accelance-transition-interactive);
+    text-decoration: none;
+}
+.acc-stat-tile:hover {
+    border-color: var(--accelance-azure-200);
+    box-shadow: var(--accelance-shadow-box);
+}
+
+.acc-table-row:hover {
+    background: var(--accelance-azure-50) !important;
+}
+
+.acc-pager-btn {
+    transition: var(--accelance-transition-interactive);
+}
+.acc-pager-btn:hover {
+    background: var(--accelance-azure-50);
+}
+
+.acc-refresh-btn {
+    transition: var(--accelance-transition-interactive);
+}
+.acc-refresh-btn:hover {
+    background: var(--accelance-azure-50);
+}
+
+.acc-open-link {
+    transition: var(--accelance-transition-interactive);
+}
+.acc-open-link:hover {
+    color: var(--accelance-azure-500);
+}
+
+/* Keyframes from the source .dc.html mockups' own <style> block — kept here once, shared by any
+   page built against this design system, instead of repeating per page. */
+@keyframes acc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes acc-rise {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+@keyframes acc-slide {
+    from {
+        transform: translateX(16px);
+        opacity: 0;
+    }
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+.acc-spin {
+    animation: acc-spin 1s linear infinite;
+}

@@ -86,9 +86,13 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     // Active menu item tracks the current route, not just the initial page load — re-runs on every
     // navigation (including a plain navigate() call that didn't originate from clicking a NavItem,
     // e.g. a Control Tower stat-tile), so the sidebar highlight never goes stale against the URL.
+    // Matched against the item's own url segment, not its id — a few items (controlTower ->
+    // /control-tower, sso -> /sso-config) have an id that doesn't literally equal their url segment,
+    // which silently left them never highlighted when navigated to directly.
     useEffect(() => {
         if (navType === 'MENU') {
-            const currentIndex = location.pathname.split('/').findIndex((id) => id === item.id)
+            const urlSegment = item.url?.split('/')[1]
+            const currentIndex = urlSegment ? location.pathname.split('/').findIndex((segment) => segment === urlSegment) : -1
             if (currentIndex > -1) {
                 dispatch({ type: MENU_OPEN, id: item.id })
             }

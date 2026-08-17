@@ -1,0 +1,81 @@
+/* Verbatim from the "accelance-design-system-ee18bc52-ef81-4433-9e6b-233c9f4b825e" Claude Design
+   project (pulled via DesignSync 2026-08-14, source: ControlTower.dc.html mockup). This is a
+   newer, more complete design system than design-system/tokens.json (pulled from a different,
+   older project, "019dd881..."), and is now the one being adopted for the app shell + newly
+   redesigned pages per the user's explicit direction ("follow this design for all pages") — see
+   DESIGN_SPEC.md Section 9 for the full reconciliation note. Do not hand-edit; re-sync via
+   DesignSync if the source project changes. */
+:root {
+    /* Azure Blue — primary brand */
+    --accelance-azure-700: #011224;
+    --accelance-azure-600: #032f52;
+    --accelance-azure-500: #075085;
+    --accelance-azure-400: #0f74bd; /* logo + primary CTA, confirmed */
+    --accelance-azure-300: #179af8;
+    --accelance-azure-200: #8fbefe;
+    --accelance-azure-100: #d5e4fe;
+    --accelance-azure-50: #ecf0fe;
+
+    /* Deep Blue — navy, headings & dark emphasis */
+    --accelance-deepblue-700: #010e31;
+    --accelance-deepblue-600: #062667;
+    --accelance-deepblue-500: #1043a8;
+    --accelance-deepblue-400: #1c62ef;
+    --accelance-deepblue-300: #6c8bfa;
+    --accelance-deepblue-200: #a5b4fc;
+    --accelance-deepblue-100: #d9defe;
+    --accelance-deepblue-50: #ecf0fe;
+
+    /* Vivid Green — secondary / positive */
+    --accelance-green-700: #011f03;
+    --accelance-green-600: #02410a;
+    --accelance-green-500: #066716;
+    --accelance-green-400: #0c8f22;
+    --accelance-green-300: #13ba2f; /* live-site headline green, confirmed */
+    --accelance-green-200: #1be63d;
+    --accelance-green-100: #c1ffc5;
+
+    /* Golden Amber — tertiary, illustration accent */
+    --accelance-amber-700: #1a0f00;
+    --accelance-amber-600: #3e2902;
+    --accelance-amber-500: #674706;
+    --accelance-amber-400: #93670d;
+    --accelance-amber-300: #c28915;
+    --accelance-amber-200: #f4ad1d;
+    --accelance-amber-100: #fedcb9;
+
+    /* Charcoal — neutrals */
+    --accelance-charcoal-700: #101112;
+    --accelance-charcoal-600: #2c2d30;
+    --accelance-charcoal-500: #4c4d51;
+    --accelance-charcoal-400: #6e7075;
+    --accelance-charcoal-300: #92959a;
+    --accelance-charcoal-200: #b9bbbe;
+    --accelance-charcoal-100: #e2e3e4;
+    --accelance-charcoal-50: #fdfeff;
+    --accelance-black: #000000;
+    --accelance-white: #ffffff;
+
+    /* Semantic aliases */
+    --accelance-color-brand-primary: var(--accelance-azure-400);
+    --accelance-color-brand-secondary: var(--accelance-green-300);
+    --accelance-color-success: var(--accelance-green-400); /* proposed */
+    --accelance-color-warning: var(--accelance-amber-300); /* proposed */
+    /* --accelance-color-danger: UNDEFINED — no red ramp exists in the source. Open gap. */
+
+    --accelance-text-primary: var(--accelance-charcoal-600);
+    --accelance-text-secondary: var(--accelance-charcoal-400);
+    --accelance-text-muted: var(--accelance-charcoal-300);
+    --accelance-text-heading: var(--accelance-deepblue-600);
+    --accelance-text-accent: var(--accelance-azure-400);
+    --accelance-text-on-dark: var(--accelance-white);
+
+    --accelance-surface-page: var(--accelance-white);
+    --accelance-surface-card: var(--accelance-white);
+    --accelance-surface-subtle: var(--accelance-azure-50);
+    --accelance-surface-dark: var(--accelance-deepblue-600);
+
+    --accelance-border-subtle: var(--accelance-charcoal-100);
+    --accelance-border-strong: var(--accelance-charcoal-200);
+    --accelance-border-accent: var(--accelance-azure-400);
+}

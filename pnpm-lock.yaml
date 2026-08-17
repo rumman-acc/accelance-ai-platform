@@ -1447,6 +1447,9 @@ importers:
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
+      lucide-react:
+        specifier: ^1.31.0
+        version: 1.31.0(react@18.2.0)
       moment:
         specifier: ^2.29.3
         version: 2.30.1
@@ -15708,6 +15711,11 @@ packages:
   lru.min@1.1.1:
     resolution: {integrity: sha512-FbAj6lXil6t8z4z3j0E5mfRlPzxkySotzUHwRXjlpRh10vc6AI6WN62ehZj82VG7M20rqogJ0GLwar2Xa05a8Q==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
+
+  lucide-react@1.31.0:
+    resolution: {integrity: sha512-G8u2eEtoHUnUa9f8lbvqDhCiORMnYLdUEo06EEG9MQvHQrInKcX3Pa2TH39MM5qyzRcWETxB0+aOwAPI1g1kEg==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   lunary@0.7.12:
     resolution: {integrity: sha512-ruEJaV2Jjw50l34RAgYG+9YYzsIZk3mmUklAp0Zpuk0trxbjOKAPEnovMGQJesEokf9+qdloq+Z0pG+cwFbAtw==}
@@ -41415,6 +41423,10 @@ snapshots:
   lru-cache@9.1.2: {}
 
   lru.min@1.1.1: {}
+
+  lucide-react@1.31.0(react@18.2.0):
+    dependencies:
+      react: 18.2.0
 
   lunary@0.7.12(openai@6.19.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@4.3.6))(react@18.3.1):
     dependencies:

@@ -467,12 +467,16 @@ still need the design conversation's input and are logged as open in Section 9.
 
 Anything the design conversation hasn't resolved yet — flagged here so Claude Code knows NOT to implement that part yet, and so it doesn't invent an answer silently.
 
-- **Tech-stack gap:** the current frontend (`packages/ui`) is MUI + `@tabler/icons-react`, a
-  Flowise-derived codebase (matching route names, menu structure, even a hardcoded
-  `docs.flowiseai.com` link) — not Tailwind/shadcn as Section 1 states as the constraint and goal
-  ("not look like flowise ui"). This is a from-scratch visual/component rebuild, not an incremental
-  reskin. Needs confirmation before migration-checklist.md is built, since it changes scope/effort
-  per page substantially.
+- **Tech-stack gap — partially resolved 2026-08-13:** the current frontend (`packages/ui`) is MUI +
+  `@tabler/icons-react`, a Flowise-derived codebase — not Tailwind/shadcn as Section 1 states as the
+  constraint/goal. Rows 1-23 answered this for the *existing* app with a conservative MUI re-skin
+  (recolor to brand tokens, no rewrite). **User decision (2026-08-13): pages inside the platform now
+  get a full Tailwind/shadcn rebuild from the real Claude Design mockups, same treatment as
+  landing/register/login (rows 18/19), rather than the conservative re-skin** — starting with
+  Control Tower (migration-checklist.md row 24). MUI and Tailwind now intentionally coexist across
+  the authenticated app shell (MUI chrome: header/sidebar; Tailwind content: migrated pages) until
+  more pages are migrated one at a time. Still open: no stated order/timeline for the remaining
+  pages beyond "one at a time, per the checklist."
 - **Duplicate agent-flow canvases — decided 2026-07-27:** `/agentcanvas` (v1, reuses the chatflow
   canvas) and `/v2/agentcanvas` (`views/agentflowsv2/`, a separate newer implementation) coexisted
   with no stated canonical one. **User decision: v2 is canonical** going forward
@@ -588,6 +592,46 @@ Anything the design conversation hasn't resolved yet — flagged here so Claude 
   request, rather than only filtering the list in place. The "Build" group was renamed **"Studio"**
   at the user's request — Section 2's "Group 1 — Build" label above is now stale; flagging rather
   than editing Section 2 directly per this file's header rule.
+- **`tailwind.config.js` had the superseded Accelance Blue, found 2026-08-13 while rebuilding
+  Control Tower:** the config's `primary`/`tint`/`brand-gradient` values (`#0052CC`/`#003A8F`/
+  `#C8D8EC`) were never updated when `design-system/tokens.json` was reconciled to the Envoy brand
+  (row 19's note above) — meaning the already-shipped `/get-started` landing page had been
+  rendering off-brand this whole time. Fixed to the real Envoy values (`#0F74BD`/`#062667`/
+  `#D5E4FE`) plus the missing `secondaryAccent` token; same Tailwind class names, values only, so
+  landing/register/login need no code changes to pick up the correct colors on next build.
+- **Control Tower's 5 stat tiles only have 4 confirmed metric tones to draw from:**
+  `design-system/tokens.json`/`component-inventory.md`'s MetricCard only defines
+  primary/success/alert/compliance. "Awaiting Approval" and "Needs Attention" (migration-
+  checklist.md row 24) share `alert` rather than a design conversation inventing a 5th tone here —
+  differentiated by icon/label. Revisit if a real 5-tone (or more) metric palette is ever defined.
+- **App shell + Control Tower rebuilt again, 2026-08-14, against a real mockup this time
+  (migration-checklist.md row 26) — supersedes rows 1/23/24's approach, not this file's content:**
+  the user provided `ControlTower.dc.html`, their own hand-designed mockup, via a **different,
+  newer Claude Design project** ("Platform page design planning",
+  `f29a73f7-9f82-447b-8807-26f0eae5d58e`) importing tokens from
+  `accelance-design-system-ee18bc52-ef81-4433-9e6b-233c9f4b825e` — the same newer system row 19
+  already used, and a different, richer system than "019dd881" (the one `design-system/tokens.json`
+  and every row 1-24 component were built against). Per the user's explicit direction ("follow
+  this design for all pages"), and because the mockup itself includes the full header+sidebar
+  chrome rather than just page content, this became an app-shell rebuild: new
+  `design-system/accelance-shell/` (`AccelanceHeader.jsx`, `AccelanceSidebar.jsx`) replaced the
+  MUI `Header`/`Sidebar` in `MainLayout`, reusing row 23's `useMenuSections.js` logic unchanged —
+  only the visual layer changed. **This system ships raw CSS custom properties, not Tailwind** —
+  copied into `design-system/accelance-ds/tokens/*.css`, imported once app-wide, deliberately
+  excluding the source's own `base.css` element-level rules (would have recolored/refonted every
+  still-MUI page). **Icon library changed to Lucide** for this system's markup (`lucide-react`,
+  new dependency) — a documented departure from tokens.json's Tabler-only rule, since the ee18bc52
+  system's own readme flags Lucide as its (unconfirmed) icon choice, not the 019dd881 system's.
+  `design-system/tokens.json`/`tailwind.config.js` and the `design-system/components/ui/*`
+  Tailwind layer are **unaffected** — they remain the system for pages not yet touched by this
+  newer mockup track (landing/register/login, and any future page not given a real mockup).
+  **Two deliberate deviations from the mockup:** no checkbox/bulk-select column on Control
+  Tower's table (nothing in the real app performs a bulk action on executions); the real
+  `ExecutionDetails` drawer was kept instead of the mockup's own drawer, which shows a "run trace"
+  step timeline with no backing data model. **Known gap:** the mockup has no responsive/mobile
+  treatment (explicit `min-width: 1320px`); the old shell's mobile hamburger/temporary-drawer
+  behavior was not carried over — there is currently no mobile experience for the authenticated
+  app. The old MUI Header/Sidebar files are left in place, unused, not deleted.
 
 ## 10. Changelog
 

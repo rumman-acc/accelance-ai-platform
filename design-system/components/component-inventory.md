@@ -65,11 +65,17 @@
 ## Data (`components/data/`)
 
 ### Table
+- **Implemented:** `design-system/components/ui/table.jsx` (migration-checklist.md row 24, Control Tower)
 - **Anatomy:** blue header row, white bold header text, alternating row shading, horizontal borders only (no vertical), tint on row hover
+- **Props beyond the source spec:** `onRowClick`, `getRowKey` — additive, needed for list pages with row-click-to-open-detail (e.g. Control Tower's executions list); cell values may be any node, matching the source spec's own `<AgentStatus/>`-in-a-cell usage. `columns` entries may also be `{ label, key }` (sortable, paired with `sortBy`/`sortDirection`/`onSort`) — the component only renders the indicator/reports clicks, the caller still owns sorting `rows`. `maxHeightClassName` bounds the table to a scrollable region with a sticky header, so a long list scrolls in place instead of growing the whole page.
 
 ### MetricCard
+- **Implemented:** `design-system/components/ui/metric-card.jsx` (migration-checklist.md row 24, Control Tower)
 - **Anatomy:** big number (48px bold), label, optional icon
 - **Variants (tone):** `success` (green) for positive results
+- **Additive prop beyond the source spec:** `size="sm"` (36px number, 32px icon circle) for dense
+  multi-column rows (5+ across) where the full 48px treatment would dominate the page — default
+  `size="lg"` still matches the source spec exactly
 
 ### CalloutBox
 - Tinted (light-blue), borderless — for risks/assumptions/key notes
@@ -107,6 +113,37 @@
   it reuses TopNav's and Sidebar's individually-validated states/tokens rather than inventing new
   ones. See DESIGN_SPEC.md Section 9 for the full note. Colors resolve through `theme.palette.primary`
   (the app's real Envoy brand), not the design system's literal Accelance-Blue `#0052CC`.
+- **Superseded visually, 2026-08-14** — see AccelanceHeader/AccelanceSidebar below. The
+  logic/state this SectionNav entry documents (`useMenuSections.js`, `defaultItemId` navigation)
+  is unchanged and still exactly what's running; only the rendered header/sidebar chrome changed.
+
+### AccelanceHeader / AccelanceSidebar — status: draft, pending design review
+- **Implemented:** `packages/ui/src/design-system/accelance-shell/` (`AccelanceHeader.jsx`,
+  `AccelanceSidebar.jsx`, `icons.js`, `shell.css`), wired into `layout/MainLayout/index.jsx` in
+  place of the old MUI `Header`/`Sidebar` (migration-checklist.md row 26, 2026-08-14)
+- **Source:** a real hand-designed mockup (`ControlTower.dc.html`, Claude Design project "Platform
+  page design planning" `f29a73f7-9f82-447b-8807-26f0eae5d58e`, importing design tokens from
+  `accelance-design-system-ee18bc52-ef81-4433-9e6b-233c9f4b825e`) — **not** the "019dd881" system
+  the rest of this inventory (Button/Card/Icon/Table/MetricCard above) was pulled from. This is
+  the same newer system row 19's Envoy Auth rebuild used.
+- **Anatomy:** header — 3-bar mark + "envoy" wordmark, section tabs (bold + azure underline when
+  active), org/workspace pill chips, azure-tinted settings-gear icon-circle (profile menu
+  trigger). Sidebar — flat list of the active section's items, active item = rounded-12,
+  azure-tinted pill (not TopNav/Sidebar's underline/left-bar — a different active-state recipe,
+  confirmed correct for this design system, not a bug)
+- **Reuses, doesn't rebuild:** `hooks/useMenuSections.js` for section/sidebar data
+  (unchanged from the SectionNav entry above); `OrgWorkspaceBreadcrumbs`/`ProfileSection` for
+  org-switching/logout logic, via an additive `variant="accelance"` prop that only overrides
+  their chip/avatar `sx` — their actual API calls and dropdown logic are untouched
+- **Icon library: Lucide** (`lucide-react`, new dependency), not Tabler — a deliberate departure
+  from the Icon entry above's "never mix icon sets" rule, because this is a different design
+  system with its own explicit (if self-described as unconfirmed) icon choice. `icons.js` maps
+  `menu-items/dashboard.js` ids to Lucide components; only the "Studio" group + 3 section tabs are
+  confirmed against the actual mockup, the rest are a reasonable guess pending a real mockup.
+- **Known gap:** no responsive/mobile treatment — the source mockup has `min-width: 1320px` and no
+  mobile design; the old shell's hamburger/temporary-drawer behavior was not carried over.
+- **Do not build a third header/sidebar** — if a future mockup refines this, edit these files
+  in place rather than adding a parallel implementation.
 
 ## Feedback (`components/feedback/`)
 

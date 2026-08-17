@@ -210,8 +210,22 @@ ImportDialog.propTypes = {
 
 // ==============================|| PROFILE MENU ||============================== //
 
-const ProfileSection = ({ handleLogout }) => {
+// Matches ControlTower.dc.html's settings-gear icon-circle (azure-tinted, fully round) — an sx
+// override on top of the existing Avatar trigger, same pattern as OrgWorkspaceBreadcrumbs'
+// ACCELANCE_CHIP_SX; the dropdown menu below (export/import/version/account/logout) is unchanged.
+const ACCELANCE_TRIGGER_SX = {
+    borderRadius: '999px !important',
+    background: 'var(--accelance-azure-50)',
+    color: 'var(--accelance-azure-400)',
+    '&:hover': {
+        background: 'var(--accelance-azure-100)',
+        color: 'var(--accelance-azure-400)'
+    }
+}
+
+const ProfileSection = ({ handleLogout, variant }) => {
     const theme = useTheme()
+    const triggerSx = variant === 'accelance' ? ACCELANCE_TRIGGER_SX : undefined
 
     const customization = useSelector((state) => state.customization)
 
@@ -398,7 +412,8 @@ const ProfileSection = ({ handleLogout }) => {
                         '&:hover': {
                             background: theme.palette.primary.main,
                             color: theme.palette.primary.light
-                        }
+                        },
+                        ...triggerSx
                     }}
                     onClick={handleToggle}
                     color='inherit'
@@ -538,7 +553,8 @@ const ProfileSection = ({ handleLogout }) => {
 }
 
 ProfileSection.propTypes = {
-    handleLogout: PropTypes.func
+    handleLogout: PropTypes.func,
+    variant: PropTypes.oneOf(['accelance'])
 }
 
 export default ProfileSection

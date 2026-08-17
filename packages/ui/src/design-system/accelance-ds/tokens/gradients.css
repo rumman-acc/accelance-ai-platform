@@ -1,0 +1,36 @@
+/* Verbatim, see colors.css header comment for provenance. */
+:root {
+    --accelance-gradient-text-brand: linear-gradient(90deg, var(--accelance-azure-400) 0%, var(--accelance-deepblue-600) 100%);
+    --accelance-gradient-brand: linear-gradient(135deg, var(--accelance-azure-400) 0%, var(--accelance-green-300) 100%);
+
+    --accelance-gradient-blue-drift: linear-gradient(
+        45deg,
+        rgba(236, 240, 254, 0.5) 0%,
+        rgba(226, 227, 228, 0.5) 50%,
+        rgba(236, 240, 254, 0.5) 100%
+    );
+    --accelance-gradient-soft-horizon: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(226, 227, 228, 0.3) 60%,
+        rgba(236, 240, 254, 0.5) 100%
+    );
+    --accelance-gradient-glass: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.75) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0.75) 100%
+    );
+    --accelance-gradient-skyline-mist-1: linear-gradient(90deg, rgba(236, 240, 254, 0.75) 0%, rgba(226, 227, 228, 0.75) 100%);
+    --accelance-gradient-skyline-mist-2: linear-gradient(180deg, rgba(236, 240, 254, 0.5) 0%, rgba(226, 227, 228, 0.5) 100%);
+    --accelance-gradient-skyline-mist-3: linear-gradient(90deg, rgba(236, 240, 254, 0.5) 0%, rgba(226, 227, 228, 0.5) 100%);
+
+    --accelance-gradient-soft-horizon-stroke: linear-gradient(45deg, rgba(6, 38, 103, 0.3) 0%, rgba(15, 116, 189, 0.3) 100%);
+    --accelance-gradient-glass-stroke: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(236, 240, 254, 0.45) 50%,
+        rgba(255, 255, 255, 0.8) 100%
+    );
+    --accelance-gradient-skyline-mist-2-stroke: linear-gradient(45deg, rgba(236, 240, 254, 0.3) 0%, rgba(226, 227, 228, 0.3) 100%);
+}

@@ -1,0 +1,72 @@
+/* Verbatim, see colors.css header comment for provenance. */
+:root {
+    --accelance-font-primary: 'Lexend', sans-serif;
+    --accelance-font-office-fallback: 'Arial', sans-serif;
+    --accelance-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --accelance-weight-light: 300;
+    --accelance-weight-regular: 400;
+    --accelance-weight-medium: 500;
+    --accelance-weight-bold: 700;
+
+    --accelance-display-1-size: 76px;
+    --accelance-display-1-lh: 94px;
+    --accelance-display-1-weight: 700;
+    --accelance-display-2-size: 60px;
+    --accelance-display-2-lh: 72px;
+    --accelance-display-2-weight: 700;
+    --accelance-heading-1-size: 56px;
+    --accelance-heading-1-lh: 70px;
+    --accelance-heading-1-weight: 500;
+    --accelance-heading-2-size: 48px;
+    --accelance-heading-2-lh: 60px;
+    --accelance-heading-2-weight: 300;
+    --accelance-heading-3-size: 32px;
+    --accelance-heading-3-lh: 40px;
+    --accelance-heading-3-weight: 300;
+    --accelance-section-heading-size: 20px;
+    --accelance-section-heading-lh: 32px;
+    --accelance-section-heading-weight: 300;
+    --accelance-subsection-heading-size: 12px;
+    --accelance-subsection-heading-lh: 20px;
+    --accelance-subsection-heading-weight: 300;
+    --accelance-tab-text-size: 24px;
+    --accelance-tab-text-lh: 36px;
+    --accelance-tab-text-weight: 300;
+    --accelance-body-1-size: 20px;
+    --accelance-body-1-lh: 32px;
+    --accelance-body-1-weight: 300;
+    --accelance-body-2-size: 16px;
+    --accelance-body-2-lh: 24px;
+    --accelance-body-2-weight: 300;
+    --accelance-body-3-size: 16px;
+    --accelance-body-3-lh: 24px;
+    --accelance-body-3-weight: 500;
+    --accelance-button-1-size: 20px;
+    --accelance-button-1-lh: 32px;
+    --accelance-button-1-weight: 300;
+    --accelance-button-2-size: 16px;
+    --accelance-button-2-lh: 24px;
+    --accelance-button-2-weight: 500;
+
+    --accelance-display-1-size-mobile: 32px;
+    --accelance-display-1-lh-mobile: 48px;
+    --accelance-display-2-size-mobile: 28px;
+    --accelance-display-2-lh-mobile: 36px;
+    --accelance-heading-1-size-mobile: 28px;
+    --accelance-heading-1-lh-mobile: 36px;
+    --accelance-heading-2-size-mobile: 24px;
+    --accelance-heading-2-lh-mobile: 32px;
+    --accelance-heading-3-size-mobile: 20px;
+    --accelance-heading-3-lh-mobile: 28px;
+    --accelance-section-heading-size-mobile: 16px;
+    --accelance-section-heading-lh-mobile: 24px;
+    --accelance-tab-text-size-mobile: 16px;
+    --accelance-tab-text-lh-mobile: 24px;
+    --accelance-body-1-size-mobile: 16px;
+    --accelance-body-1-lh-mobile: 24px;
+    --accelance-body-2-size-mobile: 12px;
+    --accelance-body-2-lh-mobile: 20px;
+    --accelance-button-2-size-mobile: 10px;
+    --accelance-button-2-lh-mobile: 16px;
+}

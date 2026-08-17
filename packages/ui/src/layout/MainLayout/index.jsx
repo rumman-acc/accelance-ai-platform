@@ -1,103 +1,56 @@
-import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'
-import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
+import { Box, CssBaseline } from '@mui/material'
 
 // project imports
-import Header from './Header'
-import Sidebar from './Sidebar'
-import { drawerWidth, headerHeight } from '@/store/constant'
-import { SET_MENU } from '@/store/actions'
+import AccelanceHeader from '@/design-system/accelance-shell/AccelanceHeader'
+import AccelanceSidebar from '@/design-system/accelance-shell/AccelanceSidebar'
 
 // styles
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+// theme.typography.mainContent's ambient padding is kept — every not-yet-migrated MUI page still
+// depends on it for its own page padding (see migration-checklist.md row 24's follow-up: Control
+// Tower's rebuild double-padded when it also added its own). But its marginTop/marginRight/
+// minHeight were sized for the *old* layout's `position: fixed` AppBar (marginTop: 75px pushed
+// content out from under a header that overlaid the page) — AccelanceHeader is a normal in-flow
+// flex item now, nothing overlays anything, so that margin was pure dead space above every page's
+// heading. Overridden back out here rather than in the shared theme value, since nothing else
+// reads theme.typography.mainContent.
+const Main = styled('main')(({ theme }) => ({
     ...theme.typography.mainContent,
-    ...(!open && {
-        backgroundColor: 'transparent',
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-        transition: theme.transitions.create('all', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen
-        }),
-        marginRight: 0,
-        [theme.breakpoints.up('md')]: {
-            marginLeft: -drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`
-        },
-        [theme.breakpoints.down('md')]: {
-            marginLeft: '20px',
-            width: `calc(100% - ${drawerWidth}px)`,
-            padding: '16px'
-        },
-        [theme.breakpoints.down('sm')]: {
-            marginLeft: '10px',
-            width: `calc(100% - ${drawerWidth}px)`,
-            padding: '16px',
-            marginRight: '10px'
-        }
-    }),
-    ...(open && {
-        backgroundColor: 'transparent',
-        transition: theme.transitions.create('all', {
-            easing: theme.transitions.easing.easeOut,
-            duration: theme.transitions.duration.enteringScreen
-        }),
-        marginLeft: 0,
-        marginRight: 0,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-        width: `calc(100% - ${drawerWidth}px)`
-    })
+    marginTop: 0,
+    marginRight: 0,
+    minHeight: 'auto',
+    flex: 1,
+    minWidth: 0,
+    overflowY: 'auto',
+    background: 'var(--accelance-white)'
 }))
 
 // ==============================|| MAIN LAYOUT ||============================== //
-
+// App shell rebuilt to match ControlTower.dc.html (pulled via DesignSync 2026-08-14), at the
+// user's explicit direction to use that design for the whole app, not just Control Tower's own
+// content — see design-system/accelance-shell/ and DESIGN_SPEC.md Section 9. The old MUI
+// Header/Sidebar (this file's previous AppBar+Drawer+SET_MENU-toggle implementation,
+// migration-checklist.md rows 1/23) are left in place, unused, for reference/rollback rather than
+// deleted — Sidebar.jsx, Header/index.jsx, and everything under Sidebar/MenuList/ no longer have
+// any import path into the running app. The source mockup has no responsive/mobile treatment
+// (explicit `min-width: 1320px` on its own root) — the old layout's hamburger-toggle/temporary-
+// drawer mobile behavior is not carried over; this is a known, flagged gap, not a silent drop.
 const MainLayout = () => {
     const theme = useTheme()
-    const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
-
-    // Handle left drawer
-    const leftDrawerOpened = useSelector((state) => state.customization.opened)
-    const dispatch = useDispatch()
-    const handleLeftDrawerToggle = () => {
-        dispatch({ type: SET_MENU, opened: !leftDrawerOpened })
-    }
-
-    useEffect(() => {
-        setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [matchDownMd])
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
             <CssBaseline />
-            {/* header */}
-            <AppBar
-                enableColorOnDark
-                position='fixed'
-                color='inherit'
-                elevation={0}
-                sx={{
-                    bgcolor: theme.palette.background.default,
-                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
-                }}
-            >
-                <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.grey[900] + 25 }}>
-                    <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
-                </Toolbar>
-            </AppBar>
-
-            {/* drawer */}
-            <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />
-
-            {/* main content */}
-            <Main theme={theme} open={leftDrawerOpened}>
-                <Outlet />
-            </Main>
+            <AccelanceHeader />
+            <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}>
+                <AccelanceSidebar />
+                <Main theme={theme}>
+                    <Outlet />
+                </Main>
+            </Box>
         </Box>
     )
 }

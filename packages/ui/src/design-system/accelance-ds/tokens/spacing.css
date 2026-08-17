@@ -1,0 +1,37 @@
+/* Verbatim, see colors.css header comment for provenance. Tablet values are undefined in the
+   source and are NOT invented here — tablet inherits mobile spacing until confirmed. */
+:root {
+    --accelance-space-1: 64px;
+    --accelance-space-1-mobile: 32px; /* main sectional */
+    --accelance-space-2: 48px;
+    --accelance-space-2-mobile: 24px; /* section elements */
+    --accelance-space-3: 32px;
+    --accelance-space-3-mobile: 16px; /* sub-section elements */
+    --accelance-space-4: 24px;
+    --accelance-space-4-mobile: 12px; /* heading & paragraph */
+    --accelance-space-5: 16px;
+    --accelance-space-5-mobile: 8px; /* paragraph */
+    --accelance-space-6: 8px;
+    --accelance-space-6-mobile: 4px; /* other small */
+
+    --accelance-pad-section: 64px;
+    --accelance-pad-section-mobile: 32px;
+    --accelance-pad-box: 48px;
+    --accelance-pad-box-mobile: 24px;
+    --accelance-pad-tiles: 32px;
+    --accelance-pad-tiles-mobile: 16px;
+    --accelance-pad-cards: 24px;
+    --accelance-pad-cards-mobile: 12px;
+
+    --accelance-grid-desktop-columns: 12;
+    --accelance-grid-desktop-margin: 48px;
+    --accelance-grid-desktop-gutter: 8px;
+    --accelance-grid-tablet-columns: 8;
+    --accelance-grid-tablet-margin: 32px;
+    --accelance-grid-tablet-gutter: 8px;
+    --accelance-grid-mobile-columns: 4;
+    --accelance-grid-mobile-margin: 32px;
+    --accelance-grid-mobile-gutter: 8px;
+
+    --accelance-container-max: 1440px;
+}
