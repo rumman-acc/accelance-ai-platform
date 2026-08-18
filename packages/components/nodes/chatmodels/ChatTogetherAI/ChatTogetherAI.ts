@@ -41,7 +41,7 @@ class ChatTogetherAI_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'mixtral-8x7b-32768',
+                placeholder: 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8',
                 description: 'Refer to <a target="_blank" href="https://docs.together.ai/docs/inference-models">models</a> page'
             },
             {

@@ -50,7 +50,7 @@ class ChatOllama_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'llama2'
+                placeholder: 'llama3.2'
             },
             {
                 label: 'Temperature',

@@ -42,7 +42,7 @@ class ChatXAI_ChatModels implements INode {
                 label: 'Model',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'grok-beta'
+                placeholder: 'grok-4'
             },
             {
                 label: 'Temperature',
@@ -68,14 +68,6 @@ class ChatXAI_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
-            },
-            {
-                label: 'Max Tokens',
-                name: 'maxTokens',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
             },
             {
                 label: 'Max Tokens',

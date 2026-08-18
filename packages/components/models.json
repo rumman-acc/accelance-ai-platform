@@ -1193,10 +1193,39 @@
             "name": "chatAlibabaTongyi",
             "models": [
                 {
+                    "label": "qwen-turbo",
+                    "name": "qwen-turbo",
+                    "description": "Fast, cost-effective model",
+                    "input_cost": 0.00000005,
+                    "output_cost": 0.0000002
+                },
+                {
                     "label": "qwen-plus",
                     "name": "qwen-plus",
-                    "input_cost": 0.0016,
-                    "output_cost": 0.0064
+                    "description": "Balanced performance and cost",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.0000012
+                },
+                {
+                    "label": "qwen-max",
+                    "name": "qwen-max",
+                    "description": "Flagship model for complex tasks",
+                    "input_cost": 0.0000016,
+                    "output_cost": 0.0000064
+                },
+                {
+                    "label": "qwen3-coder-plus",
+                    "name": "qwen3-coder-plus",
+                    "description": "Code generation specialist",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.0000024
+                },
+                {
+                    "label": "qwen-long",
+                    "name": "qwen-long",
+                    "description": "Long-context model",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000006
                 }
             ]
         },
@@ -1572,12 +1601,20 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "openai/gpt-oss-120b",
+                    "name": "openai/gpt-oss-120b"
+                },
+                {
                     "label": "openai/gpt-oss-20b",
                     "name": "openai/gpt-oss-20b"
                 },
                 {
-                    "label": "openai/gpt-oss-120b",
-                    "name": "openai/gpt-oss-120b"
+                    "label": "moonshotai/kimi-k2-thinking",
+                    "name": "moonshotai/kimi-k2-thinking"
+                },
+                {
+                    "label": "moonshotai/kimi-k2-instruct-0905",
+                    "name": "moonshotai/kimi-k2-instruct-0905"
                 },
                 {
                     "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
@@ -1586,6 +1623,10 @@
                 {
                     "label": "meta-llama/llama-4-scout-17b-16e-instruct",
                     "name": "meta-llama/llama-4-scout-17b-16e-instruct"
+                },
+                {
+                    "label": "qwen/qwen3-32b",
+                    "name": "qwen/qwen3-32b"
                 },
                 {
                     "label": "compound-beta",
@@ -1604,48 +1645,12 @@
                     "name": "llama-3.3-70b-versatile"
                 },
                 {
-                    "label": "llama-3.3-70b-specdec",
-                    "name": "llama-3.3-70b-specdec"
-                },
-                {
-                    "label": "llama-3.2-1b-preview",
-                    "name": "llama-3.2-1b-preview"
-                },
-                {
-                    "label": "llama-3.2-3b-preview",
-                    "name": "llama-3.2-3b-preview"
-                },
-                {
-                    "label": "llama-3.2-11b-text-preview",
-                    "name": "llama-3.2-11b-text-preview"
-                },
-                {
-                    "label": "llama-3.2-90b-text-preview",
-                    "name": "llama-3.2-90b-text-preview"
-                },
-                {
                     "label": "llama-3.1-8b-instant",
                     "name": "llama-3.1-8b-instant"
                 },
                 {
-                    "label": "gemma-2-9b-it",
-                    "name": "gemma-2-9b-it"
-                },
-                {
-                    "label": "llama3-70b-8192",
-                    "name": "llama3-70b-8192"
-                },
-                {
-                    "label": "llama3-8b-8192",
-                    "name": "llama3-8b-8192"
-                },
-                {
-                    "label": "mixtral-saba-24b",
-                    "name": "mixtral-saba-24b"
-                },
-                {
-                    "label": "qwen-qwq-32b",
-                    "name": "qwen-qwq-32b"
+                    "label": "gemma2-9b-it",
+                    "name": "gemma2-9b-it"
                 },
                 {
                     "label": "allam-2-7b",
@@ -1702,6 +1707,11 @@
                     "description": "Best for complex reasoning and long-form content"
                 },
                 {
+                    "label": "qwen-3-235b-a22b-instruct",
+                    "name": "qwen-3-235b-a22b-instruct",
+                    "description": "Large-scale flagship reasoning and instruction following"
+                },
+                {
                     "label": "qwen-3-32b",
                     "name": "qwen-3-32b",
                     "description": "Balanced performance for general-purpose tasks"
@@ -1715,6 +1725,11 @@
                     "label": "gpt-oss-120b",
                     "name": "gpt-oss-120b",
                     "description": "Largest model for demanding tasks"
+                },
+                {
+                    "label": "gpt-oss-20b",
+                    "name": "gpt-oss-20b",
+                    "description": "Compact open-weight model for demanding tasks at lower cost"
                 },
                 {
                     "label": "zai-glm-4.7",
@@ -2179,59 +2194,115 @@
             "name": "chatMistralAI",
             "models": [
                 {
-                    "label": "open-mistral-nemo",
-                    "name": "open-mistral-nemo",
-                    "input_cost": 0.00000015,
-                    "output_cost": 0.00000015
+                    "label": "mistral-large-latest",
+                    "name": "mistral-large-latest",
+                    "description": "Mistral's flagship model, Large 3 generation",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
                 },
                 {
-                    "label": "open-mistral-7b",
-                    "name": "open-mistral-7b",
-                    "input_cost": 0.00000025,
-                    "output_cost": 0.00000025
+                    "label": "mistral-medium-latest",
+                    "name": "mistral-medium-latest",
+                    "description": "Balanced performance and cost",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000003
                 },
                 {
-                    "label": "mistral-tiny-2312",
-                    "name": "mistral-tiny-2312",
-                    "input_cost": 0.0000007,
-                    "output_cost": 0.0000007
+                    "label": "mistral-small-latest",
+                    "name": "mistral-small-latest",
+                    "description": "Cost-efficient, low-latency model",
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000003
                 },
                 {
-                    "label": "mistral-tiny",
-                    "name": "mistral-tiny",
-                    "input_cost": 0.0000007,
-                    "output_cost": 0.0000007
-                },
-                {
-                    "label": "open-mixtral-8x7b",
-                    "name": "open-mixtral-8x7b",
-                    "input_cost": 0.0000007,
-                    "output_cost": 0.0000007
-                },
-                {
-                    "label": "open-mixtral-8x22b",
-                    "name": "open-mixtral-8x22b",
+                    "label": "magistral-medium-latest",
+                    "name": "magistral-medium-latest",
+                    "description": "Reasoning model for complex, multi-step tasks",
                     "input_cost": 0.000002,
                     "output_cost": 0.000006
                 },
                 {
-                    "label": "mistral-small-2312",
-                    "name": "mistral-small-2312",
+                    "label": "magistral-small-latest",
+                    "name": "magistral-small-latest",
+                    "description": "Compact reasoning model",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "devstral-medium-latest",
+                    "name": "devstral-medium-latest",
+                    "description": "Coding agent model",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "devstral-small-latest",
+                    "name": "devstral-small-latest",
+                    "description": "Compact coding agent model",
                     "input_cost": 0.0000001,
                     "output_cost": 0.0000003
                 },
                 {
-                    "label": "mistral-small",
-                    "name": "mistral-small",
+                    "label": "codestral-latest",
+                    "name": "codestral-latest",
+                    "description": "Code generation and completion specialist",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000006
+                },
+                {
+                    "label": "pixtral-large-latest",
+                    "name": "pixtral-large-latest",
+                    "description": "Multimodal (text, image) flagship model",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000009
+                },
+                {
+                    "label": "pixtral-12b-latest",
+                    "name": "pixtral-12b-latest",
+                    "description": "Compact multimodal (text, image) model",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.00000015
+                },
+                {
+                    "label": "ministral-8b-latest",
+                    "name": "ministral-8b-latest",
+                    "description": "Edge/on-device model",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.00000015
+                },
+                {
+                    "label": "ministral-3b-latest",
+                    "name": "ministral-3b-latest",
+                    "description": "Smallest edge/on-device model",
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000001
+                },
+                {
+                    "label": "voxtral-small-latest",
+                    "name": "voxtral-small-latest",
+                    "description": "Speech and text model",
                     "input_cost": 0.0000001,
                     "output_cost": 0.0000003
                 },
                 {
-                    "label": "mistral-small-2402",
-                    "name": "mistral-small-2402",
-                    "input_cost": 0.0000001,
-                    "output_cost": 0.0000003
+                    "label": "voxtral-mini-latest",
+                    "name": "voxtral-mini-latest",
+                    "description": "Compact speech and text model",
+                    "input_cost": 0.00000004,
+                    "output_cost": 0.00000004
                 },
+                {
+                    "label": "open-mistral-nemo",
+                    "name": "open-mistral-nemo",
+                    "description": "Open-weight general purpose model",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.00000015
+                }
+            ]
+        },
+        {
+            "name": "chatMistral_LlamaIndex",
+            "models": [
                 {
                     "label": "mistral-small-latest",
                     "name": "mistral-small-latest",
@@ -2245,63 +2316,57 @@
                     "output_cost": 0.000003
                 },
                 {
-                    "label": "mistral-medium-2312",
-                    "name": "mistral-medium-2312",
-                    "input_cost": 0.000001,
-                    "output_cost": 0.000003
-                },
-                {
-                    "label": "mistral-medium",
-                    "name": "mistral-medium",
-                    "input_cost": 0.000001,
-                    "output_cost": 0.000003
-                },
-                {
                     "label": "mistral-large-latest",
                     "name": "mistral-large-latest",
-                    "input_cost": 0.000002,
-                    "output_cost": 0.000006
-                },
-                {
-                    "label": "mistral-large-2402",
-                    "name": "mistral-large-2402",
-                    "input_cost": 0.000002,
-                    "output_cost": 0.000006
-                },
-                {
-                    "label": "codestral-latest",
-                    "name": "codestral-latest",
-                    "input_cost": 0.0000002,
-                    "output_cost": 0.0000006
-                },
-                {
-                    "label": "devstral-small-2505",
-                    "name": "devstral-small-2505",
-                    "input_cost": 0.0000001,
-                    "output_cost": 0.0000003
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
                 }
             ]
         },
         {
-            "name": "chatMistral_LlamaIndex",
+            "name": "chatMoonshot",
             "models": [
                 {
-                    "label": "mistral-tiny",
-                    "name": "mistral-tiny",
-                    "input_cost": 0.0007,
-                    "output_cost": 0.0007
+                    "label": "kimi-k2.5",
+                    "name": "kimi-k2.5",
+                    "description": "Moonshot's flagship multimodal (text, image) model",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.000003
                 },
                 {
-                    "label": "mistral-small",
-                    "name": "mistral-small",
-                    "input_cost": 0.0001,
-                    "output_cost": 0.0003
+                    "label": "kimi-k2-thinking",
+                    "name": "kimi-k2-thinking",
+                    "description": "Extended reasoning model for complex, multi-step tasks",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.0000025
                 },
                 {
-                    "label": "mistral-medium",
-                    "name": "mistral-medium",
-                    "input_cost": 0.001,
-                    "output_cost": 0.003
+                    "label": "kimi-k2-0905-preview",
+                    "name": "kimi-k2-0905-preview",
+                    "description": "Kimi K2 base model, agentic tool use",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "moonshot-v1-128k",
+                    "name": "moonshot-v1-128k",
+                    "description": "General purpose, 128K context",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.0000006
+                },
+                {
+                    "label": "moonshot-v1-32k",
+                    "name": "moonshot-v1-32k",
+                    "description": "General purpose, 32K context",
+                    "input_cost": 0.0000003,
+                    "output_cost": 0.0000003
+                },
+                {
+                    "label": "moonshot-v1-8k",
+                    "name": "moonshot-v1-8k",
+                    "description": "General purpose, 8K context",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000002
                 }
             ]
         }

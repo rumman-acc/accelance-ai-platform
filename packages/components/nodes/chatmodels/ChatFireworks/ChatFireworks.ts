@@ -41,8 +41,8 @@ class ChatFireworks_ChatModels implements INode {
                 label: 'Model',
                 name: 'modelName',
                 type: 'string',
-                default: 'accounts/fireworks/models/llama-v3p1-8b-instruct',
-                placeholder: 'accounts/fireworks/models/llama-v3p1-8b-instruct'
+                default: 'accounts/fireworks/models/llama4-maverick-instruct-basic',
+                placeholder: 'accounts/fireworks/models/llama4-maverick-instruct-basic'
             },
             {
                 label: 'Temperature',
