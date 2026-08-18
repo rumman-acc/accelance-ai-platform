@@ -62,6 +62,7 @@ import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerService
 import { UsageCacheManager } from '../UsageCacheManager'
 import { generateTTSForResponseStream, shouldAutoPlayTTS } from './buildChatflow'
 import { InternalAccelanceError } from '../errors/internalAccelanceError'
+import guardrailsService from '../services/guardrails'
 import { StatusCodes } from 'http-status-codes'
 
 interface IWaitingNode {
@@ -1924,6 +1925,14 @@ export const executeAgentFlow = async ({
 
     const maxIterations = process.env.MAX_ITERATIONS ? parseInt(process.env.MAX_ITERATIONS) : 1000
 
+    // Loop & Recursion Detection guardrail: an admin-configurable, per-workspace/agent step budget
+    // layered on top of the existing MAX_ITERATIONS platform-wide ceiling above (which stays as the
+    // absolute circuit breaker). Resolved once here, not inside the loop, to avoid a DB round-trip
+    // per iteration.
+    const loopGuardrail = await guardrailsService.evaluate(workspaceId, chatflowid, 'loop_recursion_detection')
+    const loopGuardrailMaxSteps: number =
+        loopGuardrail.enabled && typeof loopGuardrail.config?.maxSteps === 'number' ? loopGuardrail.config.maxSteps : Infinity
+
     // Get chat history from ChatMessage table
     const pastChatHistory = (await appDataSource
         .getRepository(ChatMessage)
@@ -2040,6 +2049,11 @@ export const executeAgentFlow = async ({
 
         if (iterations++ > maxIterations) {
             throw new Error('Maximum iteration limit reached')
+        }
+        if (iterations > loopGuardrailMaxSteps) {
+            throw new Error(
+                `Loop & Recursion Detection: this agent exceeded its configured step budget (${loopGuardrailMaxSteps}). Raise it in the Guardrails settings if this flow legitimately needs more steps.`
+            )
         }
 
         const currentNode = nodeExecutionQueue.shift()

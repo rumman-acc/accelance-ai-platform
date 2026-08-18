@@ -182,6 +182,48 @@ export interface IAgentToolPolicy {
     updatedDate: Date
 }
 
+export interface IGuardrailCatalogItem {
+    id: string
+    key: string
+    name: string
+    description: string
+    kind: string
+    category: string
+    nodeNames?: string
+    enforcementStatus: string
+    configSchema?: string
+    defaultConfig?: string
+    isStandard: boolean
+    workspaceId?: string
+    createdBy?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
+export interface IAuditLog {
+    id: string
+    workspaceId: string
+    userId?: string
+    action: string
+    targetType: string
+    targetId?: string
+    metadata?: string
+    createdDate: Date
+}
+
+export interface IGuardrailPolicy {
+    id: string
+    workspaceId: string
+    /** '' (empty string) means workspace-wide default -- see GuardrailPolicy entity comment. */
+    chatflowId: string
+    catalogKey: string
+    enabled: boolean
+    config?: string
+    createdBy?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
 export interface IVariable {
     id: string
     name: string

@@ -73,6 +73,7 @@ import { executeAgentFlow } from './buildAgentflow'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
 import { Organization } from '../enterprise/database/entities/organization.entity'
 import { mergeAnalyticsConfig } from '../enterprise/utils/organizationAnalytics'
+import { checkPreflightGuardrails, resolveTrustedToolCallerUserId } from './preflightGuardrails'
 
 const shouldAutoPlayTTS = (textToSpeechConfig: string | undefined | null): boolean => {
     if (!textToSpeechConfig) return false
@@ -1049,6 +1050,30 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         }
         const workspaceId = workspace.id
 
+        // Guardrails pre-flight: Topic & Action Scoping / Spend & Token Budgets. Covers every flow
+        // type (classic/multi-agent/sequential/AgentFlow V2) since they all route through here first.
+        const preflight = await checkPreflightGuardrails({
+            appDataSource: appServer.AppDataSource,
+            workspaceId,
+            chatflowId: chatflow.id,
+            chatId,
+            question: incomingInput.question || '',
+            chatType
+        })
+        if (preflight.blocked) {
+            return preflight.result
+        }
+
+        // Confused-deputy prevention: only trusted (verified-membership) when the target workspace
+        // has the guardrail enabled -- see preflightGuardrails.ts for the verification itself.
+        const trustedToolCallerUserId = await resolveTrustedToolCallerUserId(
+            appServer.AppDataSource,
+            workspaceId,
+            chatflow.id,
+            isTool,
+            req.get('x-original-user-id')
+        )
+
         const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
             id: workspace.organizationId
         })
@@ -1085,7 +1110,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             workspaceId,
             subscriptionId,
             productId,
-            userId: req.user?.id
+            userId: req.user?.id ?? trustedToolCallerUserId
         }
 
         if (process.env.MODE === MODE.QUEUE) {

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useSelector } from 'react-redux'
 import { Box, Dialog, DialogContent, DialogTitle, Typography, IconButton } from '@mui/material'
@@ -18,7 +18,8 @@ import {
     IconChartBar,
     IconCode,
     IconServer,
-    IconAdjustments
+    IconAdjustments,
+    IconShieldCheck
 } from '@tabler/icons-react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
@@ -36,6 +37,7 @@ import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
 import McpServer from '@/ui-component/extended/McpServer'
+import GuardrailsCompliance from '@/ui-component/extended/GuardrailsCompliance'
 
 const CONFIGURATION_GROUPS = [
     {
@@ -104,6 +106,17 @@ const CONFIGURATION_GROUPS = [
                 id: 'fileUpload',
                 icon: IconUpload,
                 description: 'Allow file uploads in chat'
+            }
+        ]
+    },
+    {
+        label: 'Guardrails',
+        sections: [
+            {
+                label: 'Guardrails',
+                id: 'guardrailsCompliance',
+                icon: IconShieldCheck,
+                description: 'Content moderation, PII redaction, tool allowlist, and other runtime safety policies applied to this agent'
             }
         ]
     },
@@ -225,7 +238,16 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const customization = useSelector((state) => state.customization)
 
-    const [activeSection, setActiveSection] = useState('rateLimit')
+    const [activeSection, setActiveSection] = useState(dialogProps?.defaultSectionId || 'rateLimit')
+
+    // A new dialogProps.defaultSectionId (e.g. from the canvas header's shield button) should jump
+    // straight to that section even if the dialog instance was already mounted with a different one.
+    useEffect(() => {
+        if (dialogProps?.defaultSectionId) {
+            setActiveSection(dialogProps.defaultSectionId)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dialogProps?.defaultSectionId, show])
 
     const isDark = theme.palette.mode === 'dark' || customization?.isDarkMode
 
@@ -273,6 +295,8 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                 return <PostProcessing {...props} />
             case 'mcpServer':
                 return <McpServer {...props} />
+            case 'guardrailsCompliance':
+                return <GuardrailsCompliance hideTitle />
             case 'overrideConfig':
                 return <OverrideConfig {...props} hideTitle />
             default:

@@ -46,6 +46,11 @@ import { AddCreatedByToCredential1779000000003 } from './1779000000003-AddCreate
 import { AddCredentialAccessEntity1780000000003 } from './1780000000003-AddCredentialAccessEntity'
 import { AddAgentToolPolicyEntity1781000000003 } from './1781000000003-AddAgentToolPolicyEntity'
 import { AddToolCallAuditEntity1782000000003 } from './1782000000003-AddToolCallAuditEntity'
+import { AddGuardrailCatalogItemEntity1783000000003 } from './1783000000003-AddGuardrailCatalogItemEntity'
+import { AddGuardrailPolicyEntity1784000000003 } from './1784000000003-AddGuardrailPolicyEntity'
+import { AddGuardrailCatalogItemBatch2_1785000000003 } from './1785000000003-AddGuardrailCatalogItemBatch2'
+import { GuardrailCatalogBatch3Enforcement1786000000003 } from './1786000000003-GuardrailCatalogBatch3Enforcement'
+import { AddAuditLogEntity1787000000003 } from './1787000000003-AddAuditLogEntity'
 import { AddCustomMcpServerStdioTransport1790000000000 } from './1790000000000-AddCustomMcpServerStdioTransport'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
@@ -125,6 +130,11 @@ export const sqliteMigrations = [
     AddCredentialAccessEntity1780000000003,
     AddAgentToolPolicyEntity1781000000003,
     AddToolCallAuditEntity1782000000003,
+    AddGuardrailCatalogItemEntity1783000000003,
+    AddGuardrailPolicyEntity1784000000003,
+    AddGuardrailCatalogItemBatch2_1785000000003,
+    GuardrailCatalogBatch3Enforcement1786000000003,
+    AddAuditLogEntity1787000000003,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000,

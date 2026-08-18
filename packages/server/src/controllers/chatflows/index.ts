@@ -6,6 +6,7 @@ import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../../enterpris
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import apiKeyService from '../../services/apikey'
+import auditLogService from '../../services/audit-log'
 import chatflowsService from '../../services/chatflows'
 import credentialAccessService from '../../services/credential-access'
 import scheduleService from '../../services/schedule'
@@ -85,6 +86,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
                 throw new InternalAccelanceError(StatusCodes.FORBIDDEN, `You do not have permission to delete any chatflow types`)
         }
         const apiResponse = await chatflowsService.deleteChatflow(req.params.id, orgId, workspaceId, userPermittedTypes)
+        await auditLogService.record(workspaceId, req.user?.id, 'chatflow.delete', 'ChatFlow', req.params.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

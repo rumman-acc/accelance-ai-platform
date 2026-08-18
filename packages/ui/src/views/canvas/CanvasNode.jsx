@@ -17,7 +17,7 @@ import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
 
 // const
 import { baseURL } from '@/store/constant'
-import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
+import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle, IconShieldCheck } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
@@ -181,6 +181,22 @@ const CanvasNode = ({ data }) => {
                                 </Typography>
                             </Box>
                             <div style={{ flexGrow: 1 }}></div>
+                            {data.category === 'Moderation' && (
+                                <Tooltip title='Guardrail node -- see Guardrails & Compliance in canvas Settings' placement='top'>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            borderRadius: '50%',
+                                            p: 1,
+                                            mr: 1,
+                                            color: '#16a34a'
+                                        }}
+                                    >
+                                        <IconShieldCheck size={20} stroke={1.5} />
+                                    </Box>
+                                </Tooltip>
+                            )}
                             {data.tags && data.tags.includes('LlamaIndex') && (
                                 <>
                                     <div

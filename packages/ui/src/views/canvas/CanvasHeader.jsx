@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme, styled, alpha } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, Switch, TextField, Button, Tooltip } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, Switch, TextField, Button, Tooltip, Badge } from '@mui/material'
 
 // icons
 import {
@@ -16,7 +16,8 @@ import {
     IconCheck,
     IconX,
     IconCode,
-    IconAlertTriangleFilled
+    IconAlertTriangleFilled,
+    IconShieldCheck
 } from '@tabler/icons-react'
 
 // project imports
@@ -32,6 +33,7 @@ import { Available } from '@/ui-component/rbac/available'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import guardrailsApi from '@/api/guardrails'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -141,6 +143,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     const [upsertHistoryDialogProps, setUpsertHistoryDialogProps] = useState({})
     const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
     const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
+    const [guardrailActiveCount, setGuardrailActiveCount] = useState(0)
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
@@ -223,6 +226,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             setChatflowConfigurationDialogProps({
                 title: `${title} Configuration`,
                 chatflow: chatflow
+            })
+            setChatflowConfigurationDialogOpen(true)
+        } else if (setting === 'guardrailsCompliance') {
+            setChatflowConfigurationDialogProps({
+                title: `${title} Configuration`,
+                chatflow: chatflow,
+                defaultSectionId: 'guardrailsCompliance'
             })
             setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
@@ -347,6 +357,19 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         setSavePermission(isAgentCanvas ? 'agentflows:update' : 'chatflows:update')
         handleSaveFlow(flowName)
     }
+
+    useEffect(() => {
+        if (!chatflow?.id) {
+            setGuardrailActiveCount(0)
+            return
+        }
+        guardrailsApi
+            .getSummary(chatflow.id)
+            .then((res) => setGuardrailActiveCount(res.data?.activeCount ?? 0))
+            .catch(() => setGuardrailActiveCount(0))
+        // Re-fetch when the configuration panel closes too, in case a toggle changed inside it.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chatflow?.id, chatflowConfigurationDialogOpen])
 
     useEffect(() => {
         if (updateChatflowApi.data) {
@@ -588,6 +611,35 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 )}
                             </Box>
                         </Tooltip>
+                    )}
+                    {chatflow?.id && (
+                        <ButtonBase title='Guardrails' sx={{ borderRadius: '50%', mr: 2 }}>
+                            <Badge
+                                badgeContent={guardrailActiveCount}
+                                color='primary'
+                                invisible={guardrailActiveCount === 0}
+                                overlap='circular'
+                            >
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.canvasHeader.settingsLight,
+                                        color: theme.palette.canvasHeader.settingsDark,
+                                        '&:hover': {
+                                            background: theme.palette.canvasHeader.settingsDark,
+                                            color: theme.palette.canvasHeader.settingsLight
+                                        }
+                                    }}
+                                    color='inherit'
+                                    onClick={() => onSettingsItemClick('guardrailsCompliance')}
+                                >
+                                    <IconShieldCheck stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </Badge>
+                        </ButtonBase>
                     )}
                     {chatflow?.id && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>

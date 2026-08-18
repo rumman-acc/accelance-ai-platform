@@ -1,4 +1,6 @@
 ﻿import { Document } from '@langchain/core/documents'
+import guardrailsService from '../guardrails'
+import { redactContent } from '../../utils/contentRedaction'
 import {
     addArrayFilesToStorage,
     addSingleFileToStorage,
@@ -505,6 +507,17 @@ const editDocumentStoreFileChunk = async (
         if (!editChunk) {
             throw new InternalAccelanceError(StatusCodes.NOT_FOUND, `Document Chunk ${chunkId} not found`)
         }
+
+        // Memory & RAG Write Validation guardrail: covers manual chunk edits, the one write path
+        // that doesn't cross a worker-thread boundary. Bulk loader-driven ingestion (the harder,
+        // worker-thread-based path) is NOT covered by this first pass -- see
+        // rules/epics-feature-status.md §9 for that gap.
+        const ragCheck = await guardrailsService.evaluate(workspaceId, '', 'memory_rag_write_validation')
+        if (ragCheck.enabled) {
+            const extraPatterns: string[] = Array.isArray(ragCheck.config?.patterns) ? ragCheck.config!.patterns : []
+            content = redactContent(content, { patterns: extraPatterns })
+        }
+
         found.totalChars -= editChunk.pageContent.length
         editChunk.pageContent = content
         editChunk.metadata = JSON.stringify(metadata)

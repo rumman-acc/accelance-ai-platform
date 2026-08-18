@@ -106,7 +106,7 @@ them — Qdrant or Neo4j.
 
 - Visual builder for single-flow Agents (route `/chatflows`) and multi-agent Agent Swarms (route `/agentflows`, drag-and-drop canvas) — renamed from "Chatflow(s)"/"Agentflow(s)" in the UI; the code-level identifiers (`chatflowId`, `agentflowId`, route paths) were deliberately left unchanged
 - Multi-agent orchestration: supervisor/worker pattern, sequential state-machine agents, Agentflow V2 engine — user-facing as "Agent Swarm" (conditions, loops, human-input checkpoints)
-- 200+ LangChain-based node integrations — chat models (29 providers, including self-hosted Ollama/LocalAI), embeddings, vector stores, document loaders, tools
+- 200+ LangChain-based node integrations — chat models (30 providers, including self-hosted Ollama/LocalAI), embeddings, vector stores, document loaders, tools
 - Flow execution engine with SSE streaming
 - Document Store + vector search (RAG pipeline)
 - Encrypted credential store + OAuth2 for tool auth
@@ -249,6 +249,47 @@ in the graph. So the two wrap sites are: `utils/index.ts` `buildFlow` (right aft
 `newNodeInstance.init()`, gated on `category === 'Tools'`) and `Tool.ts`'s own `init()` call.
 `buildAgentGraph.ts` needed no changes — it only consumes tool instances `buildFlow` already
 wrapped. `ToolCallAudit` (new entity) logs every allow/deny; DLP content redaction was not built.
+
+**Update (2026-08-17):** built the Guardrails & Compliance catalog on top of the `AgentToolPolicy`
+pattern above, per a design discussion that settled two things first: (1) guardrails split into
+`kind:'node'` (canvas-visible, position matters — e.g. Content Moderation) and `kind:'policy'`
+(no canvas position, engine-enforced everywhere — e.g. PII redaction, the existing Tool Allowlist),
+listed together in one catalog but handled differently in the UI; (2) true Compliance items (audit
+log, data retention, certifications) are org/workspace admin settings, not agent-scoped, and were
+explicitly kept OUT of this catalog — they don't fit the node/policy model. New entities
+`GuardrailCatalogItem` (the DB-backed catalog itself — seeded by migration with 5 standard entries,
+not hardcoded into `packages/components`, same reasoning as the MCP registry browser/Composio
+importer) and `GuardrailPolicy` (per-workspace/per-agent enable state, same `chatflowId=''`
+sentinel + most-specific-match-wins convention as `AgentToolPolicy`, except the no-match default is
+OFF rather than permissive-allow, since a disabled guardrail isn't the kind of regression a
+silently-blocked tool call would be). `services/guardrails` merges catalog + policy + a scan of the
+chatflow's `flowData` node names into one effective-state view (`GET /guardrails/summary/:chatflowId`)
+for the new canvas-side "Guardrails & Compliance" panel (`ui-component/extended/
+GuardrailsCompliance.jsx`, a new group in `ChatflowConfigurationDialog`) and the shield-icon+count
+badge in `CanvasHeader.jsx`. Tool Allowlist is surfaced in that summary read-only by querying the
+existing `AgentToolPolicy` table directly rather than duplicating it into `GuardrailPolicy`. Real
+enforcement was wired for exactly one new guardrail in this pass — **PII redaction**
+(`utils/contentRedaction.ts`, regex-based: email/phone/SSN/card presets + custom pattern list from a
+policy's config), called from `utils/addChatMesage.ts` before every chat message save, gated behind
+the `pii_redaction` policy being enabled (off by default). Prompt-injection defense and topic/action
+scoping are seeded into the catalog as `enforcementStatus:'planned'` for visibility only — their
+policy toggle is disabled in the UI so enabling one can't silently do nothing. **Not built**: a
+workspace-level admin screen for setting defaults (the `/guardrails/policy` endpoint already
+supports omitting `chatflowId` to set one, just no dedicated UI page yet — only the per-agent canvas
+view built here).
+
+**Update (2026-08-17, cont'd):** built that missing workspace-level screen — `views/guardrails/index.jsx`,
+routed at `/guardrails`, added to the sidebar under Studio (next to Tools) via `menu-items/dashboard.js`,
+gated on the same `guardrails:view`/`guardrails:manage` permissions as the canvas panel. No new backend
+routes were needed: it calls the existing `GET /guardrails/catalog` and `GET /guardrails/policy` (no
+`chatflowId` → returns every policy row in the workspace, both the `chatflowId=''` workspace-wide rows
+and every per-agent override) and filters client-side to the `chatflowId=''` rows for the "workspace
+default" toggle state, while counting the non-`''` enabled rows per catalog key into an "Overridden by N
+agents" chip — visibility into per-agent overrides without a new endpoint. Toggling here calls the same
+`POST /guardrails/policy` with no `chatflowId`, which the service already treats as the `WORKSPACE_WIDE`
+sentinel. Verified end-to-end in a real browser against the running dev server: toggled PII Detection &
+Redaction's workspace default on (`chatflowId:""` in the request body, confirmed in the response) and
+back off, chip updated correctly both times, zero console errors.
 
 **Update (2026-08-12):** the AgentFlow V2 natural-language "Generate" feature
 (`packages/server/src/services/agentflowv2-generator`, `packages/components/src/

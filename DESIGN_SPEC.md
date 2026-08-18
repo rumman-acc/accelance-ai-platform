@@ -502,6 +502,12 @@ Anything the design conversation hasn't resolved yet — flagged here so Claude 
   dark-mode toggle is removed from the migrated header (migration-checklist.md row 1). This is logged
   here, not silently dropped: the design conversation may still want to design a real dark palette
   later, at which point the toggle can be reintroduced against real tokens.
+- **Guardrails & Compliance panel colors — gap found 2026-08-17:** the new
+  `GuardrailsCompliance.jsx` component (canvas Settings dialog) needed status/source chip colors
+  (workspace default / overridden / on canvas / off) with no equivalent in either Claude Design
+  source project or `design-system/tokens.json`; shipped with ad hoc hex values, logged in
+  `design-system/components/component-inventory.md` under a new "Guardrails" draft section —
+  needs a design-conversation pass to map onto real tokens rather than the ad hoc set used now.
 - **Brand tokens lack a full tonal ramp — gap found during Row 1 implementation (2026-07-27):**
   `design-system/tokens.json` defines only a single main+dark value per color (primary, success,
   alert, compliance), but MUI's (and most component libraries') palette structure expects a fuller

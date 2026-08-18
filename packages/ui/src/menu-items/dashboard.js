@@ -26,7 +26,9 @@ import {
     IconListCheck,
     IconGauge,
     IconLayoutGrid,
-    IconFlask
+    IconFlask,
+    IconShieldCheck,
+    IconCertificate
 } from '@tabler/icons-react'
 
 // constant
@@ -57,7 +59,9 @@ const icons = {
     IconListCheck,
     IconGauge,
     IconLayoutGrid,
-    IconFlask
+    IconFlask,
+    IconShieldCheck,
+    IconCertificate
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -137,6 +141,24 @@ const dashboard = {
                     icon: icons.IconTool,
                     breadcrumbs: true,
                     permission: 'tools:view'
+                },
+                {
+                    id: 'guardrails',
+                    title: 'Guardrails',
+                    type: 'item',
+                    url: '/guardrails',
+                    icon: icons.IconShieldCheck,
+                    breadcrumbs: true,
+                    permission: 'guardrails:view'
+                },
+                {
+                    id: 'compliance',
+                    title: 'Compliance',
+                    type: 'item',
+                    url: '/compliance',
+                    icon: icons.IconCertificate,
+                    breadcrumbs: true,
+                    permission: 'guardrails:view'
                 },
                 {
                     id: 'credentials',

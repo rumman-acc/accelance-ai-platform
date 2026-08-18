@@ -50,6 +50,11 @@ import { AddCreatedByToCredential1779000000002 } from './1779000000002-AddCreate
 import { AddCredentialAccessEntity1780000000002 } from './1780000000002-AddCredentialAccessEntity'
 import { AddAgentToolPolicyEntity1781000000002 } from './1781000000002-AddAgentToolPolicyEntity'
 import { AddToolCallAuditEntity1782000000002 } from './1782000000002-AddToolCallAuditEntity'
+import { AddGuardrailCatalogItemEntity1783000000002 } from './1783000000002-AddGuardrailCatalogItemEntity'
+import { AddGuardrailPolicyEntity1784000000002 } from './1784000000002-AddGuardrailPolicyEntity'
+import { AddGuardrailCatalogItemBatch2_1785000000002 } from './1785000000002-AddGuardrailCatalogItemBatch2'
+import { GuardrailCatalogBatch3Enforcement1786000000002 } from './1786000000002-GuardrailCatalogBatch3Enforcement'
+import { AddAuditLogEntity1787000000002 } from './1787000000002-AddAuditLogEntity'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
 
@@ -129,6 +134,11 @@ export const mariadbMigrations = [
     AddCredentialAccessEntity1780000000002,
     AddAgentToolPolicyEntity1781000000002,
     AddToolCallAuditEntity1782000000002,
+    AddGuardrailCatalogItemEntity1783000000002,
+    AddGuardrailPolicyEntity1784000000002,
+    AddGuardrailCatalogItemBatch2_1785000000002,
+    GuardrailCatalogBatch3Enforcement1786000000002,
+    AddAuditLogEntity1787000000002,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000
 ]

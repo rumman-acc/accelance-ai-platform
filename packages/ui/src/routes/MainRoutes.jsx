@@ -22,6 +22,10 @@ const APIKey = Loadable(lazy(() => import('@/views/apikey')))
 // tools routing
 const Tools = Loadable(lazy(() => import('@/views/tools')))
 
+// guardrails & compliance routing
+const Guardrails = Loadable(lazy(() => import('@/views/guardrails')))
+const Compliance = Loadable(lazy(() => import('@/views/compliance')))
+
 // assistants routing
 const Assistants = Loadable(lazy(() => import('@/views/assistants')))
 const OpenAIAssistantLayout = Loadable(lazy(() => import('@/views/assistants/openai/OpenAIAssistantLayout')))
@@ -133,6 +137,22 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'tools:view'}>
                     <Tools />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/guardrails',
+            element: (
+                <RequireAuth permission={'guardrails:view'}>
+                    <Guardrails />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/compliance',
+            element: (
+                <RequireAuth permission={'guardrails:view'}>
+                    <Compliance />
                 </RequireAuth>
             )
         },

@@ -3,6 +3,7 @@ import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import apikeyRouter from './apikey'
 import assistantsRouter from './assistants'
 import attachmentsRouter from './attachments'
+import auditLogRouter from './audit-log'
 import chatMessageRouter from './chat-messages'
 import chatflowsRouter from './chatflows'
 import chatflowsStreamingRouter from './chatflows-streaming'
@@ -24,6 +25,7 @@ import feedbackRouter from './feedback'
 import fetchLinksRouter from './fetch-links'
 import flowConfigRouter from './flow-config'
 import getUploadFileRouter from './get-upload-file'
+import guardrailsRouter from './guardrails'
 import internalChatmessagesRouter from './internal-chat-messages'
 import internalPredictionRouter from './internal-predictions'
 import leadsRouter from './leads'
@@ -93,6 +95,8 @@ router.use('/control-tower', controlTowerRouter)
 router.use('/credentials', credentialsRouter)
 router.use('/credential-access', credentialAccessRouter)
 router.use('/tool-policy', toolPolicyRouter)
+router.use('/guardrails', guardrailsRouter)
+router.use('/audit-log', auditLogRouter)
 router.use('/datasets', IdentityManager.checkFeatureByPlan('feat:datasets'), datasetRouter)
 router.use('/document-store', documentStoreRouter)
 router.use('/evaluations', IdentityManager.checkFeatureByPlan('feat:evaluations'), evaluationsRouter)

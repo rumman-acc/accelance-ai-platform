@@ -38,6 +38,11 @@ export class Permissions {
         toolsCategory.addPermission(new Permission('tools:manage-policy', 'Manage Tool Access Policy', false, true, true))
         this.categories.push(toolsCategory)
 
+        const guardrailsCategory = new PermissionCategory('guardrails')
+        guardrailsCategory.addPermission(new Permission('guardrails:view', 'View Guardrails & Compliance', true, true, true))
+        guardrailsCategory.addPermission(new Permission('guardrails:manage', 'Manage Guardrails & Compliance', false, true, true))
+        this.categories.push(guardrailsCategory)
+
         const assistantsCategory = new PermissionCategory('assistants')
         assistantsCategory.addPermission(new Permission('assistants:view', 'View', true, true, true))
         assistantsCategory.addPermission(new Permission('assistants:create', 'Create', true, true, true))

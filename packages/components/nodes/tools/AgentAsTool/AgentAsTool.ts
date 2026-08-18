@@ -194,6 +194,14 @@ class AgentAsTool_Tools implements INode {
 
         let name = _name || 'agentflow_tool'
 
+        // Thread the original triggering user's identity to the inner call so the target
+        // agentflow's own confused-deputy-prevention check (if enabled for its workspace) can
+        // verify and use it, instead of the inner call always running with no principal. The
+        // receiving end re-verifies workspace membership before trusting this -- see
+        // utils/preflightGuardrails.ts's resolveTrustedToolCallerUserId.
+        const triggeringUserId = options.userId as string | undefined
+        if (triggeringUserId) headers = { ...headers, 'x-original-user-id': triggeringUserId }
+
         return new AgentflowTool({
             name,
             baseURL,

@@ -5,6 +5,9 @@ import { AgentToolPolicy } from './AgentToolPolicy'
 import { Credential } from './Credential'
 import { CredentialAccess } from './CredentialAccess'
 import { ToolCallAudit } from './ToolCallAudit'
+import { GuardrailCatalogItem } from './GuardrailCatalogItem'
+import { GuardrailPolicy } from './GuardrailPolicy'
+import { AuditLog } from './AuditLog'
 import { Tool } from './Tool'
 import { Assistant } from './Assistant'
 import { Variable } from './Variable'
@@ -41,6 +44,9 @@ export const entities = {
     CredentialAccess,
     AgentToolPolicy,
     ToolCallAudit,
+    GuardrailCatalogItem,
+    GuardrailPolicy,
+    AuditLog,
     Tool,
     Assistant,
     Variable,

@@ -50,6 +50,11 @@ import { AddCreatedByToCredential1779000000001 } from './1779000000001-AddCreate
 import { AddCredentialAccessEntity1780000000001 } from './1780000000001-AddCredentialAccessEntity'
 import { AddAgentToolPolicyEntity1781000000001 } from './1781000000001-AddAgentToolPolicyEntity'
 import { AddToolCallAuditEntity1782000000001 } from './1782000000001-AddToolCallAuditEntity'
+import { AddGuardrailCatalogItemEntity1783000000001 } from './1783000000001-AddGuardrailCatalogItemEntity'
+import { AddGuardrailPolicyEntity1784000000001 } from './1784000000001-AddGuardrailPolicyEntity'
+import { AddGuardrailCatalogItemBatch2_1785000000001 } from './1785000000001-AddGuardrailCatalogItemBatch2'
+import { GuardrailCatalogBatch3Enforcement1786000000001 } from './1786000000001-GuardrailCatalogBatch3Enforcement'
+import { AddAuditLogEntity1787000000001 } from './1787000000001-AddAuditLogEntity'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
@@ -130,6 +135,11 @@ export const mysqlMigrations = [
     AddCredentialAccessEntity1780000000001,
     AddAgentToolPolicyEntity1781000000001,
     AddToolCallAuditEntity1782000000001,
+    AddGuardrailCatalogItemEntity1783000000001,
+    AddGuardrailPolicyEntity1784000000001,
+    AddGuardrailCatalogItemBatch2_1785000000001,
+    GuardrailCatalogBatch3Enforcement1786000000001,
+    AddAuditLogEntity1787000000001,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000

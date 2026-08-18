@@ -1,5 +1,6 @@
 import {
     Activity,
+    BadgeCheck,
     BarChart3,
     Bot,
     Braces,
@@ -56,6 +57,8 @@ export const MENU_ITEM_ICONS = {
     assistants: Bot,
     marketplaces: Store,
     tools: Wrench,
+    guardrails: ShieldCheck,
+    compliance: BadgeCheck,
     credentials: Lock,
     variables: Braces,
     apikey: KeyRound,

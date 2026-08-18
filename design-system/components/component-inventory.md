@@ -197,6 +197,36 @@
 ### Logo — updated, not new
 - Gained a `variant` prop (`'auto' | 'light' | 'dark'`, default `'auto'`) so callers can force the white-on-gradient or navy-on-white treatment independent of the app's dark-mode setting (used by AuthSplitShell's brand panel). Mark/wordmark itself unchanged (see `design-system/tokens.json` `color.logo` for the current Envoy mark spec).
 
+## Guardrails (`ui-component/extended/`) — status: draft, pending design review
+
+> Built 2026-08-17 for the new Guardrails & Compliance catalog (`rules/architecture.md`'s
+> 2026-08-17 update, `rules/epics-feature-status.md` §9). No equivalent existed in either Claude
+> Design source project, so this reuses the existing `ChatflowConfigurationDialog` section-list
+> pattern and MUI primitives already in the app rather than inventing new visual language. Added
+> here per CLAUDE.md's Gap protocol step 3; not yet reviewed back into the source design system.
+> Used in three places now (the canvas Settings dialog, the standalone `/guardrails` workspace
+> admin page, and `/compliance`'s placeholder rows — all 2026-08-17, `migration-checklist.md`
+> rows 25-27) — past the "1-2 uses before flagging" bound noted when this was first added. A
+> real design-review pass on these ad hoc colors is now overdue, not just a future flag.
+
+### GuardrailRow
+- **Implemented:** `packages/ui/src/ui-component/extended/GuardrailRow.jsx` — shared by
+  `GuardrailsCompliance.jsx` (canvas panel), `views/guardrails/index.jsx`, and
+  `views/compliance/index.jsx`, extracted 2026-08-17 after the same row markup was duplicated
+  across the first two and a layout bug (see below) had to be fixed in both places separately
+- **Anatomy:** name + wrapping row of colored badges, description, optional italic hint line,
+  optional right-aligned `SwitchInput` toggle
+- **Layout note:** the text column uses `minWidth: 0` and the badge row uses `flexWrap: 'wrap'` —
+  this is a deliberate fix for a real bug (2026-08-17), not incidental styling: without both, a
+  long title + multiple badges collapse into a single narrow flex column and wrap character-by-
+  character instead of the badges simply dropping to a new line. Don't remove either when editing
+  this component.
+- **Tokens used:** ad hoc hex values for badge colors (`#2196f3`, `#9c27b0`, `#16a34a`, `#9e9e9e`)
+  — not yet mapped to `design-system/tokens.json`, since no semantic-color slot for
+  "guardrail/compliance source/state" exists there yet.
+- **Don't:** reuse this badge color set for unrelated status displays until the design
+  conversation reviews it — picked ad hoc to ship this pass, not derived from the token system.
+
 ## Reference: full internal-app example
 
 `ui_kits/agent-console/` in the source project is a working dashboard example (approval queue, agent

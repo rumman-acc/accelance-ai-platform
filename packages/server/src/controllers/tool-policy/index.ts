@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import toolPolicyService from '../../services/tool-policy'
+import auditLogService from '../../services/audit-log'
 import { AgentToolPolicyEffect } from '../../database/entities/AgentToolPolicy'
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { StatusCodes } from 'http-status-codes'
@@ -35,6 +36,11 @@ const upsertPolicy = async (req: Request, res: Response, next: NextFunction) => 
             throw new InternalAccelanceError(StatusCodes.BAD_REQUEST, `Error: toolPolicyController.upsertPolicy - invalid effect!`)
         }
         const apiResponse = await toolPolicyService.upsertPolicy(workspaceId, chatflowId, toolNodeName, effect, req.user?.id)
+        await auditLogService.record(workspaceId, req.user?.id, 'tool_policy.upsert', 'AgentToolPolicy', apiResponse.id, {
+            toolNodeName,
+            effect,
+            chatflowId: chatflowId || null
+        })
         return res.json(apiResponse)
     } catch (error) {
         next(error)

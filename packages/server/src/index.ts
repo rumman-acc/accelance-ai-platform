@@ -24,6 +24,7 @@ import errorHandlerMiddleware from './middlewares/errors'
 import { NodesPool } from './NodesPool'
 import { QueueManager } from './queue/QueueManager'
 import { ScheduleBeat } from './schedule/ScheduleBeat'
+import { startRetentionCleanupJob } from './schedule/RetentionCleanup'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { registerModelRefreshJob, stopModelRefreshJob } from './jobs/refreshModelList'
 import { initWebhookListenerRegistry } from './services/webhook-listener'
@@ -169,6 +170,10 @@ export class App {
             // Init ScheduleBeat (works in both queue and non-queue mode)
             await ScheduleBeat.getInstance().init()
             logger.info('⏰ [server]: ScheduleBeat initialized successfully')
+
+            // Data Retention Policy guardrail: daily cleanup job, independent of ScheduleBeat
+            // (that system is for user-created flow schedules, not this system-level job)
+            startRetentionCleanupJob()
 
             registerModelRefreshJob()
 

@@ -111,6 +111,14 @@
 
 **Prevention:** When debugging "logged out after N minutes," check for a client-side idle/session timer before assuming it's the JWT/refresh-token chain — the two are independent and can coincidentally share the same duration. Any `navigate(..., { state: {...} })` redirect that's meant to explain *why* the user landed somewhere should be verified to actually be read on the receiving page, not just passed.
 
+**Follow-up (2026-08-14) — durations increased, and a real bug found while doing it:** User reported the same symptom again, this time saying the idle gap felt like only ~10 minutes. Re-checked the whole codebase for any other automatic caller of `/account/logout` or a hidden ~10-minute constant (session store TTL, rate limiter, cookie config) — found none. Same root cause as above: the 60-minute idle clock measures inactivity on the app tab specifically, and time spent working in a separate window/tool (e.g. a long debugging conversation) still counts as idle on that tab, so the *felt* gap before logout can be much shorter than 60 minutes. Not a new bug.
+
+Per explicit user request, increased both durations: `IDLE_TIMEOUT_MS` in `SessionTimeout.jsx` raised from 60 minutes to **8 hours**; `JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES` raised from 1440 (24h) to **10080 (7 days)** in `.env` / `.env.example`. Access-token lifetime (`JWT_TOKEN_EXPIRY_IN_MINUTES=60`) left untouched — it refreshes transparently and isn't user-facing.
+
+**Real bug found in the same pass:** the express-session cookie's `maxAge` in `passport/index.ts` was **hardcoded** to the `DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES` constant (1440) rather than reading `process.env.JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES`. Since both happened to be 1440 before, this was invisible — but simply bumping the env var to 7 days would NOT have actually extended sessions, because the session (which `req.user` depends on for every refresh) would still die at the old hardcoded 24h, capping the effective session length regardless of the refresh JWT's own longer expiry. Fixed by deriving the cookie's `maxAge` from the same env var the refresh JWT itself uses (`getRefreshTokenExpiryInMinutes` reads), falling back to the same default constant (now also bumped to 7 days) when unset.
+
+**Prevention (added):** Any time a token/session lifetime is read in more than one place, grep for every hardcoded copy of the old default before assuming a single env var change takes effect everywhere — `DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES` was duplicated as both "JWT fallback" and, separately, "literal session cookie maxAge," and only one of those two call sites read the env override.
+
 ---
 
 ## #009 — AgentFlow V2 "Generate" feature: Condition Agent (router) node crashes immediately with "Failed to parse a valid scenario"
@@ -148,3 +156,30 @@
 **Fix:** removed `-y`/`--yes` from `npx`'s dangerous-flags list, keeping the genuinely dangerous ones blocked. Also added `uvx` (the modern Python-package runner most pypi-based MCP servers actually use) to the command allowlist, since it was missing entirely.
 
 **Prevention:** when adding a flag to a command-allowlist/denylist-style security check, verify it's actually a *capability* the flag grants (code execution, filesystem access, network access) rather than just a *behavior* (skips a prompt, changes output format) — the two get conflated easily under a "looks scary" heuristic, and the cost of over-blocking (a whole command becomes unusable) can be as real as the cost of under-blocking.
+
+---
+
+## #012 — New sidebar item added to `menu-items/dashboard.js` with an `icon:` prop shows no icon at all, silently
+
+**Symptom:** Adding a new nav item to `menu-items/dashboard.js` (e.g. `id: 'guardrails', icon: icons.IconShieldCheck, ...`) renders with **no icon glyph and no error** — the item's text also shifts slightly left versus its siblings, since the icon slot collapses to zero width rather than showing a placeholder.
+
+**Root cause:** the sidebar actually rendered today is `packages/ui/src/design-system/accelance-shell/AccelanceSidebar.jsx` (migration-checklist.md row 26, 2026-08-14), not the classic MUI `Sidebar/MenuList/NavItem`. It reuses `menu-items/dashboard.js` for section/item *data* (via `hooks/useMenuSections.js`) but completely ignores that file's `icon:` prop — it looks up a Lucide icon by `item.id` in its own separate registry, `accelance-shell/icons.js`'s `MENU_ITEM_ICONS`. An id with no entry there renders nothing (`{Icon && <Icon .../>}`), and nothing warns you, because `item.icon` (unused) was still a perfectly valid Tabler component reference the whole time — only `MENU_ITEM_ICONS[item.id]` was missing.
+
+**Fix:** added `guardrails: ShieldCheck` and `compliance: BadgeCheck` to `MENU_ITEM_ICONS` in `accelance-shell/icons.js`.
+
+---
+
+## #013 — Several LLM-provider nodes had stale defaults, a wrong URL scheme, and a duplicate input, found while auditing the model catalog
+
+**Symptom:** Multiple small bugs found while refreshing `packages/components/models.json` (2026-08-17):
+- `ChatSambanova.ts`'s "Base Path" default was `htps://api.sambanova.ai/v1` (missing the `t`) — any user who left the default in place and didn't override it would fail to connect.
+- `ChatXAI.ts` declared the `maxTokens` number input twice (identical blocks back to back) — harmless but would render a duplicate field in the node UI.
+- `ChatXAI.ts`'s model placeholder was `grok-beta`, a long-retired model id.
+- `ChatTogetherAI.ts`'s model placeholder was `mixtral-8x7b-32768` — a Groq-style context-length-suffixed id, not a valid Together AI model id format.
+- `chatAlibabaTongyi` in `models.json` priced `qwen-plus` at `input_cost: 0.0016` — roughly 1000x every other entry in the file (all other costs are USD-per-token; this one looked like USD-per-1K-tokens left unconverted).
+
+**Root cause:** copy/paste and typo errors accumulated across separate additions to each node; nothing validates `models.json` pricing units or checks node input arrays for duplicate `name` keys.
+
+**Fix:** corrected the SambaNova URL, removed the duplicate `maxTokens` input, bumped both placeholders to current model ids (`grok-4`, a real Together AI id), and fixed the Alibaba Tongyi pricing to per-token units. See `rules/epics-feature-status.md` § 4 for the broader model-catalog refresh this was found during.
+
+**Prevention:** any new top-level sidebar item needs an entry in **both** places — `menu-items/dashboard.js` (id/url/permission/breadcrumbs; its own `icon:` prop only matters if the classic `NavItem` shell is ever reinstated) **and** `accelance-shell/icons.js`'s `MENU_ITEM_ICONS`, keyed by the same `id`, with a Lucide icon (this shell's icon library is Lucide, not Tabler — see the note already in `component-inventory.md`'s AccelanceHeader/AccelanceSidebar entry). Forgetting the second one fails silently — no console error, no broken layout, just a missing icon and a few pixels of shifted text, easy to miss in a quick glance.
