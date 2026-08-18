@@ -6,7 +6,7 @@ import { API_BASE_PATH, baseURL } from '@/store/constant'
 import { store } from '@/store'
 import { logoutSuccess } from '@/store/reducers/authSlice'
 
-const IDLE_TIMEOUT_MS = 60 * 60 * 1000
+const IDLE_TIMEOUT_MS = 8 * 60 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
 
 const SessionTimeout = () => {

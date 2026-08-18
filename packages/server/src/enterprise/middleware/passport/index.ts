@@ -35,8 +35,16 @@ const localStrategy = require('passport-local').Strategy
 
 const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 'true'
 const DEFAULT_AUTH_TOKEN_EXPIRY_IN_MINUTES = 60
-const DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES = 1440
+const DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES = 7 * 24 * 60 // 7 days
 const MILLISECONDS_PER_MINUTE = 60 * 1000
+
+// The session cookie must live at least as long as the refresh token, otherwise the session
+// (and the req.user it carries) dies first and every refresh attempt fails with "Unauthorized"
+// well before the refresh token itself actually expires.
+const configuredRefreshTokenExpiryInMinutes = Number.parseInt(process.env.JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES ?? '', 10)
+const sessionCookieMaxAgeInMinutes = Number.isFinite(configuredRefreshTokenExpiryInMinutes)
+    ? configuredRefreshTokenExpiryInMinutes
+    : DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES
 
 // Allow explicit override of cookie security settings
 // This is useful when running behind a reverse proxy/load balancer that terminates SSL
@@ -62,7 +70,7 @@ const _initializePassportMiddleware = async (app: express.Application) => {
             secure: secureCookie,
             httpOnly: true,
             sameSite: 'lax', // Add sameSite attribute
-            maxAge: DEFAULT_REFRESH_TOKEN_EXPIRY_IN_MINUTES * MILLISECONDS_PER_MINUTE
+            maxAge: sessionCookieMaxAgeInMinutes * MILLISECONDS_PER_MINUTE
         },
         rolling: true
     }

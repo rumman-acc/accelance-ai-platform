@@ -123,7 +123,7 @@ const SignInPage = () => {
 
     useEffect(() => {
         if (location.state?.reason === 'idle-timeout') {
-            setIdleTimeoutMessage("You've been signed out after 60 minutes of inactivity.")
+            setIdleTimeoutMessage("You've been signed out after 8 hours of inactivity.")
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
