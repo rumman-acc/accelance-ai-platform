@@ -951,6 +951,27 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-opus-5",
+                    "name": "claude-opus-5",
+                    "description": "Claude Opus 5 - most capable model for complex reasoning and agents",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "claude-sonnet-5",
+                    "name": "claude-sonnet-5",
+                    "description": "Claude Sonnet 5 - balanced intelligence and speed",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-fable-5",
+                    "name": "claude-fable-5",
+                    "description": "Claude Fable 5",
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.0000075
+                },
+                {
                     "label": "claude-opus-4-7",
                     "name": "claude-opus-4-7",
                     "description": "Claude 4.7 Opus",

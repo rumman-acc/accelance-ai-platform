@@ -21,8 +21,9 @@
 export const MODELS_WITHOUT_SAMPLING_PARAMS: RegExp[] = [
     // Opus 4.7, 4.8, 4.9
     /opus-4-[7-9](?:\b|-)/,
-    // Opus 5.x and beyond (single- or multi-digit major versions >= 5)
-    /opus-(?:[5-9]|\d{2,})-/
+    // Opus 5.x and beyond (single- or multi-digit major versions >= 5), including a bare
+    // major-version release like "claude-opus-5" with no trailing minor/date segment
+    /opus-(?:[5-9]|\d{2,})(?:\b|-)/
 ]
 
 /**

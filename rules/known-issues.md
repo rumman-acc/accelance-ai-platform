@@ -167,6 +167,8 @@ Per explicit user request, increased both durations: `IDLE_TIMEOUT_MS` in `Sessi
 
 **Fix:** added `guardrails: ShieldCheck` and `compliance: BadgeCheck` to `MENU_ITEM_ICONS` in `accelance-shell/icons.js`.
 
+**Prevention:** any new top-level sidebar item needs an entry in **both** places — `menu-items/dashboard.js` (id/url/permission/breadcrumbs; its own `icon:` prop only matters if the classic `NavItem` shell is ever reinstated) **and** `accelance-shell/icons.js`'s `MENU_ITEM_ICONS`, keyed by the same `id`, with a Lucide icon (this shell's icon library is Lucide, not Tabler — see the note already in `component-inventory.md`'s AccelanceHeader/AccelanceSidebar entry). Forgetting the second one fails silently — no console error, no broken layout, just a missing icon and a few pixels of shifted text, easy to miss in a quick glance.
+
 ---
 
 ## #013 — Several LLM-provider nodes had stale defaults, a wrong URL scheme, and a duplicate input, found while auditing the model catalog
@@ -182,4 +184,12 @@ Per explicit user request, increased both durations: `IDLE_TIMEOUT_MS` in `Sessi
 
 **Fix:** corrected the SambaNova URL, removed the duplicate `maxTokens` input, bumped both placeholders to current model ids (`grok-4`, a real Together AI id), and fixed the Alibaba Tongyi pricing to per-token units. See `rules/epics-feature-status.md` § 4 for the broader model-catalog refresh this was found during.
 
-**Prevention:** any new top-level sidebar item needs an entry in **both** places — `menu-items/dashboard.js` (id/url/permission/breadcrumbs; its own `icon:` prop only matters if the classic `NavItem` shell is ever reinstated) **and** `accelance-shell/icons.js`'s `MENU_ITEM_ICONS`, keyed by the same `id`, with a Lucide icon (this shell's icon library is Lucide, not Tabler — see the note already in `component-inventory.md`'s AccelanceHeader/AccelanceSidebar entry). Forgetting the second one fails silently — no console error, no broken layout, just a missing icon and a few pixels of shifted text, easy to miss in a quick glance.
+---
+
+## #014 — Anthropic (`chatAnthropic`) model catalog never had Claude 5 added, and the reasoning-feature model gate missed a matching regex case
+
+**Symptom:** The Claude picker in the AI agent-generation modal (`/v2/agentcanvas` → "What would you like to build?") only listed Opus/Sonnet 4.x snapshots (`claude-opus-4-7` down to `claude-opus-4-0`) — no Claude 5 model anywhere, even though it's the current generation.
+
+**Root cause:** `chatAnthropic` in `packages/components/models.json` was never updated when Claude 5 shipped — unlike OpenAI/Gemini, Anthropic's catalog here is hand-maintained except for the nightly `refreshModelList` job, and that job only adds/removes model ids it sees live, it doesn't get run without `MODEL_REFRESH_ANTHROPIC_API_KEY` configured. Separately, `anthropicUtils.ts`'s `MODELS_WITHOUT_SAMPLING_PARAMS` regex for "Opus 5.x and beyond" (`/opus-(?:[5-9]|\d{2,})-/`) required a trailing hyphen, so it silently failed to match a bare version id like `claude-opus-5` (no minor/date suffix) — would have kept showing `temperature`/`top_p`/`top_k` controls for a model that doesn't accept them.
+
+**Fix:** added `claude-opus-5`, `claude-sonnet-5`, and `claude-fable-5` to `chatAnthropic` in `models.json`; extended `ChatAnthropic.ts`'s Extended/Adaptive Thinking and Thinking Effort `show`/`hide` gates to include the two reasoning-capable new models; fixed the regex to `/opus-(?:[5-9]|\d{2,})(?:\b|-)/` so it matches both a bare major-version id and a dated/minor-versioned one, matching the sibling pattern for Opus 4.7+ just above it in the same file.

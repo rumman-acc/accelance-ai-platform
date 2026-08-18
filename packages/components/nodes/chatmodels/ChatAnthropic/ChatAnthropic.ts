@@ -82,7 +82,7 @@ class ChatAnthropic_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 hide: {
-                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-5', 'claude-sonnet-5', 'claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {
@@ -98,7 +98,7 @@ class ChatAnthropic_ChatModels implements INode {
                     extendedThinking: true
                 },
                 hide: {
-                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-5', 'claude-sonnet-5', 'claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {
@@ -111,7 +111,7 @@ class ChatAnthropic_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 show: {
-                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-5', 'claude-sonnet-5', 'claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {
@@ -142,7 +142,7 @@ class ChatAnthropic_ChatModels implements INode {
                 additionalParams: true,
                 show: {
                     adaptiveThinking: true,
-                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-5', 'claude-sonnet-5', 'claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {
