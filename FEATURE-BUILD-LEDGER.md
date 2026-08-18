@@ -13,7 +13,14 @@ not the same as verified in production.
 
 Status legend: ✅ Done · 🟡 Built, not configured · 🔴 To be built
 
-**Summary: 90 tracked features — 25 done · 36 built-not-configured · 29 to be built.**
+**Summary: 90 tracked features — 33 done · 39 built-not-configured · 18 to be built.** (Revised
+2026-08-18: 8 §9/§10 guardrail/compliance items moved 🔴→✅ and 3 moved 🔴→🟡 — they were already
+built and enforced, just undocumented; see `rules/known-issues.md` #015.)
+
+**Who configures what:** the ✅/🟡/🔴 status here answers "does the code exist?" — it doesn't
+say who does the remaining work. `rules/epics-feature-status.md`'s "Configuration Ownership"
+section re-sorts every non-done epic into build backlog vs. one-time platform build-out setup
+vs. end-user/tenant self-service — read that before scoping a build-out plan off this sheet.
 
 ---
 
@@ -113,24 +120,24 @@ Status legend: ✅ Done · 🟡 Built, not configured · 🔴 To be built
 | Feature | What it's for | Status | Built | Scope / what's left |
 | --- | --- | --- | --- | --- |
 | Guardrails catalog | DB-backed, browsable list of standard + custom guardrails (content moderation, PII redaction, prompt-injection defense, tool allowlist, topic scoping); per-agent canvas panel + header badge, plus a standalone `/guardrails` admin page for workspace-wide defaults and per-guardrail override counts. Split from a combined "Guardrails & Compliance" label 2026-08-17 once it was pointed out nothing compliance-related was actually behind it. | 🟡 | 95% | Built 2026-08-17 — entity/service/routes + per-agent UI panel + canvas badge + node marker + standalone workspace page, all wired to the same backend (no new routes for the page). Remaining 5%: no live-data test of the standalone page against a large multi-agent workspace, only a single test agent. |
-| Compliance (placeholder) | Separate nav item/page (`/compliance`) plainly listing the not-yet-built §10 items (Audit Log, Data Retention, Certifications, Policy Templates) as "Not yet built" — visibility only, no fake toggles. | 🔴 | 0% | Added 2026-08-17 as a UI-only placeholder so "Compliance" isn't silently conflated with Guardrails again. The 4 underlying features themselves are unchanged — see their own §10 rows below. |
+| Compliance (placeholder) | Separate nav item/page (`/compliance`) — dynamically renders every `category:'compliance'` catalog entry as a real toggleable row; only a small hardcoded `STATIC_NOT_BUILT_ITEMS` list (just Certifications) shows the static "Not yet built" badge. | 🟡 | 90% | Added 2026-08-17. 3 of its 4 underlying features shipped real enforcement 2026-08-17/18 (batch 3) and already render correctly here since the page reads the catalog dynamically, not a hardcoded list — no UI fix needed. Only Certifications is genuinely a placeholder — see their own §10 rows below. |
 | Content moderation | Blocks/flags toxic or policy-violating content. | 🟡 | 80% | Nodes exist, unused, deny-list empty. Now discoverable via the catalog above. ~1 day to wire in + populate a starter list. |
-| Prompt-injection defense | Separates trusted instructions from untrusted content an agent reads. | 🔴 | 5% | Only a manual deny-list exists. Listed in the catalog for visibility only (toggle disabled). ~3 days for a "wrap untrusted content" pattern. |
+| Prompt-injection defense | Separates trusted instructions from untrusted content an agent reads. | ✅ | 100% | Built 2026-08-17/18: every successful tool-call result is wrapped in `[UNTRUSTED TOOL OUTPUT]` delimiters (`toolPolicy.ts`) before the LLM re-reads it. Nothing to configure beyond the enable toggle. |
 | PII detection & redaction | Scans and redacts personal data before logging/storing. | 🟡 | 60% | Built 2026-08-17: regex-based redaction (email/phone/SSN/card + custom patterns) wired into every chat message save, opt-in per workspace/agent. ~2 days remaining for an NER-based pass to catch free-text PII regex misses. |
-| Topic/action scoping | Bounds what subject matter/actions an agent may touch. | 🔴 | 0% | No such bound exists. Listed in the catalog for visibility only (toggle disabled). ~3 days. |
-| Loop & recursion detection | Halts runaway loops/excessive delegation depth in multi-agent flows before they burn unbounded time or spend. | 🔴 | 0% | Added to the catalog 2026-08-17 for visibility (toggle disabled). No effort estimate sized yet. |
-| Egress filtering | Blocks/flags outbound data that could exfiltrate sensitive content via a poisoned tool call. | 🔴 | 0% | Added to the catalog 2026-08-17. Main defense against prompt-injection-driven exfiltration — nothing defends against this today. No effort estimate sized yet. |
-| Confused-deputy prevention | Stops an agent from using its own elevated privileges on behalf of a less-privileged caller. | 🔴 | 0% | Added to the catalog 2026-08-17. Distinct from the existing per-user `CredentialAccess` grant model. No effort estimate sized yet. |
-| Memory & RAG write validation | Validates content before it's written into agent memory/a document store, so poisoned input can't persist across runs. | 🔴 | 0% | Added to the catalog 2026-08-17. No effort estimate sized yet. |
+| Topic/action scoping | Bounds what subject matter/actions an agent may touch. | ✅ | 95% | Built 2026-08-17/18: pre-flight denied-topic keyword check (`preflightGuardrails.ts`) before every flow runs, seeded default list. ~1 day remaining for a UI to edit the denied-topics list beyond the seeded default. |
+| Loop & recursion detection | Halts runaway loops/excessive delegation depth in multi-agent flows before they burn unbounded time or spend. | ✅ | 100% | Built 2026-08-17/18: AgentFlow V2 execution halts past a configured `maxSteps` (default 25). |
+| Egress filtering | Blocks/flags outbound data that could exfiltrate sensitive content via a poisoned tool call. | ✅ | 90% | Built 2026-08-17/18: blocks a tool call whose args match a blocked-domain pattern (seeded SSRF baseline: loopback/link-local/metadata endpoints). ~2 days remaining to widen the default pattern set + add a config-editing UI. |
+| Confused-deputy prevention | Stops an agent from using its own elevated privileges on behalf of a less-privileged caller. | ✅ | 100% | Built 2026-08-17/18: an `AgentAsTool` inner call's claimed triggering-user id is only trusted after verifying active workspace membership. |
+| Memory & RAG write validation | Validates content before it's written into agent memory/a document store, so poisoned input can't persist across runs. | 🟡 | 70% | Built 2026-08-17/18: document-chunk writes are checked against a custom pattern denylist — but it's empty by default, so enforces nothing until an admin populates it. ~1 day to seed a sensible non-empty default. |
 
 ## 10. Compliance & Data Governance
 
 | Feature | What it's for | Status | Built | Scope / what's left |
 | --- | --- | --- | --- | --- |
-| Audit log | Append-only record of who did what, when. | 🔴 | 0% | Doesn't exist. ~8 days — schema + write-path hooks. |
-| Data retention policy | TTL/cleanup for logs, messages, traces. | 🔴 | 0% | Everything accumulates indefinitely today. ~3 days. |
+| Audit log | Append-only record of who did what, when. | ✅ | 60% | Built 2026-08-17/18: records guardrail-policy changes, tool-policy changes, and chatflow deletion. ~3 days remaining to extend to remaining consequential actions (credential/role changes, individual predictions). |
+| Data retention policy | TTL/cleanup for logs, messages, traces. | ✅ | 100% | Built 2026-08-17/18: daily cron job deletes chat messages/executions/tool-call-audit rows older than a configured window (default 90 days each). |
 | Compliance certifications / data residency (SOC2, GDPR, HIPAA) | Formal certifications some enterprise buyers require. | 🔴 | 0% | Largely a legal/audit process. Pursue only once contractually required. |
-| Policy templates applied platform-wide | Standard rule set applied to every new agent automatically. | 🔴 | 0% | No such mechanism. ~3 days. |
+| Policy templates applied platform-wide | Standard rule set applied to every new agent automatically. | ✅ | 60% | Built 2026-08-17/18: applies one hardcoded bundle (currently just PII redaction) to every new workspace, and retroactively when toggled on. ~2 days remaining for a real multi-bundle template picker/editor. |
 
 ## 11. Security & Permission Model
 
@@ -146,7 +153,7 @@ Status legend: ✅ Done · 🟡 Built, not configured · 🔴 To be built
 | Feature | What it's for | Status | Built | Scope / what's left |
 | --- | --- | --- | --- | --- |
 | Per-call cost tracking | Tracks $ cost of each LLM call. | 🟡 | 85% | Exists via Langfuse + cost calculator, dormant until Langfuse is on. |
-| Per-workspace token/spend budgets + alerts | Spend ceiling per workspace with warning thresholds. | 🔴 | 0% | No first-class budget concept exists. ~6 days. Also surfaced 2026-08-17 as the `spend_token_budgets` entry in the §9 Guardrails catalog, so it's visible from `/guardrails` too, not just this section. |
+| Per-workspace token/spend budgets + alerts | Spend ceiling per workspace with warning thresholds. | 🟡 | 40% | Built 2026-08-17/18 as a predictions-per-month proxy cap (default 10,000), enforced pre-flight — not a $ or token-based cap yet, no warn-before-block threshold. ~4 days remaining for real cost-based metering once Langfuse is on, plus a warn/block threshold pair. |
 | Rate limiting / usage caps | Per-tenant caps on predictions, flows, users, storage. | 🟡 | 70% | Already implemented, gated behind the unused CLOUD mode. ~2 days to verify/wire once that decision is made. |
 
 ## 13. Agent Builder Tooling & Evaluation

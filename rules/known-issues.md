@@ -167,6 +167,20 @@ Per explicit user request, increased both durations: `IDLE_TIMEOUT_MS` in `Sessi
 
 **Fix:** added `guardrails: ShieldCheck` and `compliance: BadgeCheck` to `MENU_ITEM_ICONS` in `accelance-shell/icons.js`.
 
+---
+
+## #015 — `rules/epics-feature-status.md` documented six guardrails as "planned"/🔴 for a full day after the commit that made them real, wired enforcement
+
+**Symptom:** Asked to "build" the remaining §9 Guardrails & Safety backlog (prompt-injection defense, topic/action scoping, loop & recursion detection, egress filtering, confused-deputy prevention, memory & RAG write validation), a fresh read of `rules/epics-feature-status.md` said all six were still `🔴 To build`/`enforcementStatus:'planned'`. Reading the actual code first (`packages/components/src/toolPolicy.ts`, `packages/server/src/utils/preflightGuardrails.ts`) showed real, wired enforcement already existed for every one of them, plus §10's audit log and data retention policy.
+
+**Root cause:** commit `4e8adc8` ("feat(guardrails): add Guardrails & Compliance catalog with real enforcement") was a large, multi-part commit spanning several dated sub-passes (catalog v1 → workspace admin page → catalog batch 2 (seeded as `'planned'`, visibility only) → catalog batch 3 (a `GuardrailCatalogBatch3Enforcement` migration flipping all of batch 2 to `'enforced'` plus real call sites in `preflightGuardrails.ts`/`toolPolicy.ts`/`buildAgentflow.ts`/`AgentAsTool.ts`/`documentstore/index.ts`) → `AuditLog` entity/service/routes → `RetentionCleanup.ts` cron job. The doc-update half of that commit captured the state as of the batch-2 sub-pass and was never revised again before the whole thing was committed atomically — so the single commit's own tracked-documentation snapshot was already stale relative to its own code snapshot, not just relative to a later commit.
+
+**Fix:** corrected every affected row in `rules/epics-feature-status.md` §9/§10/§12 (and the "Reading this map" summary, and the "Configuration Ownership" audit section) to match the actual shipped code, verified against the migration content and each call site rather than the commit message. Also corrected `FEATURE-BUILD-LEDGER.md`.
+
+**Prevention:** for a large commit that bundles multiple dated sub-passes into one atomic commit (a pattern this repo uses often, per the "Update (date, cont'd)" convention already throughout these tracking docs), don't trust that the commit's *own* accompanying doc edit reflects the commit's *own* final code state — grep for the actual enforcement call sites (or the terminal migration in a numbered batch sequence) before reporting a tracked epic as still `🔴`/`'planned'`, even immediately after reading the tracking file. This is a stricter version of the "before recommending from memory" rule: a doc file committed five minutes ago can already be behind the code sitting right next to it in the same commit.
+
+---
+
 **Prevention:** any new top-level sidebar item needs an entry in **both** places — `menu-items/dashboard.js` (id/url/permission/breadcrumbs; its own `icon:` prop only matters if the classic `NavItem` shell is ever reinstated) **and** `accelance-shell/icons.js`'s `MENU_ITEM_ICONS`, keyed by the same `id`, with a Lucide icon (this shell's icon library is Lucide, not Tabler — see the note already in `component-inventory.md`'s AccelanceHeader/AccelanceSidebar entry). Forgetting the second one fails silently — no console error, no broken layout, just a missing icon and a few pixels of shifted text, easy to miss in a quick glance.
 
 ---

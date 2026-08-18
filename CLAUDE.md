@@ -13,7 +13,7 @@ apply depends on what kind of change you're making — most non-trivial changes 
 | If the change is... | Read / update... |
 |---|---|
 | UI/presentation — re-skinning an existing page, or any page-level visual work | `DESIGN_SPEC.md` (read-only except Section 9) + `migration-checklist.md` + `design-system/tokens.json` + `design-system/components/component-inventory.md` |
-| Backend, business logic, architecture, or a new feature/epic | `rules/architecture.md`, `rules/epics-feature-status.md`, `rules/known-issues.md`, `rules/changes.md` |
+| Backend, business logic, architecture, or a new feature/epic | `rules/architecture.md`, `rules/epics-feature-status.md`, `rules/known-issues.md`, `rules/changes.md`, `FEATURE-BUILD-LEDGER.md`, `Envoy-overview.md` |
 | A user-facing rename or copy change (product name, page names, terminology) | Whichever of the above already refers to the old name — add a one-line note wherever it appears, don't just fix the code |
 
 **Never skip the read step because a change "looks small."** The 2026-08 Control Tower dashboard,
@@ -102,3 +102,21 @@ that contradict the spec. If the spec doesn't cover something you need, stop and
   service/route, and log a `rules/known-issues.md` entry if you fixed a bug. A one-line
   update in the same commit is cheaper than a later audit reconstructing it from
   `git log`.
+- **Also update `FEATURE-BUILD-LEDGER.md` in the same pass, whenever you touch
+  `rules/epics-feature-status.md`.** It's a flattened, description-first view of that
+  file (feature / what it's for / status / built % / scope-left) built for quick
+  scanning — kept only for readability, not as an independent source of truth. Edit the
+  matching row(s): flip the status pill, adjust the Built % estimate, and rewrite the
+  "Scope / what's left" cell to match the new state. If a whole epic's status changes
+  (e.g. 🟡→✅), also nudge the section subtotal in that file's own top-of-file summary
+  line. Never let this file and `rules/epics-feature-status.md` disagree about a given
+  epic's status — if you don't have time to update both, update
+  `rules/epics-feature-status.md` (the source of truth) and add a one-line TODO at the
+  top of `FEATURE-BUILD-LEDGER.md` flagging which rows are stale, rather than leaving it
+  silently wrong.
+- **Also check `Envoy-overview.md`** whenever a change alters the architecture diagram,
+  the tech stack, the core-capabilities list, the build-maturity snapshot counts, or the
+  documentation map (a new tracked doc added/removed). It's a newcomer-facing synthesis
+  of `rules/architecture.md` + `rules/epics-feature-status.md`, not a third source of
+  truth — update the relevant section(s) to match, same "don't leave it silently wrong"
+  standard as above.

@@ -291,6 +291,49 @@ sentinel. Verified end-to-end in a real browser against the running dev server: 
 Redaction's workspace default on (`chatflowId:""` in the request body, confirmed in the response) and
 back off, chip updated correctly both times, zero console errors.
 
+**Update (2026-08-17/18, batch 3 — real enforcement for the remaining six, plus Compliance):** a
+`GuardrailCatalogBatch3Enforcement` migration flips `prompt_injection_defense`, `topic_action_scoping`,
+`loop_recursion_detection`, `egress_filtering`, `confused_deputy_prevention`, and
+`memory_rag_write_validation` from `enforcementStatus:'planned'` to `'enforced'`, each seeded with a
+usable `defaultConfig` (no config-editing UI exists yet, so a workspace can only toggle these on/off,
+not customize the specifics, until that ships). Real call sites, one new shared chokepoint plus four
+existing ones extended: `packages/server/src/utils/preflightGuardrails.ts` is a new single pre-flight
+check (`checkPreflightGuardrails`) called from `utilBuildChatflow` before any flow type executes —
+covers Topic & Action Scoping (denied-topic keyword match against the question, configurable refusal
+message) and a `spend_token_budgets` guardrail (a predictions-per-month proxy cap, not real $/token
+metering, until Langfuse cost data is wired in — see §12 of `rules/epics-feature-status.md`) uniformly
+across every flow type in one place. The same file's `resolveTrustedToolCallerUserId` implements
+Confused-Deputy Prevention, called from `AgentAsTool.ts`: an inner `AgentAsTool` call's claimed
+triggering-user id is only trusted as the execution principal if the guardrail is enabled AND that user
+verifies as an active member of the target workspace — otherwise falls back to no principal (today's
+existing, more restrictive default), never to trusting an unverified id. `packages/components/src/
+toolPolicy.ts` gained `checkEgressFiltering` (blocks a tool call whose stringified arguments match a
+blocked-domain pattern — seeded default is an SSRF baseline: loopback/link-local/metadata-endpoint
+hosts) and `applyPromptInjectionWrapping` (wraps every successful tool-call result in explicit
+`[UNTRUSTED TOOL OUTPUT]` delimiters before the LLM re-reads it), both invoked from the same
+`wrapToolWithPolicy` chokepoint the tool-governance phase-0 work already built. `utils/buildAgentflow.ts`
+reads `loop_recursion_detection`'s `maxSteps` (default 25) and halts an AgentFlow V2 execution once
+exceeded. `services/documentstore/index.ts` checks `memory_rag_write_validation`'s pattern denylist
+(empty by default — enforces nothing until an admin populates it) before a document-chunk write.
+
+Also shipped in this pass, previously placeholder-only on `/compliance`: a new `AuditLog` entity +
+`services/audit-log` + `routes/audit-log`, with write-path hooks from `controllers/guardrails`
+(`guardrail_policy.upsert`), `controllers/tool-policy` (`tool_policy.upsert`), and
+`controllers/chatflows` (`chatflow.delete`) — a first pass covering governance-relevant changes, not
+literally every action yet. A daily cron job (`schedule/RetentionCleanup.ts`, `0 3 * * *`, started from
+`index.ts`) deletes chat messages/executions/`ToolCallAudit` rows older than a configured window
+(default 90 days each) for Data Retention Policy. `services/guardrails`' `applyDefaultPolicyTemplate`
+applies one hardcoded bundle (currently just PII redaction) to every newly created workspace and
+retroactively to an existing one when the `policy_templates` catalog entry is toggled on — Policy
+Templates in name, but a single fixed bundle in scope today, not a general template editor.
+
+**Documentation note:** this entire batch-3 pass shipped in the same commit as the batch-2 seed above
+(`4e8adc8`), but `rules/epics-feature-status.md`'s own doc-update half of that commit captured the
+batch-2 (`'planned'`, visibility-only) state and was never revised to match batch-3 before the commit
+landed — so the tracking file spent a full day contradicting the code sitting right next to it in the
+same commit. Caught and corrected 2026-08-18 by reading the migration content and call sites directly
+rather than trusting the commit message. See `rules/known-issues.md` #015.
+
 **Update (2026-08-12):** the AgentFlow V2 natural-language "Generate" feature
 (`packages/server/src/services/agentflowv2-generator`, `packages/components/src/
 agentflowv2Generator.ts`) had two real bugs, found by actually generating a flow and inspecting

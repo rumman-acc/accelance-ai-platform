@@ -130,22 +130,24 @@ field)
 | --- | --- | --- | --- |
 | Guardrails & Compliance catalog (DB-backed, browsable list of standard + custom guardrails; per-agent canvas visibility panel + header badge + a standalone workspace-level admin page) | 🟡 Built (2026-08-17) | `database/entities/{GuardrailCatalogItem,GuardrailPolicy}`, `services/guardrails`, `routes/guardrails` (`/guardrails/catalog`, `/guardrails/policy`, `/guardrails/summary/:chatflowId`); UI: `ui-component/extended/GuardrailsCompliance.jsx` (new "Guardrails & Compliance" group in `ChatflowConfigurationDialog`, per-agent), shield-icon+count badge in `CanvasHeader.jsx`, guardrail-node marker on `CanvasNode.jsx` for `category==='Moderation'`, plus a standalone `views/guardrails/index.jsx` page at `/guardrails` (sidebar nav under Studio) for setting workspace-wide defaults and seeing an "Overridden by N agents" count per catalog entry. Catalog is seeded by migration (not hardcoded into `packages/components`), same reasoning as the MCP registry browser/Composio importer. Distinguishes `kind:'node'` (draggable canvas nodes, detected by scanning `flowData`) from `kind:'policy'` (engine-enforced, no canvas position, most-specific-match-wins via `chatflowId=''` sentinel — same convention as `AgentToolPolicy`). The standalone page reuses the existing `/guardrails/catalog` and `/guardrails/policy` endpoints with no `chatflowId` — no new backend routes needed. Tool Allowlist is surfaced read-only in both UIs by querying the existing `AgentToolPolicy` table rather than duplicating it | Guardrails/policy catalog + admin visibility, same shape as e.g. watsonx Orchestrate's guardrails list or Agentforce's Trust Layer controls |
 | Content moderation (OpenAI Moderation API, deny-list) | 🟡 Built, not configured | `nodes/moderation/{OpenAIModeration,SimplePromptModeration}`; now a `kind:'node'` catalog entry (`content_moderation`), detected on canvas and shown in the new Guardrails & Compliance panel — visibility only, the nodes themselves are still unused and the deny-list is still empty | Content/toxicity guardrail |
-| Prompt-injection defense (trusted vs. untrusted content separation) | 🔴 To build | none — only a manual deny-list exists; listed in the new catalog as `enforcementStatus:'planned'` for visibility, toggle disabled in the UI so it can't be turned on and silently do nothing | Untrusted-content delimiting; instruction-origin rule (goals accepted only from authenticated requests, never from content an agent merely reads) |
+| Prompt-injection defense (trusted vs. untrusted content separation) | ✅ Done (2026-08-17/18) | `packages/components/src/toolPolicy.ts`'s `applyPromptInjectionWrapping` — every successful tool-call result is wrapped in explicit `[UNTRUSTED TOOL OUTPUT]` delimiters before the LLM re-reads it, gated on the `prompt_injection_defense` policy (catalog flipped `enforcementStatus:'planned'→'enforced'` by the `GuardrailCatalogBatch3Enforcement` migration). No custom-config UI yet (nothing to configure — the wrapper is unconditional once enabled) | Untrusted-content delimiting; instruction-origin rule (goals accepted only from authenticated requests, never from content an agent merely reads) |
 | PII detection & redaction | 🟡 Built (2026-08-17), regex-based | `utils/contentRedaction.ts` (email/phone/SSN/card-pattern presets + custom regex list), wired into `utils/addChatMesage.ts` — every chat message save now runs `guardrailsService.getActiveRedactionPatterns()` and redacts before persisting, but only when the `pii_redaction` catalog policy (or a custom denylist-type policy) is enabled for that workspace/chatflow; off by default. NER-based detection remains 🔴, not attempted here | PII scan/redaction on logged/stored content |
-| Topic/action scoping (bound exactly what an agent may do) | 🔴 To build | none; listed in the new catalog as `enforcementStatus:'planned'` for visibility, same as prompt-injection defense above | "Topics & Actions" style scoping |
-| Loop & recursion detection (runaway loops / excessive delegation depth in multi-agent flows) | 🔴 To build | none; catalog entry `loop_recursion_detection` added 2026-08-17 for visibility (`enforcementStatus:'planned'`) after a taxonomy review against agent-specific guardrail patterns | Max-depth/step-count circuit breaker on supervisor/worker and sequential-agent loops |
-| Egress filtering (block/flag outbound data that could exfiltrate sensitive content) | 🔴 To build | none; catalog entry `egress_filtering` added 2026-08-17 for visibility. Main defense against prompt-injection-driven data exfiltration, which nothing in this platform currently defends against at the network-egress layer | Outbound-request inspection at the tool-call boundary |
-| Confused-deputy prevention (agent can't use its own elevated privileges on behalf of a less-privileged caller) | 🔴 To build | none; catalog entry `confused_deputy_prevention` added 2026-08-17. Related to, but distinct from, the existing `CredentialAccess`/`AgentToolPolicy` per-user grant model — those govern *whose* credential an agent may use, not whether the agent's *own* standing privilege can be invoked on a lower-privileged caller's behalf | Delegation-boundary check between caller identity and agent's own service-identity privileges |
-| Memory & RAG write validation (poisoned input persisting via agent memory or document-store writes) | 🔴 To build | none; catalog entry `memory_rag_write_validation` added 2026-08-17 | Write-path content validation before a memory/vector-store commit, not just read-path RAG retrieval |
+| Topic/action scoping (bound exactly what an agent may do) | ✅ Done (2026-08-17/18) | `utils/preflightGuardrails.ts`'s `checkPreflightGuardrails`, called from `utilBuildChatflow` before every flow type executes — matches the question text against a `deniedTopics` list (seeded default: self-harm/suicide/illegal drugs/weapons/child exploitation) and returns a configured refusal message instead of running the flow. Enabled via the same `/guardrails` toggle; no UI yet to edit the denied-topics list beyond the seeded default (DB `defaultConfig` only) | "Topics & Actions" style scoping |
+| Loop & recursion detection (runaway loops / excessive delegation depth in multi-agent flows) | ✅ Done (2026-08-17/18) | `utils/buildAgentflow.ts` reads the `loop_recursion_detection` policy (default `maxSteps:25`) and halts an AgentFlow V2 execution once its step count exceeds the configured max | Max-depth/step-count circuit breaker on supervisor/worker and sequential-agent loops |
+| Egress filtering (block/flag outbound data that could exfiltrate sensitive content) | ✅ Done (2026-08-17/18) | `packages/components/src/toolPolicy.ts`'s `checkEgressFiltering` — blocks a tool call whose stringified arguments match a blocked-domain pattern (seeded default: loopback/link-local/metadata-endpoint hosts, an SSRF-style baseline) before the call runs | Outbound-request inspection at the tool-call boundary |
+| Confused-deputy prevention (agent can't use its own elevated privileges on behalf of a less-privileged caller) | ✅ Done (2026-08-17/18) | `utils/preflightGuardrails.ts`'s `resolveTrustedToolCallerUserId`, called from `AgentAsTool.ts` — an inner `AgentAsTool` call's claimed triggering-user id is only trusted as the execution principal if the guardrail is enabled AND that user is verified as an active member of the target workspace; otherwise falls back to no principal (today's existing, more restrictive default), never to trusting an unverified id | Delegation-boundary check between caller identity and agent's own service-identity privileges |
+| Memory & RAG write validation (poisoned input persisting via agent memory or document-store writes) | ✅ Done (2026-08-17/18) | `services/documentstore/index.ts` checks the `memory_rag_write_validation` policy (a custom regex/pattern denylist, empty by default) against content before a document-chunk write | Write-path content validation before a memory/vector-store commit, not just read-path RAG retrieval |
+
+**Correction (2026-08-18):** the six rows above were documented as `🔴 To build`/`enforcementStatus:'planned'` in this file as recently as the prior pass, but the actual code shipped in the *same* commit (`4e8adc8`) already flips all six to real, wired enforcement via a follow-on `GuardrailCatalogBatch3Enforcement` migration — the doc pass in that commit simply didn't catch up to the final code state before it was committed. Verified directly against the running code (migration content, call sites in `preflightGuardrails.ts`/`toolPolicy.ts`/`buildAgentflow.ts`/`AgentAsTool.ts`/`documentstore/index.ts`), not assumed from the commit message. See `rules/known-issues.md` #015.
 
 ## 10. Compliance & Data Governance
 
 | Epic | Status | Accelance evidence | Reference Pattern |
 | --- | --- | --- | --- |
-| Audit log (who did what, when, to what) | 🔴 To build | none | Append-only audit trail across agent/tool actions |
-| Data retention policy (TTL/cleanup for logs, messages, traces) | 🔴 To build | none — data accumulates indefinitely today | Configurable retention tiers |
-| Compliance certifications / data residency (SOC2, GDPR, HIPAA) | 🔴 To build (lowest priority until contractually required) | none | Certifications — largely an audit/business process, not just code |
-| Policy templates applied platform-wide | 🔴 To build | none | Standard rule sets applied to every agent automatically |
+| Audit log (who did what, when, to what) | ✅ Done (2026-08-17/18), first pass | `database/entities/AuditLog.ts`, `services/audit-log`, `routes/audit-log` — records are written from `controllers/guardrails` (`guardrail_policy.upsert`), `controllers/tool-policy` (`tool_policy.upsert`), and `controllers/chatflows` (`chatflow.delete`). Covers guardrail/tool-policy changes and chatflow deletion, **not yet every consequential action** (e.g. no coverage yet for credential/role changes or individual tool calls beyond `ToolCallAudit`, which is a separate, older table) | Append-only audit trail across agent/tool actions |
+| Data retention policy (TTL/cleanup for logs, messages, traces) | ✅ Done (2026-08-17/18) | `schedule/RetentionCleanup.ts`, a daily (`0 3 * * *`) cron job started from `index.ts`, deletes chat messages/executions/`ToolCallAudit` rows older than a configured window (default 90 days each, via the `data_retention_policy` catalog entry) | Configurable retention tiers |
+| Compliance certifications / data residency (SOC2, GDPR, HIPAA) | 🔴 To build (lowest priority until contractually required) | none — deliberately left as a static "not yet built" placeholder on `/compliance`, since it's an external audit/legal process, not a coding task | Certifications — largely an audit/business process, not just code |
+| Policy templates applied platform-wide | ✅ Done (2026-08-17/18), narrow scope | `services/guardrails`' `applyDefaultPolicyTemplate` — applies one hardcoded bundle (currently just PII redaction) to every newly created workspace, and retroactively to an existing workspace when the `policy_templates` catalog entry is toggled on. Not yet a general "define any custom bundle" template system — one fixed default bundle only | Standard rule sets applied to every agent automatically |
 
 ## 11. Security & Permission Model
 
@@ -161,7 +163,7 @@ field)
 | Epic | Status | Accelance evidence | Reference Pattern |
 | --- | --- | --- | --- |
 | Per-call cost tracking | 🟡 Built, not configured | `nodes/analytic/LangFuse`; `services/evaluations/CostCalculator.ts` | Cost/usage analytics |
-| Per-workspace token/spend budgets + alert thresholds | 🔴 To build | none — though see the quota scaffolding noted in section 6 | FinOps budget guardrails (e.g. 80% warn / 100% block) |
+| Per-workspace token/spend budgets + alert thresholds | 🟡 Partially built (2026-08-17/18) | `spend_token_budgets` guardrail (`utils/preflightGuardrails.ts`) — a per-workspace **prediction-count-per-month** cap (default 10,000) enforced pre-flight, as a proxy until real cost-per-call metering (Langfuse) is wired in. Not a $ or token-based cap, and no warn-before-block threshold yet — see the quota scaffolding also noted in section 6 | FinOps budget guardrails (e.g. 80% warn / 100% block) |
 | Model tiering for cost control | 🟡 Available per-flow, not enforced as policy | any chatmodel node, manual choice | Tiered model routing for cost |
 | Rate limiting / usage caps | 🟡 Built, disabled | `LICENSE_QUOTAS` (`PREDICTIONS_LIMIT`, `FLOWS_LIMIT`, `USERS_LIMIT`, `STORAGE_LIMIT`) in `UsageCacheManager.ts`, gated behind CLOUD platform mode | Rate/usage caps at plan/tenant/model level |
 
@@ -218,10 +220,111 @@ form — most of section 1 (core orchestration), all of section 3's building blo
 of section 4 (model access) are fully done. The 🟡 bucket (sections 2, 3, 5, 6, 7, 8, 9, 12,
 13, 15, 16) is config/account work, not development — several of those (multi-org platform
 mode, usage quotas) turned out to be further along than expected, gated behind a platform
-mode rather than missing code. The genuine 🔴 backlog clusters in three areas — **Guardrails,
-Compliance, and the Admin/Governance Control Plane** — plus the specific security invariant
-of scoping agent tool access to the acting user's own permissions, and the org-onboarding
-process itself (section 16).
+mode rather than missing code. **Update (2026-08-18):** Guardrails (§9) is no longer part of the 🔴 backlog — all six items
+that were listed as "planned"/"to build" (prompt-injection defense, topic/action scoping, loop
+& recursion detection, egress filtering, confused-deputy prevention, memory & RAG write
+validation) shipped with real enforcement in the same commit that built the catalog, plus
+Compliance's audit log and data retention policy (§10) — see the correction note under §9 and
+`rules/known-issues.md` #015 for why this file didn't reflect that until now. The genuine 🔴
+backlog now clusters in two areas — **the Admin/Governance Control Plane and full compliance
+certifications** — plus service accounts/ABAC (§6), the specific security invariant of scoping
+agent tool access to the acting user's own permissions (already ✅, see §11), and the
+org-onboarding process itself (section 16).
+
+---
+
+## Configuration Ownership: Build vs. Platform Setup vs. End-User Setup
+
+The status legend (✅/🟡/🔴) answers "does the code exist?" It doesn't answer "who does the
+remaining work?" — and for the 🟡 bucket especially, that's two very different kinds of task
+that were being conflated (see the note under the legend at the top of this file). This
+section re-sorts every non-done epic along that second axis, cutting across the 17 numbered
+sections above:
+
+- **A. To be built** — genuine engineering work, owned by whoever is building the platform.
+  This is the 🔴 backlog, plus the handful of 🟡 rows whose remaining work is more dev than
+  config (DLP redaction, catalog pagination, CLOUD-mode wiring).
+- **B. Platform build-out configuration** — one-time, deployment-wide setup that has to happen
+  *before* any tenant can use the feature at all (a shared OAuth app, an infra instance, an
+  account with a third-party vendor, a security/governance default). This is done once by
+  whoever stands up the platform, not per-customer.
+- **C. End-user / tenant self-service configuration** — per-workspace, per-agent, or
+  per-integration setup that the UI already supports and that individual customers are meant
+  to do themselves as part of normal use, not something to front-load during platform
+  build-out. Doing these during the build pass would be premature — there's no real value
+  they're configured against yet.
+
+Each entry cross-references its section number (§) above for full detail/evidence.
+
+### A. To be built
+
+| Epic | § | Why it's a build item, not config |
+| --- | --- | --- |
+| Agent Library/Registry | 1 | New entity + CRUD + list page + canvas save/load/sync UX — planned, not started |
+| Centralized tool-call policy — DLP content redaction | 2 | Field-level masking/regex rules on tool input/output were never written |
+| Tool/node catalog server-side pagination | 2 | Client-side virtualization shipped; cursor-based server pagination isn't |
+| Cost/usage dashboards per workspace | 5 | No aggregated view exists |
+| Drift detection | 5 | No behavior-change detection exists |
+| Service accounts | 6 | No non-human, project-scoped identity concept exists |
+| ABAC / resource tagging | 6 | RBAC is role-only today |
+| Multi-org CLOUD mode — self-serve signup, quota enforcement wiring, tenant isolation testing, billing self-service | 6, 16 | Stories 4–7 of the Deep Dive below are new code, not a mode flip (stories 1–3 are config — see bucket B) |
+| Dev/staging/prod environment separation | 7 | No environment-per-tier pattern exists |
+| Multi-region / HA | 7 | Not needed at current scale — deferred, not estimated |
+| HIL policy — runtime gate matrix for manually-built flows | 8 | Today's classifier only gates flows built via the AI generator |
+| Approver inbox / review UI | 8 | No dedicated screen for reviewing pending HIL pauses |
+| Node-level retry/resume after execution error | 8 | No resume path for a genuine tool/schema failure, only HITL pauses |
+| Per-workspace token/spend budgets — real $/token metering | 12 | The shipped `spend_token_budgets` guardrail is a predictions-per-month proxy only; real cost-based metering still depends on Langfuse (§5) being on first |
+| Pre-publish evaluation gate | 13 | Eval results don't block anything from going live today |
+| Control Tower — budgets/cost view | 14 | Inventory/approvals shipped; budget data still missing |
+| Agent lifecycle states (draft → validated → published) | 14 | No lifecycle state exists on flows today |
+| Ownerless-agent / risk flagging | 14 | No automated flagging exists |
+| Per-org dedicated deployment runbook | 16 | Mechanism works; the process itself was never written down |
+| Branded first-party SDK package | 16 | Currently ships under the unforked upstream package name (optional) |
+| Full platform i18n | 17 | Confirmed zero existing i18n infra; ~6–8 week plan, not started |
+
+Deliberately excluded from this backlog (see their rows above for why): Compliance
+certifications/data residency (§10 — a business/audit process, not a dev task) and the
+dedicated Git-backed workflow engine (§15 — deferred until in-graph nodes prove insufficient).
+Also excluded, as of the 2026-08-18 correction — not deferred, but already shipped and
+enforced: all six §9 guardrails, plus §10's audit log and data retention policy. Enabling any
+of these for a given workspace/agent is bucket C work (the `/guardrails` toggle), not bucket A.
+
+### B. Platform build-out configuration (done once, before any tenant can use it)
+
+| Epic | § | What's configured, and why it's mine not the end-user's |
+| --- | --- | --- |
+| Native connector OAuth apps (Gmail, GDrive, Jira, MS Teams/Outlook, Figma MCP) | 2 | One OAuth app per provider serves the whole deployment; after this, end users just click "Connect" |
+| Custom MCP security toggles (`CUSTOM_MCP_SECURITY_CHECK`, `CUSTOM_MCP_ALLOWED_ENV_VARS`) | 2 | A deployment-wide security-posture decision, not a per-tenant one |
+| Vector store instance (Qdrant) | 3 | Infra needed before any workspace can use RAG at all (tenants can layer their own credential on top later) |
+| Graph database (Neo4j) instance | 3 | Same reasoning as vector stores |
+| LLM response cache backend (Redis/Upstash/Momento) | 3 | Deployment-wide performance feature |
+| Model tiering policy (cheap vs. frontier convention) | 4, 12 | A written convention + default templates, not a per-tenant setting |
+| Model allow/deny-listing | 4 | Deployment-wide governance decision (`MODEL_LIST_CONFIG_JSON`, `DISABLED_NODES`) |
+| Tracing backend (Langfuse/LangSmith/Arize/Phoenix) project + API key | 5 | Highest-value single config item in the whole 🟡 bucket per the original estimate; observability is a deployment-wide decision |
+| Prometheus / OpenTelemetry metrics + collector | 5 | Infra-level, one collector for the deployment |
+| Custom observability SDK (`packages/observe`) scope assessment | 5 | A short investigation task before anyone can rely on it |
+| Queue mode / BullMQ (`MODE=queue`) | 7 | Infra-level worker-pool decision |
+| Production security toggles (HTTP/OAuth2 checks, path-traversal, trust-proxy) | 11 | Must be reviewed/set before sitting behind a real load balancer, deployment-wide |
+| Stripe account + plan-tier definitions for CLOUD mode | 6, 16 | Stories 1–3 of the Deep Dive below — a platform business decision, prerequisite to any org self-serving |
+| Rate limiting / usage caps wiring | 12 | Tied to the CLOUD-mode decision above, not a per-tenant toggle |
+| First org's SSO provider (if launching with SSO enabled on day one) | 6 | Every *subsequent* org configures its own via slug routing — see bucket C |
+
+### C. End-user / tenant self-service configuration (leave for the customer, don't front-load)
+
+| Epic | § | Why this waits for the end user |
+| --- | --- | --- |
+| Pre-obtained-token connectors — Salesforce, DocuSign, QuickBooks, Xero | 2 | Each tenant supplies their own personal token; there's no shared app to register |
+| API-key connectors — Discord, Twilio, Airtable, Shopify, Zendesk, Intercom, Freshdesk, Asana, Trello, Monday.com, ClickUp, Mailchimp, SendGrid, Klaviyo, Zoom, Telegram, WhatsApp, GitLab, Bitbucket, CircleCI, Vercel, Datadog, PagerDuty, Dropbox, Box, Segment, Amplitude, Mixpanel, Azure services, ServiceNow, Okta, Confluence, Jira Service Mgmt, Claude/GPT sub-agent | 2 | Each tenant enters their own account's API key via the existing Credentials UI |
+| MCP servers — Notion, Linear, Sentry, Browserbase, registry imports, Pipedream | 2 | Connected per-workspace, as needed, by whoever wants that integration |
+| Composio account/API key | 2 | Supplemental by product direction (§2) — bring-your-own, not platform-provisioned |
+| Document Store content ingestion | 3 | Populating it with real documents is a usage-time task, not platform setup |
+| Additional SSO providers (2nd org onward) | 6 | Per-org self-service via slug-based routing (`09d279e`) — that's the point of the feature |
+| Guardrail policy enablement per workspace/agent (content moderation, PII redaction, tool allowlist) | 9 | The `/guardrails` admin page exists specifically so workspace admins toggle these themselves |
+| HumanInput checkpoint placement into a specific flow | 8 | A flow-design choice made by whoever builds that agent, not a platform prerequisite |
+| Scheduling — first scheduled flow | 15 | Set up per automation the customer actually wants |
+| Webhooks — first webhook registration | 15 | Per integration the customer wants, not a platform default |
+| Evaluations framework — first dataset/evaluator | 13 | Created per agent being evaluated, by whoever owns that agent |
+| Marketplace "Save As Template" | 13 | Any user can do this today, zero platform prerequisite |
 
 ---
 
@@ -410,23 +513,33 @@ is newly estimated on the same reduced basis.
 
 **Update (2026-08-17, catalog batch 2):** a taxonomy review against NIST AI RMF / OWASP LLM Top 10 / MLCommons hazard categories / agent-specific guardrail patterns (prompted by the user) surfaced two kinds of gap, both closed the same way — new seeded catalog rows, no enforcement code: (1) **cross-links to backlog items that already existed but were invisible from `/guardrails`** — `spend_token_budgets` (policy, planned, points to §12 FinOps budgets, still 🔴) and `hitl_approval_gates` (node, enforced, maps to the existing `humanInputAgentflow` node — real when placed, not policy-toggleable, matching how Content Moderation is represented); (2) **four genuinely new agent-specific guardrail concepts with zero prior representation anywhere**, added as new §9 rows above (`loop_recursion_detection`, `egress_filtering`, `confused_deputy_prevention`, `memory_rag_write_validation`), all `enforcementStatus:'planned'`. Also added 4 reference-only rows to the `/compliance` page (NIST AI RMF, ISO/IEC 42001, EU AI Act, OWASP LLM Top 10) naming frameworks worth mapping to later — explicitly not a certification claim, no code behind them. **Deliberately not done in this pass**: MLCommons/Llama-Guard-level category granularity inside Content Moderation's deny-list, domain-specific compliance packs (healthcare/fin-services/HR), and any real enforcement of the four new planned items — each is a separate, non-trivial future epic (egress filtering in particular has no existing network-boundary chokepoint to hook into anywhere in the flow-execution path).
 
+**Update (2026-08-17/18, catalog batch 3 — real enforcement, corrected 2026-08-18):** all six items seeded as `'planned'` in batch 2 (`prompt_injection_defense`, `topic_action_scoping`, `loop_recursion_detection`, `egress_filtering`, `confused_deputy_prevention`, `memory_rag_write_validation`) plus `spend_token_budgets` flip to `enforcementStatus:'enforced'` via a follow-on `GuardrailCatalogBatch3Enforcement` migration, each with a sensible seeded `defaultConfig` since no config-editing UI exists yet — none can be customized, only toggled on/off, until that UI exists. Three new compliance-category catalog entries also ship as real (not placeholder): `audit_log`, `data_retention_policy`, `policy_templates` — see §10. This migration shipped in the *same* commit as the batch-2 seed above (`4e8adc8`), but this file's own documentation pass didn't catch up to it until this correction — verified directly against the migration content and each call site, not assumed from the commit message (see `rules/known-issues.md` #015). Full detail per item below.
+
 **Content moderation** — OpenAI Moderation + deny-list nodes exist, unused, deny-list empty. Now discoverable via the catalog above (detected if dragged onto canvas), but the nodes/deny-list themselves are unchanged. **Effort: 1 day** to wire into a first flow and populate a starter deny-list.
 
-**Prompt-injection defense** — Only a manual deny-list exists; no structural separation of trusted instructions from untrusted content. Listed in the catalog as `enforcementStatus:'planned'` for visibility only — its policy toggle is disabled in the UI. **Effort: 3 days** for a reusable "wrap untrusted content" pattern (custom function node + documented convention) agents are instructed to treat as data, not commands.
+**Prompt-injection defense** — `packages/components/src/toolPolicy.ts`'s `applyPromptInjectionWrapping` wraps every successful tool-call result in `[UNTRUSTED TOOL OUTPUT]` delimiters before the LLM re-reads it. **Effort: 0 days** — nothing to configure beyond enabling the toggle.
 
 **PII detection & redaction** — Built 2026-08-17, regex-based (not NER): `utils/contentRedaction.ts` redacts email/phone/SSN/card-pattern matches (plus any custom regex patterns from a policy's config) in every chat message before it's persisted, gated behind the `pii_redaction` catalog policy being enabled for that workspace/chatflow (off by default, opt-in). **Effort remaining: ~2 days** for an NER-based pass to catch what regex patterns miss (names, addresses, free-text PII).
 
-**Topic/action scoping** — No per-agent bound on allowed subject matter/actions exists. Listed in the catalog as `enforcementStatus:'planned'` for visibility only, same as prompt-injection defense. **Effort: 3 days.**
+**Topic/action scoping** — `utils/preflightGuardrails.ts`'s `checkPreflightGuardrails`, called before every flow type executes, refuses the request with a configured message if the question matches a denied-topics list (seeded default: self-harm/suicide/illegal drugs/weapons/child exploitation). **Effort remaining: ~1 day** for a UI to edit the denied-topics list per workspace instead of relying on the seeded default.
+
+**Loop & recursion detection** — `utils/buildAgentflow.ts` halts an AgentFlow V2 execution once its step count exceeds a configured `maxSteps` (default 25). **Effort: 0 days.**
+
+**Egress filtering** — `toolPolicy.ts`'s `checkEgressFiltering` blocks a tool call whose arguments match a blocked-domain pattern (seeded default: loopback/link-local/metadata-endpoint hosts — an SSRF baseline, not a general DLP/exfiltration scanner). **Effort remaining: ~2 days** to widen the default pattern set and add a config-editing UI.
+
+**Confused-deputy prevention** — `utils/preflightGuardrails.ts`'s `resolveTrustedToolCallerUserId`, called from `AgentAsTool.ts`, only trusts an inner call's claimed triggering-user id after verifying that user is an active member of the target workspace. **Effort: 0 days.**
+
+**Memory & RAG write validation** — `services/documentstore/index.ts` checks a custom regex/pattern denylist (empty by default) against content before a document-chunk write. **Effort remaining: ~1 day** to seed a sensible non-empty default pattern set, since an empty denylist enforces nothing until an admin populates it.
 
 ### 10. Compliance & Data Governance
 
-**Audit log** — No append-only record of agent/tool actions exists anywhere. **Effort: 8 days** (kept as originally sized) — schema + write-path hooks at every consequential action.
+**Audit log** — `database/entities/AuditLog.ts` + `services/audit-log`, built 2026-08-17/18. Records guardrail-policy changes, tool-policy changes, and chatflow deletion. **Effort remaining: ~3 days** to extend write-path hooks to the remaining consequential actions (credential/role changes, individual predictions) — first pass covers governance-relevant changes, not literally everything.
 
-**Data retention policy** — No TTL/cleanup job exists; everything accumulates indefinitely. **Effort: 3 days** for a configurable retention window + scheduled cleanup.
+**Data retention policy** — `schedule/RetentionCleanup.ts`, a daily cron job (`0 3 * * *`) deleting chat messages/executions/`ToolCallAudit` rows older than a configured window (default 90 days each). **Effort: 0 days** for the mechanism; per-workspace override UI (today it's one global default) is a small fast-follow if needed.
 
 **Compliance certifications/data residency** — Largely an audit/business process (external audit, legal review, region guarantees), not a coding task. **Effort: not a dev estimate — pursue only once a contract requires it**, and only after the technical controls above exist.
 
-**Policy templates platform-wide** — No mechanism to apply a standard rule set to every agent automatically. **Effort: 3 days.**
+**Policy templates platform-wide** — `services/guardrails`' `applyDefaultPolicyTemplate` applies one hardcoded bundle (currently just PII redaction) to every new workspace, and retroactively when toggled on for an existing one. **Effort remaining: ~2 days** for a real template picker/editor if more than one bundle is ever needed — today's is intentionally a single fixed default.
 
 ### 11. Security & Permission Model
 
@@ -442,7 +555,7 @@ is newly estimated on the same reduced basis.
 
 **Per-call cost tracking** — Exists via Langfuse + the evaluations cost calculator, dormant until Langfuse is on. **Effort: 0 days** once section 5's Langfuse item is done.
 
-**Per-workspace token/spend budgets + alerts** — No budget concept exists as a first-class feature, though see the quota scaffolding in section 6. **Effort: 6 days** (kept as originally sized).
+**Per-workspace token/spend budgets + alerts** — Partially built 2026-08-17/18: the `spend_token_budgets` guardrail (`utils/preflightGuardrails.ts`) enforces a per-workspace predictions-per-month cap (default 10,000) as a proxy, pre-flight, before every flow runs. Not a $ or token-based cap, and no warn-before-block threshold — see also the quota scaffolding in section 6. **Effort remaining: ~4 days** for real cost-based metering once Langfuse (§5) is on, plus a warn/block threshold pair.
 
 **Model tiering for cost control** — Same item as section 4; listed here for the cost angle. **Effort: 2 days** (shared with the section-4 estimate, not additive).
 
