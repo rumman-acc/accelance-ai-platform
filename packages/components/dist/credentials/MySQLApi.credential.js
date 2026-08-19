@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class MySQLApi {
     constructor() {
-        this.label = 'MySQL API'
-        this.name = 'MySQLApi'
-        this.version = 1.0
+        this.label = 'MySQL API';
+        this.name = 'MySQLApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'User',
@@ -18,8 +18,8 @@ class MySQLApi {
                 type: 'password',
                 placeholder: '<MYSQL_PASSWORD>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: MySQLApi }
+module.exports = { credClass: MySQLApi };
 //# sourceMappingURL=MySQLApi.credential.js.map

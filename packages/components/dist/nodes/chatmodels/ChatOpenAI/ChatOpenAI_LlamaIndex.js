@@ -1,33 +1,33 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const llamaindex_1 = require('llamaindex')
-const modelLoader_1 = require('../../../src/modelLoader')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const llamaindex_1 = require("llamaindex");
+const modelLoader_1 = require("../../../src/modelLoader");
 class ChatOpenAI_LlamaIndex_LLMs {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatOpenAI_LlamaIndex')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatOpenAI_LlamaIndex');
             }
-        }
-        this.label = 'ChatOpenAI'
-        this.name = 'chatOpenAI_LlamaIndex'
-        this.version = 2.0
-        this.type = 'ChatOpenAI'
-        this.icon = 'openai.svg'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around OpenAI Chat LLM specific for LlamaIndex'
-        this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...(0, utils_1.getBaseClasses)(llamaindex_1.OpenAI)]
-        this.tags = ['LlamaIndex']
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
+        };
+        this.label = 'ChatOpenAI';
+        this.name = 'chatOpenAI_LlamaIndex';
+        this.version = 2.0;
+        this.type = 'ChatOpenAI';
+        this.icon = 'openai.svg';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around OpenAI Chat LLM specific for LlamaIndex';
+        this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...(0, utils_1.getBaseClasses)(llamaindex_1.OpenAI)];
+        this.tags = ['LlamaIndex'];
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.';
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['openAIApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Model Name',
@@ -75,34 +75,37 @@ class ChatOpenAI_LlamaIndex_LLMs {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const temperature = nodeData.inputs?.temperature
-        const modelName = nodeData.inputs?.modelName
-        const maxTokens = nodeData.inputs?.maxTokens
-        const topP = nodeData.inputs?.topP
-        const timeout = nodeData.inputs?.timeout
-        const basePath = nodeData.inputs?.basepath
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const openAIApiKey = (0, utils_1.getCredentialParam)('openAIApiKey', credentialData, nodeData)
+        const temperature = nodeData.inputs?.temperature;
+        const modelName = nodeData.inputs?.modelName;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const topP = nodeData.inputs?.topP;
+        const timeout = nodeData.inputs?.timeout;
+        const basePath = nodeData.inputs?.basepath;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const openAIApiKey = (0, utils_1.getCredentialParam)('openAIApiKey', credentialData, nodeData);
         const obj = {
             temperature: parseFloat(temperature),
             model: modelName,
             apiKey: openAIApiKey
-        }
+        };
         if (basePath) {
             obj.additionalSessionOptions = {
                 baseURL: basePath
-            }
+            };
         }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        const openai = new llamaindex_1.OpenAISession(obj)
-        const model = new llamaindex_1.OpenAI({ ...obj, session: openai })
-        return model
+        if (maxTokens)
+            obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (timeout)
+            obj.timeout = parseInt(timeout, 10);
+        const openai = new llamaindex_1.OpenAISession(obj);
+        const model = new llamaindex_1.OpenAI({ ...obj, session: openai });
+        return model;
     }
 }
-module.exports = { nodeClass: ChatOpenAI_LlamaIndex_LLMs }
+module.exports = { nodeClass: ChatOpenAI_LlamaIndex_LLMs };
 //# sourceMappingURL=ChatOpenAI_LlamaIndex.js.map

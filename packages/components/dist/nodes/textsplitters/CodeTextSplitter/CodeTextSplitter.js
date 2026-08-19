@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const textsplitters_1 = require('@langchain/textsplitters')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const textsplitters_1 = require("@langchain/textsplitters");
 const extraLanguageSeparators = {
     c: [
         '\nstruct ',
@@ -184,17 +184,17 @@ const extraLanguageSeparators = {
         ' ',
         ''
     ]
-}
+};
 class CodeTextSplitter_TextSplitters {
     constructor() {
-        this.label = 'Code Text Splitter'
-        this.name = 'codeTextSplitter'
-        this.version = 1.0
-        this.type = 'CodeTextSplitter'
-        this.icon = 'codeTextSplitter.svg'
-        this.category = 'Text Splitters'
-        this.description = `Split documents based on language-specific syntax`
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(textsplitters_1.RecursiveCharacterTextSplitter)]
+        this.label = 'Code Text Splitter';
+        this.name = 'codeTextSplitter';
+        this.version = 1.0;
+        this.type = 'CodeTextSplitter';
+        this.icon = 'codeTextSplitter.svg';
+        this.category = 'Text Splitters';
+        this.description = `Split documents based on language-specific syntax`;
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(textsplitters_1.RecursiveCharacterTextSplitter)];
         this.inputs = [
             {
                 label: 'Language',
@@ -319,24 +319,26 @@ class CodeTextSplitter_TextSplitters {
                 default: 200,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const chunkSize = nodeData.inputs?.chunkSize
-        const chunkOverlap = nodeData.inputs?.chunkOverlap
-        const language = nodeData.inputs?.language
-        const obj = {}
-        if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10)
-        if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
+        const chunkSize = nodeData.inputs?.chunkSize;
+        const chunkOverlap = nodeData.inputs?.chunkOverlap;
+        const language = nodeData.inputs?.language;
+        const obj = {};
+        if (chunkSize)
+            obj.chunkSize = parseInt(chunkSize, 10);
+        if (chunkOverlap)
+            obj.chunkOverlap = parseInt(chunkOverlap, 10);
         if (textsplitters_1.SupportedTextSplitterLanguages.includes(language)) {
-            return textsplitters_1.RecursiveCharacterTextSplitter.fromLanguage(language, obj)
+            return textsplitters_1.RecursiveCharacterTextSplitter.fromLanguage(language, obj);
         }
-        const separators = extraLanguageSeparators[language]
+        const separators = extraLanguageSeparators[language];
         if (separators) {
-            return new textsplitters_1.RecursiveCharacterTextSplitter({ ...obj, separators })
+            return new textsplitters_1.RecursiveCharacterTextSplitter({ ...obj, separators });
         }
-        return new textsplitters_1.RecursiveCharacterTextSplitter(obj)
+        return new textsplitters_1.RecursiveCharacterTextSplitter(obj);
     }
 }
-module.exports = { nodeClass: CodeTextSplitter_TextSplitters }
+module.exports = { nodeClass: CodeTextSplitter_TextSplitters };
 //# sourceMappingURL=CodeTextSplitter.js.map

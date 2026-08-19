@@ -1,15 +1,15 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class StickyNote {
     constructor() {
-        this.label = 'Sticky Note'
-        this.name = 'stickyNote'
-        this.version = 2.0
-        this.type = 'StickyNote'
-        this.icon = 'stickyNote.svg'
-        this.category = 'Utilities'
-        this.tags = ['Utilities']
-        this.description = 'Add a sticky note'
+        this.label = 'Sticky Note';
+        this.name = 'stickyNote';
+        this.version = 2.0;
+        this.type = 'StickyNote';
+        this.icon = 'stickyNote.svg';
+        this.category = 'Utilities';
+        this.tags = ['Utilities'];
+        this.description = 'Add a sticky note';
         this.inputs = [
             {
                 label: '',
@@ -19,12 +19,12 @@ class StickyNote {
                 placeholder: 'Type something here',
                 optional: true
             }
-        ]
-        this.baseClasses = [this.type]
+        ];
+        this.baseClasses = [this.type];
     }
     async init() {
-        return new StickyNote()
+        return new StickyNote();
     }
 }
-module.exports = { nodeClass: StickyNote }
+module.exports = { nodeClass: StickyNote };
 //# sourceMappingURL=StickyNote.js.map

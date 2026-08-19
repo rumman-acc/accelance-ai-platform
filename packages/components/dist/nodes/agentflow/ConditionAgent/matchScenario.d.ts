@@ -1,4 +1,4 @@
 export type ConditionScenario = {
-    scenario: string
-}
-export declare const findBestScenarioIndex: (scenarios: ConditionScenario[], calledOutputName: string) => number
+    scenario: string;
+};
+export declare const findBestScenarioIndex: (scenarios: ConditionScenario[], calledOutputName: string) => number;

@@ -1,16 +1,14 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.createGoogleSheetsTools = exports.desc = void 0
-const v3_1 = require('zod/v3')
-const node_fetch_1 = __importDefault(require('node-fetch'))
-const core_1 = require('../OpenAPIToolkit/core')
-const agents_1 = require('../../../src/agents')
-exports.desc = `Use this when you want to access Google Sheets API for managing spreadsheets and values`
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createGoogleSheetsTools = exports.desc = void 0;
+const v3_1 = require("zod/v3");
+const node_fetch_1 = __importDefault(require("node-fetch"));
+const core_1 = require("../OpenAPIToolkit/core");
+const agents_1 = require("../../../src/agents");
+exports.desc = `Use this when you want to access Google Sheets API for managing spreadsheets and values`;
 // Define schemas for different Google Sheets operations
 // Spreadsheet Schemas
 const CreateSpreadsheetSchema = v3_1.z.object({
@@ -18,18 +16,18 @@ const CreateSpreadsheetSchema = v3_1.z.object({
     sheetCount: v3_1.z.number().optional().default(1).describe('Number of sheets to create'),
     locale: v3_1.z.string().optional().describe('The locale of the spreadsheet (e.g., en_US)'),
     timeZone: v3_1.z.string().optional().describe('The time zone of the spreadsheet (e.g., America/New_York)')
-})
+});
 const GetSpreadsheetSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet to retrieve'),
     ranges: v3_1.z.string().optional().describe('Comma-separated list of ranges to retrieve'),
     includeGridData: v3_1.z.boolean().optional().default(false).describe('True if grid data should be returned')
-})
+});
 const UpdateSpreadsheetSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet to update'),
     title: v3_1.z.string().optional().describe('New title for the spreadsheet'),
     locale: v3_1.z.string().optional().describe('New locale for the spreadsheet'),
     timeZone: v3_1.z.string().optional().describe('New time zone for the spreadsheet')
-})
+});
 // Values Schemas
 const GetValuesSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet'),
@@ -45,34 +43,26 @@ const GetValuesSchema = v3_1.z.object({
         .default('FORMATTED_STRING')
         .describe('How dates should be represented'),
     majorDimension: v3_1.z.enum(['ROWS', 'COLUMNS']).optional().default('ROWS').describe('The major dimension that results should use')
-})
+});
 const UpdateValuesSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet'),
     range: v3_1.z.string().describe('The A1 notation of the range to update'),
     values: v3_1.z.string().describe('JSON array of values to write (e.g., [["A1", "B1"], ["A2", "B2"]])'),
-    valueInputOption: v3_1.z
-        .enum(['RAW', 'USER_ENTERED'])
-        .optional()
-        .default('USER_ENTERED')
-        .describe('How input data should be interpreted'),
+    valueInputOption: v3_1.z.enum(['RAW', 'USER_ENTERED']).optional().default('USER_ENTERED').describe('How input data should be interpreted'),
     majorDimension: v3_1.z.enum(['ROWS', 'COLUMNS']).optional().default('ROWS').describe('The major dimension of the values')
-})
+});
 const AppendValuesSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet'),
     range: v3_1.z.string().describe('The A1 notation of the range to append to'),
     values: v3_1.z.string().describe('JSON array of values to append'),
-    valueInputOption: v3_1.z
-        .enum(['RAW', 'USER_ENTERED'])
-        .optional()
-        .default('USER_ENTERED')
-        .describe('How input data should be interpreted'),
+    valueInputOption: v3_1.z.enum(['RAW', 'USER_ENTERED']).optional().default('USER_ENTERED').describe('How input data should be interpreted'),
     insertDataOption: v3_1.z.enum(['OVERWRITE', 'INSERT_ROWS']).optional().default('OVERWRITE').describe('How data should be inserted'),
     majorDimension: v3_1.z.enum(['ROWS', 'COLUMNS']).optional().default('ROWS').describe('The major dimension of the values')
-})
+});
 const ClearValuesSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet'),
     range: v3_1.z.string().describe('The A1 notation of the range to clear')
-})
+});
 const BatchGetValuesSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet'),
     ranges: v3_1.z.string().describe('Comma-separated list of ranges to retrieve'),
@@ -87,48 +77,44 @@ const BatchGetValuesSchema = v3_1.z.object({
         .default('FORMATTED_STRING')
         .describe('How dates should be represented'),
     majorDimension: v3_1.z.enum(['ROWS', 'COLUMNS']).optional().default('ROWS').describe('The major dimension that results should use')
-})
+});
 const BatchUpdateValuesSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet'),
-    valueInputOption: v3_1.z
-        .enum(['RAW', 'USER_ENTERED'])
-        .optional()
-        .default('USER_ENTERED')
-        .describe('How input data should be interpreted'),
+    valueInputOption: v3_1.z.enum(['RAW', 'USER_ENTERED']).optional().default('USER_ENTERED').describe('How input data should be interpreted'),
     values: v3_1.z
         .string()
         .describe('JSON array of value ranges to update (e.g., [{"range": "A1:B2", "values": [["A1", "B1"], ["A2", "B2"]]}])'),
     includeValuesInResponse: v3_1.z.boolean().optional().default(false).describe('Whether to return the updated values in the response')
-})
+});
 const BatchClearValuesSchema = v3_1.z.object({
     spreadsheetId: v3_1.z.string().describe('The ID of the spreadsheet'),
     ranges: v3_1.z.string().describe('Comma-separated list of ranges to clear')
-})
+});
 class BaseGoogleSheetsTool extends core_1.DynamicStructuredTool {
     constructor(args) {
-        super(args)
-        this.accessToken = ''
-        this.accessToken = args.accessToken ?? ''
+        super(args);
+        this.accessToken = '';
+        this.accessToken = args.accessToken ?? '';
     }
     async makeGoogleSheetsRequest({ endpoint, method = 'GET', body, params }) {
-        const url = `https://sheets.googleapis.com/v4/${endpoint}`
+        const url = `https://sheets.googleapis.com/v4/${endpoint}`;
         const headers = {
             Authorization: `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
             Accept: 'application/json',
             ...this.headers
-        }
+        };
         const response = await (0, node_fetch_1.default)(url, {
             method,
             headers,
             body: body ? JSON.stringify(body) : undefined
-        })
+        });
         if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Google Sheets API Error ${response.status}: ${response.statusText} - ${errorText}`)
+            const errorText = await response.text();
+            throw new Error(`Google Sheets API Error ${response.status}: ${response.statusText} - ${errorText}`);
         }
-        const data = await response.text()
-        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
+        const data = await response.text();
+        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
     }
 }
 // Spreadsheet Tools
@@ -141,32 +127,34 @@ class CreateSpreadsheetTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
             const body = {
                 properties: {
                     title: params.title
                 }
-            }
-            if (params.locale) body.properties.locale = params.locale
-            if (params.timeZone) body.properties.timeZone = params.timeZone
+            };
+            if (params.locale)
+                body.properties.locale = params.locale;
+            if (params.timeZone)
+                body.properties.timeZone = params.timeZone;
             // Add sheets if specified
             if (params.sheetCount && params.sheetCount > 1) {
-                body.sheets = []
+                body.sheets = [];
                 for (let i = 0; i < params.sheetCount; i++) {
                     body.sheets.push({
                         properties: {
                             title: i === 0 ? 'Sheet1' : `Sheet${i + 1}`
                         }
-                    })
+                    });
                 }
             }
             return await this.makeGoogleSheetsRequest({
@@ -174,9 +162,10 @@ class CreateSpreadsheetTool extends BaseGoogleSheetsTool {
                 method: 'POST',
                 body,
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error creating spreadsheet: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error creating spreadsheet: ${error}`, params);
         }
     }
 }
@@ -189,32 +178,34 @@ class GetSpreadsheetTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const queryParams = new URLSearchParams()
+            const queryParams = new URLSearchParams();
             if (params.ranges) {
                 params.ranges.split(',').forEach((range) => {
-                    queryParams.append('ranges', range.trim())
-                })
+                    queryParams.append('ranges', range.trim());
+                });
             }
-            if (params.includeGridData) queryParams.append('includeGridData', 'true')
-            const queryString = queryParams.toString()
-            const endpoint = `spreadsheets/${params.spreadsheetId}${queryString ? `?${queryString}` : ''}`
+            if (params.includeGridData)
+                queryParams.append('includeGridData', 'true');
+            const queryString = queryParams.toString();
+            const endpoint = `spreadsheets/${params.spreadsheetId}${queryString ? `?${queryString}` : ''}`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'GET',
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting spreadsheet: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting spreadsheet: ${error}`, params);
         }
     }
 }
@@ -227,38 +218,42 @@ class UpdateSpreadsheetTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const requests = []
+            const requests = [];
             if (params.title || params.locale || params.timeZone) {
-                const updateProperties = {}
-                if (params.title) updateProperties.title = params.title
-                if (params.locale) updateProperties.locale = params.locale
-                if (params.timeZone) updateProperties.timeZone = params.timeZone
+                const updateProperties = {};
+                if (params.title)
+                    updateProperties.title = params.title;
+                if (params.locale)
+                    updateProperties.locale = params.locale;
+                if (params.timeZone)
+                    updateProperties.timeZone = params.timeZone;
                 requests.push({
                     updateSpreadsheetProperties: {
                         properties: updateProperties,
                         fields: Object.keys(updateProperties).join(',')
                     }
-                })
+                });
             }
-            const body = { requests }
+            const body = { requests };
             return await this.makeGoogleSheetsRequest({
                 endpoint: `spreadsheets/${params.spreadsheetId}:batchUpdate`,
                 method: 'POST',
                 body,
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error updating spreadsheet: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error updating spreadsheet: ${error}`, params);
         }
     }
 }
@@ -272,30 +267,34 @@ class GetValuesTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const queryParams = new URLSearchParams()
-            if (params.valueRenderOption) queryParams.append('valueRenderOption', params.valueRenderOption)
-            if (params.dateTimeRenderOption) queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption)
-            if (params.majorDimension) queryParams.append('majorDimension', params.majorDimension)
-            const queryString = queryParams.toString()
-            const encodedRange = encodeURIComponent(params.range)
-            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}${queryString ? `?${queryString}` : ''}`
+            const queryParams = new URLSearchParams();
+            if (params.valueRenderOption)
+                queryParams.append('valueRenderOption', params.valueRenderOption);
+            if (params.dateTimeRenderOption)
+                queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption);
+            if (params.majorDimension)
+                queryParams.append('majorDimension', params.majorDimension);
+            const queryString = queryParams.toString();
+            const encodedRange = encodeURIComponent(params.range);
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}${queryString ? `?${queryString}` : ''}`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'GET',
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting values: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting values: ${error}`, params);
         }
     }
 }
@@ -308,38 +307,40 @@ class UpdateValuesTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'PUT',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            let values
+            let values;
             try {
-                values = JSON.parse(params.values)
-            } catch (error) {
-                throw new Error('Values must be a valid JSON array')
+                values = JSON.parse(params.values);
+            }
+            catch (error) {
+                throw new Error('Values must be a valid JSON array');
             }
             const body = {
                 values,
                 majorDimension: params.majorDimension || 'ROWS'
-            }
-            const queryParams = new URLSearchParams()
-            queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED')
-            const encodedRange = encodeURIComponent(params.range)
-            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}?${queryParams.toString()}`
+            };
+            const queryParams = new URLSearchParams();
+            queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED');
+            const encodedRange = encodeURIComponent(params.range);
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}?${queryParams.toString()}`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'PUT',
                 body,
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error updating values: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error updating values: ${error}`, params);
         }
     }
 }
@@ -352,39 +353,41 @@ class AppendValuesTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            let values
+            let values;
             try {
-                values = JSON.parse(params.values)
-            } catch (error) {
-                throw new Error('Values must be a valid JSON array')
+                values = JSON.parse(params.values);
+            }
+            catch (error) {
+                throw new Error('Values must be a valid JSON array');
             }
             const body = {
                 values,
                 majorDimension: params.majorDimension || 'ROWS'
-            }
-            const queryParams = new URLSearchParams()
-            queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED')
-            queryParams.append('insertDataOption', params.insertDataOption || 'OVERWRITE')
-            const encodedRange = encodeURIComponent(params.range)
-            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:append?${queryParams.toString()}`
+            };
+            const queryParams = new URLSearchParams();
+            queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED');
+            queryParams.append('insertDataOption', params.insertDataOption || 'OVERWRITE');
+            const encodedRange = encodeURIComponent(params.range);
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:append?${queryParams.toString()}`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'POST',
                 body,
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error appending values: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error appending values: ${error}`, params);
         }
     }
 }
@@ -397,26 +400,27 @@ class ClearValuesTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const encodedRange = encodeURIComponent(params.range)
-            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:clear`
+            const encodedRange = encodeURIComponent(params.range);
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:clear`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'POST',
                 body: {},
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error clearing values: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error clearing values: ${error}`, params);
         }
     }
 }
@@ -429,32 +433,36 @@ class BatchGetValuesTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const queryParams = new URLSearchParams()
+            const queryParams = new URLSearchParams();
             // Add ranges
             params.ranges.split(',').forEach((range) => {
-                queryParams.append('ranges', range.trim())
-            })
-            if (params.valueRenderOption) queryParams.append('valueRenderOption', params.valueRenderOption)
-            if (params.dateTimeRenderOption) queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption)
-            if (params.majorDimension) queryParams.append('majorDimension', params.majorDimension)
-            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchGet?${queryParams.toString()}`
+                queryParams.append('ranges', range.trim());
+            });
+            if (params.valueRenderOption)
+                queryParams.append('valueRenderOption', params.valueRenderOption);
+            if (params.dateTimeRenderOption)
+                queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption);
+            if (params.majorDimension)
+                queryParams.append('majorDimension', params.majorDimension);
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchGet?${queryParams.toString()}`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'GET',
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error batch getting values: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error batch getting values: ${error}`, params);
         }
     }
 }
@@ -467,36 +475,38 @@ class BatchUpdateValuesTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            let valueRanges
+            let valueRanges;
             try {
-                valueRanges = JSON.parse(params.values)
-            } catch (error) {
-                throw new Error('Values must be a valid JSON array of value ranges')
+                valueRanges = JSON.parse(params.values);
+            }
+            catch (error) {
+                throw new Error('Values must be a valid JSON array of value ranges');
             }
             const body = {
                 valueInputOption: params.valueInputOption || 'USER_ENTERED',
                 data: valueRanges,
                 includeValuesInResponse: params.includeValuesInResponse || false
-            }
-            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchUpdate`
+            };
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchUpdate`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'POST',
                 body,
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error batch updating values: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error batch updating values: ${error}`, params);
         }
     }
 }
@@ -509,33 +519,34 @@ class BatchClearValuesTool extends BaseGoogleSheetsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const ranges = params.ranges.split(',').map((range) => range.trim())
-            const body = { ranges }
-            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchClear`
+            const ranges = params.ranges.split(',').map((range) => range.trim());
+            const body = { ranges };
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchClear`;
             return await this.makeGoogleSheetsRequest({
                 endpoint,
                 method: 'POST',
                 body,
                 params
-            })
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error batch clearing values: ${error}`, params)
+            });
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error batch clearing values: ${error}`, params);
         }
     }
 }
 const createGoogleSheetsTools = (args) => {
-    const { actions = [], accessToken, defaultParams } = args || {}
-    const tools = []
+    const { actions = [], accessToken, defaultParams } = args || {};
+    const tools = [];
     // Define all available tools
     const toolClasses = {
         // Spreadsheet tools
@@ -550,15 +561,15 @@ const createGoogleSheetsTools = (args) => {
         batchGetValues: BatchGetValuesTool,
         batchUpdateValues: BatchUpdateValuesTool,
         batchClearValues: BatchClearValuesTool
-    }
+    };
     // Create tools based on requested actions
     actions.forEach((action) => {
-        const ToolClass = toolClasses[action]
+        const ToolClass = toolClasses[action];
         if (ToolClass) {
-            tools.push(new ToolClass({ accessToken, defaultParams }))
+            tools.push(new ToolClass({ accessToken, defaultParams }));
         }
-    })
-    return tools
-}
-exports.createGoogleSheetsTools = createGoogleSheetsTools
+    });
+    return tools;
+};
+exports.createGoogleSheetsTools = createGoogleSheetsTools;
 //# sourceMappingURL=core.js.map

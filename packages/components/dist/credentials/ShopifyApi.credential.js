@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class ShopifyApi {
     constructor() {
-        this.label = 'Shopify API'
-        this.name = 'shopifyApi'
-        this.version = 1.0
+        this.label = 'Shopify API';
+        this.name = 'shopifyApi';
+        this.version = 1.0;
         this.description =
-            'Custom App Admin API access token created in your Shopify admin (Settings → Apps and sales channels → Develop apps).'
+            'Custom App Admin API access token created in your Shopify admin (Settings → Apps and sales channels → Develop apps).';
         this.inputs = [
             {
                 label: 'Shop Domain',
@@ -20,8 +20,8 @@ class ShopifyApi {
                 type: 'password',
                 placeholder: '<SHOPIFY_ADMIN_ACCESS_TOKEN>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: ShopifyApi }
+module.exports = { credClass: ShopifyApi };
 //# sourceMappingURL=ShopifyApi.credential.js.map

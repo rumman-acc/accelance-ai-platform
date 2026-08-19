@@ -1,8 +1,8 @@
-import { BaseChatModel, type BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { BaseMessage } from '@langchain/core/messages'
-import { ChatResult, ChatGenerationChunk } from '@langchain/core/outputs'
-import { CallbackManagerForLLMRun } from '@langchain/core/callbacks/manager'
-import { IVisionChatModal, IMultiModalOption } from '../../../src'
+import { BaseChatModel, type BaseChatModelParams } from '@langchain/core/language_models/chat_models';
+import { BaseMessage } from '@langchain/core/messages';
+import { ChatResult, ChatGenerationChunk } from '@langchain/core/outputs';
+import { CallbackManagerForLLMRun } from '@langchain/core/callbacks/manager';
+import { IVisionChatModal, IMultiModalOption } from '../../../src';
 /**
  * Request format used when calling Bedrock's InvokeModel API for imported models.
  *
@@ -13,24 +13,24 @@ import { IVisionChatModal, IMultiModalOption } from '../../../src'
  *
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/invoke-imported-model.html
  */
-export type ImportedModelFormat = 'bedrock-completion' | 'openai-chat-completion'
+export type ImportedModelFormat = 'bedrock-completion' | 'openai-chat-completion';
 export interface BedrockImportedChatInput extends BaseChatModelParams {
-    region: string
-    modelId: string
-    format: ImportedModelFormat
-    temperature?: number
-    maxTokens?: number
-    streaming?: boolean
+    region: string;
+    modelId: string;
+    format: ImportedModelFormat;
+    temperature?: number;
+    maxTokens?: number;
+    streaming?: boolean;
     credentials?: {
-        accessKeyId: string
-        secretAccessKey: string
-        sessionToken?: string
-    }
+        accessKeyId: string;
+        secretAccessKey: string;
+        sessionToken?: string;
+    };
 }
 interface ImportedModelInfo {
-    instructSupported?: boolean
-    modelArchitecture?: string
-    supportedFormats?: string[]
+    instructSupported?: boolean;
+    modelArchitecture?: string;
+    supportedFormats?: string[];
 }
 /**
  * Fetches metadata and supported request formats for an imported Bedrock model.
@@ -46,23 +46,19 @@ interface ImportedModelInfo {
  * @see https://docs.aws.amazon.com/bedrock/latest/APIReference/API_GetImportedModel.html
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/invoke-imported-model.html
  */
-export declare function getImportedModelInfo(
-    modelId: string,
-    region: string,
-    credentials?: {
-        accessKeyId: string
-        secretAccessKey: string
-        sessionToken?: string
-    }
-): Promise<ImportedModelInfo>
+export declare function getImportedModelInfo(modelId: string, region: string, credentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken?: string;
+}): Promise<ImportedModelInfo>;
 /**
  * Selects the best request format based on the model's supported formats.
  * Prefers OpenAIChatCompletion (structured messages, tool_calls, token usage)
  * over BedrockCompletion (raw prompt string). Falls back to openai-chat-completion
  * if no format info is available.
  */
-export declare function detectFormat(supportedFormats?: string[]): ImportedModelFormat
-export declare function _resetModelInfoCache(): void
+export declare function detectFormat(supportedFormats?: string[]): ImportedModelFormat;
+export declare function _resetModelInfoCache(): void;
 /**
  * LangChain-compatible chat model for Bedrock imported models that don't support
  * the Converse API (instructSupported: false).
@@ -79,38 +75,34 @@ export declare function _resetModelInfoCache(): void
  * @see https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModel.html
  */
 export declare class BedrockImportedChat extends BaseChatModel implements IVisionChatModal {
-    configuredModel: string
-    configuredMaxToken?: number
-    multiModalOption: IMultiModalOption
-    id: string
-    private region
-    private modelId
-    private format
-    private temperature
-    private maxTokens
-    private streamingEnabled
-    private credentials?
-    private client
-    constructor(id: string, fields: BedrockImportedChatInput)
-    _llmType(): string
-    get callKeys(): string[]
-    setMultiModalOption(multiModalOption: IMultiModalOption): void
-    _generate(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult>
-    _streamResponseChunks(
-        messages: BaseMessage[],
-        _options: this['ParsedCallOptions'],
-        runManager?: CallbackManagerForLLMRun
-    ): AsyncGenerator<ChatGenerationChunk>
-    private buildRequestBody
-    private buildBedrockCompletionBody
-    private buildOpenAIChatBody
-    convertMessagesToPrompt(messages: BaseMessage[]): string
-    convertMessagesToOpenAI(messages: BaseMessage[]): Array<Record<string, unknown>>
-    private convertMultiModalContent
-    private parseResponse
-    private parseBedrockCompletionResponse
-    private parseOpenAIChatResponse
-    private extractStreamChunkText
-    private normalizeError
+    configuredModel: string;
+    configuredMaxToken?: number;
+    multiModalOption: IMultiModalOption;
+    id: string;
+    private region;
+    private modelId;
+    private format;
+    private temperature;
+    private maxTokens;
+    private streamingEnabled;
+    private credentials?;
+    private client;
+    constructor(id: string, fields: BedrockImportedChatInput);
+    _llmType(): string;
+    get callKeys(): string[];
+    setMultiModalOption(multiModalOption: IMultiModalOption): void;
+    _generate(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult>;
+    _streamResponseChunks(messages: BaseMessage[], _options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): AsyncGenerator<ChatGenerationChunk>;
+    private buildRequestBody;
+    private buildBedrockCompletionBody;
+    private buildOpenAIChatBody;
+    convertMessagesToPrompt(messages: BaseMessage[]): string;
+    convertMessagesToOpenAI(messages: BaseMessage[]): Array<Record<string, unknown>>;
+    private convertMultiModalContent;
+    private parseResponse;
+    private parseBedrockCompletionResponse;
+    private parseOpenAIChatResponse;
+    private extractStreamChunkText;
+    private normalizeError;
 }
-export {}
+export {};

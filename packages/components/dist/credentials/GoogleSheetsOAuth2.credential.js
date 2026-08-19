@@ -1,17 +1,17 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const scopes = [
     'https://www.googleapis.com/auth/drive.file',
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive.metadata'
-]
+];
 class GoogleSheetsOAuth2 {
     constructor() {
-        this.label = 'Google Sheets OAuth2'
-        this.name = 'googleSheetsOAuth2'
-        this.version = 1.0
+        this.label = 'Google Sheets OAuth2';
+        this.name = 'googleSheetsOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/google-sheets">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/google-sheets">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -49,8 +49,8 @@ class GoogleSheetsOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: GoogleSheetsOAuth2 }
+module.exports = { credClass: GoogleSheetsOAuth2 };
 //# sourceMappingURL=GoogleSheetsOAuth2.credential.js.map

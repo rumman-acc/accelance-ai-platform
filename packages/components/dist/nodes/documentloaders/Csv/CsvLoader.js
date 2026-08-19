@@ -1,13 +1,11 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.CSVLoader = void 0
-const text_1 = require('@langchain/classic/document_loaders/fs/text')
-const papaparse_1 = __importDefault(require('papaparse'))
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CSVLoader = void 0;
+const text_1 = require("@langchain/classic/document_loaders/fs/text");
+const papaparse_1 = __importDefault(require("papaparse"));
 /**
  * A class that extends the TextLoader class. It represents a document
  * loader that loads documents from a CSV file. It has a constructor that
@@ -18,12 +16,13 @@ const papaparse_1 = __importDefault(require('papaparse'))
  */
 class CSVLoader extends text_1.TextLoader {
     constructor(filePathOrBlob, options) {
-        super(filePathOrBlob)
-        this.options = {}
+        super(filePathOrBlob);
+        this.options = {};
         if (typeof options === 'string') {
-            this.options = { column: options }
-        } else {
-            this.options = options ?? this.options
+            this.options = { column: options };
+        }
+        else {
+            this.options = options ?? this.options;
         }
     }
     /**
@@ -38,30 +37,27 @@ class CSVLoader extends text_1.TextLoader {
      * @returns An array of strings representing the pageContent of each document.
      */
     async parse(raw) {
-        const { column, separator } = this.options
-        const {
-            data: parsed,
-            meta: { fields = [] }
-        } = papaparse_1.default.parse(raw.trim(), {
+        const { column, separator } = this.options;
+        const { data: parsed, meta: { fields = [] } } = papaparse_1.default.parse(raw.trim(), {
             delimiter: separator,
             header: true
-        })
+        });
         if (column !== undefined) {
             if (!fields.length) {
-                throw new Error(`Unable to resolve fields from header.`)
+                throw new Error(`Unable to resolve fields from header.`);
             }
-            let searchIdx = column
+            let searchIdx = column;
             if (typeof column == 'number') {
-                searchIdx = fields[column]
+                searchIdx = fields[column];
             }
             if (!fields.includes(searchIdx)) {
-                throw new Error(`Column ${column} not found in CSV file.`)
+                throw new Error(`Column ${column} not found in CSV file.`);
             }
             // Note TextLoader will raise an exception if the value is null.
-            return parsed.map((row) => row[searchIdx])
+            return parsed.map((row) => row[searchIdx]);
         }
-        return parsed.map((row) => fields.map((key) => `${key.trim() || '_0'}: ${row[key]?.trim()}`).join('\n'))
+        return parsed.map((row) => fields.map((key) => `${key.trim() || '_0'}: ${row[key]?.trim()}`).join('\n'));
     }
 }
-exports.CSVLoader = CSVLoader
+exports.CSVLoader = CSVLoader;
 //# sourceMappingURL=CsvLoader.js.map

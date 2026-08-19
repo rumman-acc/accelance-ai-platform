@@ -15,15 +15,11 @@
  * Does this tool node component (as found in componentNodes[toolName]) expose at least one
  * action whose name matches a mutating/write-style pattern?
  */
-export declare const isWriteCapableToolNode: (
-    componentNode:
-        | {
-              inputs?: any[]
-          }
-        | undefined
-) => boolean
+export declare const isWriteCapableToolNode: (componentNode: {
+    inputs?: any[];
+} | undefined) => boolean;
 /**
  * Given the full componentNodes registry and a list of tool node names, return the subset that
  * are write-capable per isWriteCapableToolNode.
  */
-export declare const getWriteCapableToolNames: (componentNodes: Record<string, any>, toolNodeNames: string[]) => string[]
+export declare const getWriteCapableToolNames: (componentNodes: Record<string, any>, toolNodeNames: string[]) => string[];

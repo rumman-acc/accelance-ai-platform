@@ -1,25 +1,25 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class HuggingFaceInference_LLMs {
     constructor() {
-        this.label = 'HuggingFace Inference'
-        this.name = 'huggingFaceInference_LLMs'
-        this.version = 2.0
-        this.type = 'HuggingFaceInference'
-        this.icon = 'HuggingFace.svg'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around HuggingFace large language models'
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'Use HuggingFace Inference Chat Models instead'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.HuggingFaceInference)]
+        this.label = 'HuggingFace Inference';
+        this.name = 'huggingFaceInference_LLMs';
+        this.version = 2.0;
+        this.type = 'HuggingFaceInference';
+        this.icon = 'HuggingFace.svg';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around HuggingFace large language models';
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'Use HuggingFace Inference Chat Models instead';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.HuggingFaceInference)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['huggingFaceApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -88,33 +88,40 @@ class HuggingFaceInference_LLMs {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const model = nodeData.inputs?.model
-        const temperature = nodeData.inputs?.temperature
-        const maxTokens = nodeData.inputs?.maxTokens
-        const topP = nodeData.inputs?.topP
-        const hfTopK = nodeData.inputs?.hfTopK
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty
-        const endpoint = nodeData.inputs?.endpoint
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const huggingFaceApiKey = (0, utils_1.getCredentialParam)('huggingFaceApiKey', credentialData, nodeData)
-        const cache = nodeData.inputs?.cache
+        const model = nodeData.inputs?.model;
+        const temperature = nodeData.inputs?.temperature;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const topP = nodeData.inputs?.topP;
+        const hfTopK = nodeData.inputs?.hfTopK;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty;
+        const endpoint = nodeData.inputs?.endpoint;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const huggingFaceApiKey = (0, utils_1.getCredentialParam)('huggingFaceApiKey', credentialData, nodeData);
+        const cache = nodeData.inputs?.cache;
         const obj = {
             model,
             apiKey: huggingFaceApiKey
-        }
-        if (temperature) obj.temperature = parseFloat(temperature)
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (hfTopK) obj.topK = parseFloat(hfTopK)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (endpoint) obj.endpoint = endpoint
-        const huggingFace = new core_1.HuggingFaceInference(obj)
-        if (cache) huggingFace.cache = cache
-        return huggingFace
+        };
+        if (temperature)
+            obj.temperature = parseFloat(temperature);
+        if (maxTokens)
+            obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (hfTopK)
+            obj.topK = parseFloat(hfTopK);
+        if (frequencyPenalty)
+            obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (endpoint)
+            obj.endpoint = endpoint;
+        const huggingFace = new core_1.HuggingFaceInference(obj);
+        if (cache)
+            huggingFace.cache = cache;
+        return huggingFace;
     }
 }
-module.exports = { nodeClass: HuggingFaceInference_LLMs }
+module.exports = { nodeClass: HuggingFaceInference_LLMs };
 //# sourceMappingURL=HuggingFaceInference.js.map

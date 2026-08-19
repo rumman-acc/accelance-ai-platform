@@ -1,16 +1,15 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class GoogleVertexAuth {
     constructor() {
-        this.label = 'Google Vertex Auth'
-        this.name = 'googleVertexAuth'
-        this.version = 1.0
+        this.label = 'Google Vertex Auth';
+        this.name = 'googleVertexAuth';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Google Application Credential File Path',
                 name: 'googleApplicationCredentialFilePath',
-                description:
-                    'Path to your google application credential json file. You can also use the credential JSON object (either one)',
+                description: 'Path to your google application credential json file. You can also use the credential JSON object (either one)',
                 placeholder: 'your-path/application_default_credentials.json',
                 type: 'string',
                 optional: true
@@ -43,8 +42,8 @@ class GoogleVertexAuth {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: GoogleVertexAuth }
+module.exports = { credClass: GoogleVertexAuth };
 //# sourceMappingURL=GoogleAuth.credential.js.map

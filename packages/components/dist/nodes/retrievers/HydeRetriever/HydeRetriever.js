@@ -1,18 +1,18 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const prompts_1 = require('@langchain/core/prompts')
-const hyde_1 = require('@langchain/classic/retrievers/hyde')
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const prompts_1 = require("@langchain/core/prompts");
+const hyde_1 = require("@langchain/classic/retrievers/hyde");
+const utils_1 = require("../../../src/utils");
 class HydeRetriever_Retrievers {
     constructor() {
-        this.label = 'HyDE Retriever'
-        this.name = 'HydeRetriever'
-        this.version = 3.0
-        this.type = 'HydeRetriever'
-        this.icon = 'hyderetriever.svg'
-        this.category = 'Retrievers'
-        this.description = 'Use HyDE retriever to retrieve from a vector store'
-        this.baseClasses = [this.type, 'BaseRetriever']
+        this.label = 'HyDE Retriever';
+        this.name = 'HydeRetriever';
+        this.version = 3.0;
+        this.type = 'HydeRetriever';
+        this.icon = 'hyderetriever.svg';
+        this.category = 'Retrievers';
+        this.description = 'Use HyDE retriever to retrieve from a vector store';
+        this.baseClasses = [this.type, 'BaseRetriever'];
         this.inputs = [
             {
                 label: 'Language Model',
@@ -117,7 +117,7 @@ Passage:`
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'HyDE Retriever',
@@ -136,36 +136,41 @@ Passage:`
                 description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
-        ]
+        ];
     }
     async init(nodeData, input) {
-        const llm = nodeData.inputs?.model
-        const vectorStore = nodeData.inputs?.vectorStore
-        const promptKey = nodeData.inputs?.promptKey
-        const customPrompt = nodeData.inputs?.customPrompt
-        const query = nodeData.inputs?.query
-        const topK = nodeData.inputs?.topK
-        const k = topK ? parseFloat(topK) : 4
-        const output = nodeData.outputs?.output
+        const llm = nodeData.inputs?.model;
+        const vectorStore = nodeData.inputs?.vectorStore;
+        const promptKey = nodeData.inputs?.promptKey;
+        const customPrompt = nodeData.inputs?.customPrompt;
+        const query = nodeData.inputs?.query;
+        const topK = nodeData.inputs?.topK;
+        const k = topK ? parseFloat(topK) : 4;
+        const output = nodeData.outputs?.output;
         const obj = {
             llm,
             vectorStore,
             k
-        }
-        if (customPrompt) obj.promptTemplate = prompts_1.PromptTemplate.fromTemplate(customPrompt)
-        else if (promptKey) obj.promptTemplate = promptKey
-        const retriever = new hyde_1.HydeRetriever(obj)
-        retriever.filter = vectorStore?.lc_kwargs?.filter ?? vectorStore.filter
-        if (output === 'retriever') return retriever
-        else if (output === 'document') return await retriever._getRelevantDocuments(query ? query : input)
+        };
+        if (customPrompt)
+            obj.promptTemplate = prompts_1.PromptTemplate.fromTemplate(customPrompt);
+        else if (promptKey)
+            obj.promptTemplate = promptKey;
+        const retriever = new hyde_1.HydeRetriever(obj);
+        retriever.filter = vectorStore?.lc_kwargs?.filter ?? vectorStore.filter;
+        if (output === 'retriever')
+            return retriever;
+        else if (output === 'document')
+            return await retriever._getRelevantDocuments(query ? query : input);
         else if (output === 'text') {
-            let finaltext = ''
-            const docs = await retriever._getRelevantDocuments(query ? query : input)
-            for (const doc of docs) finaltext += `${doc.pageContent}\n`
-            return (0, utils_1.handleEscapeCharacters)(finaltext, false)
+            let finaltext = '';
+            const docs = await retriever._getRelevantDocuments(query ? query : input);
+            for (const doc of docs)
+                finaltext += `${doc.pageContent}\n`;
+            return (0, utils_1.handleEscapeCharacters)(finaltext, false);
         }
-        return retriever
+        return retriever;
     }
 }
-module.exports = { nodeClass: HydeRetriever_Retrievers }
+module.exports = { nodeClass: HydeRetriever_Retrievers };
 //# sourceMappingURL=HydeRetriever.js.map

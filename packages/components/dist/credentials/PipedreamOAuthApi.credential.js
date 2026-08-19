@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class PipedreamOAuthApiCredential {
     constructor() {
-        this.label = 'Pipedream Connect'
-        this.name = 'pipedreamOAuthApi'
-        this.version = 1.0
+        this.label = 'Pipedream Connect';
+        this.name = 'pipedreamOAuthApi';
+        this.version = 1.0;
         this.description =
-            'Authenticate with Pipedream Connect <a target="_blank" href="https://pipedream.com/docs/connect/api-reference/authentication">Documentation here</a>'
+            'Authenticate with Pipedream Connect <a target="_blank" href="https://pipedream.com/docs/connect/api-reference/authentication">Documentation here</a>';
         this.inputs = [
             {
                 label: 'Client ID',
@@ -31,11 +31,10 @@ class PipedreamOAuthApiCredential {
                 type: 'string',
                 optional: true,
                 placeholder: 'connect:*',
-                description:
-                    'Space-separated list of scopes (e.g., connect:* connect:actions:*). Omitting defaults to * (full access). <a target="_blank" href="https://pipedream.com/docs/connect/api-reference/authentication">Available scopes</a>'
+                description: 'Space-separated list of scopes (e.g., connect:* connect:actions:*). Omitting defaults to * (full access). <a target="_blank" href="https://pipedream.com/docs/connect/api-reference/authentication">Available scopes</a>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: PipedreamOAuthApiCredential }
+module.exports = { credClass: PipedreamOAuthApiCredential };
 //# sourceMappingURL=PipedreamOAuthApi.credential.js.map

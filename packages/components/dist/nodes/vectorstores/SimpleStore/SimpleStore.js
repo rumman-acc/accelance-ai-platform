@@ -1,50 +1,51 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const llamaindex_1 = require('llamaindex')
-const documents_1 = require('@langchain/core/documents')
-const validator_1 = require('../../../src/validator')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const llamaindex_1 = require("llamaindex");
+const documents_1 = require("@langchain/core/documents");
+const validator_1 = require("../../../src/validator");
 class SimpleStoreUpsert_LlamaIndex_VectorStores {
     constructor() {
         //@ts-ignore
         this.vectorStoreMethods = {
             async upsert(nodeData) {
-                const basePath = nodeData.inputs?.basePath
-                const docs = nodeData.inputs?.document
-                const embeddings = nodeData.inputs?.embeddings
-                const model = nodeData.inputs?.model
-                const flattenDocs = docs && docs.length ? (0, lodash_1.flatten)(docs) : []
-                const finalDocs = []
+                const basePath = nodeData.inputs?.basePath;
+                const docs = nodeData.inputs?.document;
+                const embeddings = nodeData.inputs?.embeddings;
+                const model = nodeData.inputs?.model;
+                const flattenDocs = docs && docs.length ? (0, lodash_1.flatten)(docs) : [];
+                const finalDocs = [];
                 for (let i = 0; i < flattenDocs.length; i += 1) {
-                    finalDocs.push(new documents_1.Document(flattenDocs[i]))
+                    finalDocs.push(new documents_1.Document(flattenDocs[i]));
                 }
-                const llamadocs = []
+                const llamadocs = [];
                 for (const doc of finalDocs) {
-                    llamadocs.push(new llamaindex_1.Document({ text: doc.pageContent, metadata: doc.metadata }))
+                    llamadocs.push(new llamaindex_1.Document({ text: doc.pageContent, metadata: doc.metadata }));
                 }
-                const serviceContext = (0, llamaindex_1.serviceContextFromDefaults)({ llm: model, embedModel: embeddings })
+                const serviceContext = (0, llamaindex_1.serviceContextFromDefaults)({ llm: model, embedModel: embeddings });
                 // Validate and sanitize the base path to prevent path traversal attacks
-                const filePath = (0, validator_1.validateVectorStorePath)(basePath)
-                const storageContext = await (0, llamaindex_1.storageContextFromDefaults)({ persistDir: filePath })
+                const filePath = (0, validator_1.validateVectorStorePath)(basePath);
+                const storageContext = await (0, llamaindex_1.storageContextFromDefaults)({ persistDir: filePath });
                 try {
-                    await llamaindex_1.VectorStoreIndex.fromDocuments(llamadocs, { serviceContext, storageContext })
-                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
-                } catch (e) {
-                    throw new Error(e)
+                    await llamaindex_1.VectorStoreIndex.fromDocuments(llamadocs, { serviceContext, storageContext });
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs };
+                }
+                catch (e) {
+                    throw new Error(e);
                 }
             }
-        }
-        this.label = 'SimpleStore'
-        this.name = 'simpleStoreLlamaIndex'
-        this.version = 1.0
-        this.type = 'SimpleVectorStore'
-        this.icon = 'simplevs.svg'
-        this.category = 'Vector Stores'
-        this.description = 'Upsert embedded data to local path and perform similarity search'
-        this.baseClasses = [this.type, 'VectorIndexRetriever']
-        this.tags = ['LlamaIndex']
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
+        };
+        this.label = 'SimpleStore';
+        this.name = 'simpleStoreLlamaIndex';
+        this.version = 1.0;
+        this.type = 'SimpleVectorStore';
+        this.icon = 'simplevs.svg';
+        this.category = 'Vector Stores';
+        this.description = 'Upsert embedded data to local path and perform similarity search';
+        this.baseClasses = [this.type, 'VectorIndexRetriever'];
+        this.tags = ['LlamaIndex'];
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.';
         this.inputs = [
             {
                 label: 'Document',
@@ -66,8 +67,7 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores {
             {
                 label: 'Base Path to store',
                 name: 'basePath',
-                description:
-                    'Path to store persist embeddings indexes with persistence. If not specified, default to same path where database is stored',
+                description: 'Path to store persist embeddings indexes with persistence. If not specified, default to same path where database is stored',
                 type: 'string',
                 optional: true
             },
@@ -79,7 +79,7 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores {
                 type: 'number',
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'SimpleStore Retriever',
@@ -91,31 +91,33 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores {
                 name: 'vectorStore',
                 baseClasses: [this.type, 'VectorStoreIndex']
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const basePath = nodeData.inputs?.basePath
-        const embeddings = nodeData.inputs?.embeddings
-        const model = nodeData.inputs?.model
-        const topK = nodeData.inputs?.topK
-        const k = topK ? parseFloat(topK) : 4
+        const basePath = nodeData.inputs?.basePath;
+        const embeddings = nodeData.inputs?.embeddings;
+        const model = nodeData.inputs?.model;
+        const topK = nodeData.inputs?.topK;
+        const k = topK ? parseFloat(topK) : 4;
         // Validate and sanitize the base path to prevent path traversal attacks
-        const filePath = (0, validator_1.validateVectorStorePath)(basePath)
-        const serviceContext = (0, llamaindex_1.serviceContextFromDefaults)({ llm: model, embedModel: embeddings })
-        const storageContext = await (0, llamaindex_1.storageContextFromDefaults)({ persistDir: filePath })
-        const index = await llamaindex_1.VectorStoreIndex.init({ storageContext, serviceContext })
-        const output = nodeData.outputs?.output
+        const filePath = (0, validator_1.validateVectorStorePath)(basePath);
+        const serviceContext = (0, llamaindex_1.serviceContextFromDefaults)({ llm: model, embedModel: embeddings });
+        const storageContext = await (0, llamaindex_1.storageContextFromDefaults)({ persistDir: filePath });
+        const index = await llamaindex_1.VectorStoreIndex.init({ storageContext, serviceContext });
+        const output = nodeData.outputs?.output;
         if (output === 'retriever') {
-            const retriever = index.asRetriever()
-            retriever.similarityTopK = k
-            retriever.serviceContext = serviceContext
-            return retriever
-        } else if (output === 'vectorStore') {
-            index.k = k
-            return index
+            const retriever = index.asRetriever();
+            retriever.similarityTopK = k;
+            retriever.serviceContext = serviceContext;
+            return retriever;
         }
-        return index
+        else if (output === 'vectorStore') {
+            ;
+            index.k = k;
+            return index;
+        }
+        return index;
     }
 }
-module.exports = { nodeClass: SimpleStoreUpsert_LlamaIndex_VectorStores }
+module.exports = { nodeClass: SimpleStoreUpsert_LlamaIndex_VectorStores };
 //# sourceMappingURL=SimpleStore.js.map

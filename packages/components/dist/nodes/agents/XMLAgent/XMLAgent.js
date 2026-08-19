@@ -1,14 +1,14 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const runnables_1 = require('@langchain/core/runnables')
-const prompts_1 = require('@langchain/core/prompts')
-const log_to_message_1 = require('@langchain/classic/agents/format_scratchpad/log_to_message')
-const utils_1 = require('../../../src/utils')
-const handler_1 = require('../../../src/handler')
-const agents_1 = require('../../../src/agents')
-const Moderation_1 = require('../../moderation/Moderation')
-const OutputParserHelpers_1 = require('../../outputparsers/OutputParserHelpers')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const runnables_1 = require("@langchain/core/runnables");
+const prompts_1 = require("@langchain/core/prompts");
+const log_to_message_1 = require("@langchain/classic/agents/format_scratchpad/log_to_message");
+const utils_1 = require("../../../src/utils");
+const handler_1 = require("../../../src/handler");
+const agents_1 = require("../../../src/agents");
+const Moderation_1 = require("../../moderation/Moderation");
+const OutputParserHelpers_1 = require("../../outputparsers/OutputParserHelpers");
 const defaultSystemMessage = `You are a helpful assistant. Help the user answer any questions.
 
 You have access to the following tools:
@@ -31,17 +31,17 @@ Previous Conversation:
 {chat_history}
 
 Question: {input}
-{agent_scratchpad}`
+{agent_scratchpad}`;
 class XMLAgent_Agents {
     constructor(fields) {
-        this.label = 'XML Agent'
-        this.name = 'xmlAgent'
-        this.version = 2.0
-        this.type = 'XMLAgent'
-        this.category = 'Agents'
-        this.icon = 'xmlagent.svg'
-        this.description = `Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)`
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(agents_1.AgentExecutor)]
+        this.label = 'XML Agent';
+        this.name = 'xmlAgent';
+        this.version = 2.0;
+        this.type = 'XMLAgent';
+        this.category = 'Agents';
+        this.icon = 'xmlagent.svg';
+        this.description = `Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)`;
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(agents_1.AgentExecutor)];
         this.inputs = [
             {
                 label: 'Tools',
@@ -83,132 +83,134 @@ class XMLAgent_Agents {
                 optional: true,
                 additionalParams: true
             }
-        ]
-        this.sessionId = fields?.sessionId
+        ];
+        this.sessionId = fields?.sessionId;
     }
     async init() {
-        return null
+        return null;
     }
     async run(nodeData, input, options) {
-        const memory = nodeData.inputs?.memory
-        const moderations = nodeData.inputs?.inputModeration
-        const shouldStreamResponse = options.shouldStreamResponse
-        const sseStreamer = options.sseStreamer
-        const chatId = options.chatId
+        const memory = nodeData.inputs?.memory;
+        const moderations = nodeData.inputs?.inputModeration;
+        const shouldStreamResponse = options.shouldStreamResponse;
+        const sseStreamer = options.sseStreamer;
+        const chatId = options.chatId;
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the OpenAI Function Agent
-                input = await (0, Moderation_1.checkInputs)(moderations, input)
-            } catch (e) {
-                await new Promise((resolve) => setTimeout(resolve, 500))
+                input = await (0, Moderation_1.checkInputs)(moderations, input);
+            }
+            catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 // if (options.shouldStreamResponse) {
                 //     streamResponse(options.sseStreamer, options.chatId, e.message)
                 // }
-                return (0, OutputParserHelpers_1.formatResponse)(e.message)
+                return (0, OutputParserHelpers_1.formatResponse)(e.message);
             }
         }
-        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
-        const loggerHandler = new handler_1.ConsoleCallbackHandler(options.logger, options?.orgId)
-        const callbacks = await (0, handler_1.additionalCallbacks)(nodeData, options)
-        let res = {}
-        let sourceDocuments = []
-        let usedTools = []
+        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input });
+        const loggerHandler = new handler_1.ConsoleCallbackHandler(options.logger, options?.orgId);
+        const callbacks = await (0, handler_1.additionalCallbacks)(nodeData, options);
+        let res = {};
+        let sourceDocuments = [];
+        let usedTools = [];
         if (shouldStreamResponse) {
-            const handler = new handler_1.CustomChainHandler(sseStreamer, chatId)
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            const handler = new handler_1.CustomChainHandler(sseStreamer, chatId);
+            res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] });
             if (res.sourceDocuments) {
                 if (sseStreamer) {
-                    sseStreamer.streamSourceDocumentsEvent(chatId, (0, lodash_1.flatten)(res.sourceDocuments))
+                    sseStreamer.streamSourceDocumentsEvent(chatId, (0, lodash_1.flatten)(res.sourceDocuments));
                 }
-                sourceDocuments = res.sourceDocuments
+                sourceDocuments = res.sourceDocuments;
             }
             if (res.usedTools) {
                 if (sseStreamer) {
-                    sseStreamer.streamUsedToolsEvent(chatId, (0, lodash_1.flatten)(res.usedTools))
+                    sseStreamer.streamUsedToolsEvent(chatId, (0, lodash_1.flatten)(res.usedTools));
                 }
-                usedTools = res.usedTools
+                usedTools = res.usedTools;
             }
             // If the tool is set to returnDirect, stream the output to the client
             if (res.usedTools && res.usedTools.length) {
-                let inputTools = nodeData.inputs?.tools
-                inputTools = (0, lodash_1.flatten)(inputTools)
+                let inputTools = nodeData.inputs?.tools;
+                inputTools = (0, lodash_1.flatten)(inputTools);
                 for (const tool of res.usedTools) {
-                    const inputTool = inputTools.find((inputTool) => inputTool.name === tool.tool)
+                    const inputTool = inputTools.find((inputTool) => inputTool.name === tool.tool);
                     if (inputTool && inputTool.returnDirect) {
                         if (sseStreamer) {
-                            sseStreamer.streamTokenEvent(chatId, tool.toolOutput)
+                            sseStreamer.streamTokenEvent(chatId, tool.toolOutput);
                         }
                     }
                 }
             }
-        } else {
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+        }
+        else {
+            res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] });
             if (res.sourceDocuments) {
-                sourceDocuments = res.sourceDocuments
+                sourceDocuments = res.sourceDocuments;
             }
             if (res.usedTools) {
-                usedTools = res.usedTools
+                usedTools = res.usedTools;
             }
         }
-        await memory.addChatMessages(
-            [
-                {
-                    text: input,
-                    type: 'userMessage'
-                },
-                {
-                    text: res?.output,
-                    type: 'apiMessage'
-                }
-            ],
-            this.sessionId
-        )
-        let finalRes = res?.output
+        await memory.addChatMessages([
+            {
+                text: input,
+                type: 'userMessage'
+            },
+            {
+                text: res?.output,
+                type: 'apiMessage'
+            }
+        ], this.sessionId);
+        let finalRes = res?.output;
         if (sourceDocuments.length || usedTools.length) {
-            finalRes = { text: res?.output }
+            finalRes = { text: res?.output };
             if (sourceDocuments.length) {
-                finalRes.sourceDocuments = (0, lodash_1.flatten)(sourceDocuments)
+                finalRes.sourceDocuments = (0, lodash_1.flatten)(sourceDocuments);
             }
             if (usedTools.length) {
-                finalRes.usedTools = usedTools
+                finalRes.usedTools = usedTools;
             }
-            return finalRes
+            return finalRes;
         }
-        return finalRes
+        return finalRes;
     }
 }
 const prepareAgent = async (nodeData, options, flowObj) => {
-    const model = nodeData.inputs?.model
-    const maxIterations = nodeData.inputs?.maxIterations
-    const memory = nodeData.inputs?.memory
-    let systemMessage = nodeData.inputs?.systemMessage
-    let tools = nodeData.inputs?.tools
-    tools = (0, lodash_1.flatten)(tools)
-    const inputKey = memory.inputKey ? memory.inputKey : 'input'
-    const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
-    const prependMessages = options?.prependMessages
-    systemMessage = (0, utils_1.transformBracesWithColon)(systemMessage)
-    let promptMessage = systemMessage ? systemMessage : defaultSystemMessage
-    if (memory.memoryKey) promptMessage = promptMessage.replaceAll('{chat_history}', `{${memory.memoryKey}}`)
-    if (memory.inputKey) promptMessage = promptMessage.replaceAll('{input}', `{${memory.inputKey}}`)
+    const model = nodeData.inputs?.model;
+    const maxIterations = nodeData.inputs?.maxIterations;
+    const memory = nodeData.inputs?.memory;
+    let systemMessage = nodeData.inputs?.systemMessage;
+    let tools = nodeData.inputs?.tools;
+    tools = (0, lodash_1.flatten)(tools);
+    const inputKey = memory.inputKey ? memory.inputKey : 'input';
+    const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history';
+    const prependMessages = options?.prependMessages;
+    systemMessage = (0, utils_1.transformBracesWithColon)(systemMessage);
+    let promptMessage = systemMessage ? systemMessage : defaultSystemMessage;
+    if (memory.memoryKey)
+        promptMessage = promptMessage.replaceAll('{chat_history}', `{${memory.memoryKey}}`);
+    if (memory.inputKey)
+        promptMessage = promptMessage.replaceAll('{input}', `{${memory.inputKey}}`);
     const prompt = prompts_1.ChatPromptTemplate.fromMessages([
         prompts_1.HumanMessagePromptTemplate.fromTemplate(promptMessage),
         new prompts_1.MessagesPlaceholder('agent_scratchpad')
-    ])
-    const missingVariables = ['tools', 'agent_scratchpad'].filter((v) => !prompt.inputVariables.includes(v))
+    ]);
+    const missingVariables = ['tools', 'agent_scratchpad'].filter((v) => !prompt.inputVariables.includes(v));
     if (missingVariables.length > 0) {
-        throw new Error(`Provided prompt is missing required input variables: ${JSON.stringify(missingVariables)}`)
+        throw new Error(`Provided prompt is missing required input variables: ${JSON.stringify(missingVariables)}`);
     }
     const llmWithStop = model.withConfig({
         stop: ['</tool_input>', '</final_answer>']
-    })
-    const messages = await memory.getChatMessages(flowObj.sessionId, false, prependMessages)
-    let chatHistoryMsgTxt = ''
+    });
+    const messages = (await memory.getChatMessages(flowObj.sessionId, false, prependMessages));
+    let chatHistoryMsgTxt = '';
     for (const message of messages) {
         if (message.type === 'apiMessage') {
-            chatHistoryMsgTxt += `\\nAI:${message.message}`
-        } else if (message.type === 'userMessage') {
-            chatHistoryMsgTxt += `\\nHuman:${message.message}`
+            chatHistoryMsgTxt += `\\nAI:${message.message}`;
+        }
+        else if (message.type === 'userMessage') {
+            chatHistoryMsgTxt += `\\nHuman:${message.message}`;
         }
     }
     const runnableAgent = runnables_1.RunnableSequence.from([
@@ -221,7 +223,7 @@ const prepareAgent = async (nodeData, options, flowObj) => {
         prompt,
         llmWithStop,
         new agents_1.XMLAgentOutputParser()
-    ])
+    ]);
     const executor = agents_1.AgentExecutor.fromAgentAndTools({
         agent: runnableAgent,
         tools,
@@ -231,8 +233,8 @@ const prepareAgent = async (nodeData, options, flowObj) => {
         isXML: true,
         verbose: process.env.DEBUG === 'true' ? true : false,
         maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
-    })
-    return executor
-}
-module.exports = { nodeClass: XMLAgent_Agents }
+    });
+    return executor;
+};
+module.exports = { nodeClass: XMLAgent_Agents };
 //# sourceMappingURL=XMLAgent.js.map

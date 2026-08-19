@@ -1,167 +1,153 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.getVoices = exports.convertTextToSpeechStream = void 0
-const utils_1 = require('./utils')
-const openai_1 = __importDefault(require('openai'))
-const elevenlabs_js_1 = require('@elevenlabs/elevenlabs-js')
-const node_stream_1 = require('node:stream')
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getVoices = exports.convertTextToSpeechStream = void 0;
+const utils_1 = require("./utils");
+const openai_1 = __importDefault(require("openai"));
+const elevenlabs_js_1 = require("@elevenlabs/elevenlabs-js");
+const node_stream_1 = require("node:stream");
 const TextToSpeechType = {
     OPENAI_TTS: 'openai',
     ELEVEN_LABS_TTS: 'elevenlabs'
-}
+};
 const convertTextToSpeechStream = async (text, textToSpeechConfig, options, abortController, onStart, onChunk, onEnd) => {
     return new Promise((resolve, reject) => {
-        let streamDestroyed = false
+        let streamDestroyed = false;
         // Handle abort signal early
         if (abortController.signal.aborted) {
-            reject(new Error('TTS generation aborted'))
-            return
+            reject(new Error('TTS generation aborted'));
+            return;
         }
         const processStream = async () => {
             try {
                 if (textToSpeechConfig) {
-                    const credentialId = textToSpeechConfig.credentialId
-                    const credentialData = await (0, utils_1.getCredentialData)(credentialId ?? '', options)
+                    const credentialId = textToSpeechConfig.credentialId;
+                    const credentialData = await (0, utils_1.getCredentialData)(credentialId ?? '', options);
                     switch (textToSpeechConfig.name) {
                         case TextToSpeechType.OPENAI_TTS: {
-                            onStart('mp3')
+                            onStart('mp3');
                             const openai = new openai_1.default({
                                 apiKey: credentialData.openAIApiKey
-                            })
-                            const response = await openai.audio.speech.create(
-                                {
-                                    model: 'gpt-4o-mini-tts',
-                                    voice: textToSpeechConfig.voice || 'alloy',
-                                    input: text,
-                                    response_format: 'mp3'
-                                },
-                                {
-                                    signal: abortController.signal
-                                }
-                            )
-                            const stream = node_stream_1.Readable.fromWeb(response.body)
+                            });
+                            const response = await openai.audio.speech.create({
+                                model: 'gpt-4o-mini-tts',
+                                voice: (textToSpeechConfig.voice || 'alloy'),
+                                input: text,
+                                response_format: 'mp3'
+                            }, {
+                                signal: abortController.signal
+                            });
+                            const stream = node_stream_1.Readable.fromWeb(response.body);
                             if (!stream) {
-                                throw new Error('Failed to get response stream')
+                                throw new Error('Failed to get response stream');
                             }
                             await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController, () => {
-                                streamDestroyed = true
-                            })
-                            break
+                                streamDestroyed = true;
+                            });
+                            break;
                         }
                         case TextToSpeechType.ELEVEN_LABS_TTS: {
-                            onStart('mp3')
+                            onStart('mp3');
                             const client = new elevenlabs_js_1.ElevenLabsClient({
                                 apiKey: credentialData.elevenLabsApiKey
-                            })
-                            const response = await client.textToSpeech.stream(
-                                textToSpeechConfig.voice || '21m00Tcm4TlvDq8ikWAM',
-                                {
-                                    text: text,
-                                    modelId: 'eleven_multilingual_v2'
-                                },
-                                { abortSignal: abortController.signal }
-                            )
-                            const stream = node_stream_1.Readable.fromWeb(response)
+                            });
+                            const response = await client.textToSpeech.stream(textToSpeechConfig.voice || '21m00Tcm4TlvDq8ikWAM', {
+                                text: text,
+                                modelId: 'eleven_multilingual_v2'
+                            }, { abortSignal: abortController.signal });
+                            const stream = node_stream_1.Readable.fromWeb(response);
                             if (!stream) {
-                                throw new Error('Failed to get response stream')
+                                throw new Error('Failed to get response stream');
                             }
                             await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40, abortController, () => {
-                                streamDestroyed = true
-                            })
-                            break
+                                streamDestroyed = true;
+                            });
+                            break;
                         }
                     }
-                } else {
-                    reject(new Error('Text to speech is not selected. Please configure TTS in the chatflow.'))
                 }
-            } catch (error) {
-                reject(error)
+                else {
+                    reject(new Error('Text to speech is not selected. Please configure TTS in the chatflow.'));
+                }
             }
-        }
+            catch (error) {
+                reject(error);
+            }
+        };
         // Handle abort signal
         abortController.signal.addEventListener('abort', () => {
             if (!streamDestroyed) {
-                reject(new Error('TTS generation aborted'))
+                reject(new Error('TTS generation aborted'));
             }
-        })
-        processStream()
-    })
-}
-exports.convertTextToSpeechStream = convertTextToSpeechStream
-const processStreamWithRateLimit = async (
-    stream,
-    onChunk,
-    onEnd,
-    resolve,
-    reject,
-    targetChunkSize = 640,
-    rateLimitMs = 20,
-    abortController,
-    onStreamDestroy
-) => {
-    const TARGET_CHUNK_SIZE = targetChunkSize
-    const RATE_LIMIT_MS = rateLimitMs
-    let buffer = Buffer.alloc(0)
-    let isEnded = false
+        });
+        processStream();
+    });
+};
+exports.convertTextToSpeechStream = convertTextToSpeechStream;
+const processStreamWithRateLimit = async (stream, onChunk, onEnd, resolve, reject, targetChunkSize = 640, rateLimitMs = 20, abortController, onStreamDestroy) => {
+    const TARGET_CHUNK_SIZE = targetChunkSize;
+    const RATE_LIMIT_MS = rateLimitMs;
+    let buffer = Buffer.alloc(0);
+    let isEnded = false;
     const processChunks = async () => {
         while (!isEnded || buffer.length > 0) {
             // Check if aborted
             if (abortController.signal.aborted) {
                 if (!stream.destroyed) {
-                    stream.destroy()
+                    stream.destroy();
                 }
-                onStreamDestroy?.()
-                reject(new Error('TTS generation aborted'))
-                return
+                onStreamDestroy?.();
+                reject(new Error('TTS generation aborted'));
+                return;
             }
             if (buffer.length >= TARGET_CHUNK_SIZE) {
-                const chunk = buffer.subarray(0, TARGET_CHUNK_SIZE)
-                buffer = buffer.subarray(TARGET_CHUNK_SIZE)
-                onChunk(chunk)
-                await sleep(RATE_LIMIT_MS)
-            } else if (isEnded && buffer.length > 0) {
-                onChunk(buffer)
-                buffer = Buffer.alloc(0)
-            } else if (!isEnded) {
-                await sleep(RATE_LIMIT_MS)
-            } else {
-                break
+                const chunk = buffer.subarray(0, TARGET_CHUNK_SIZE);
+                buffer = buffer.subarray(TARGET_CHUNK_SIZE);
+                onChunk(chunk);
+                await sleep(RATE_LIMIT_MS);
+            }
+            else if (isEnded && buffer.length > 0) {
+                onChunk(buffer);
+                buffer = Buffer.alloc(0);
+            }
+            else if (!isEnded) {
+                await sleep(RATE_LIMIT_MS);
+            }
+            else {
+                break;
             }
         }
-        onEnd()
-        resolve()
-    }
+        onEnd();
+        resolve();
+    };
     stream.on('data', (chunk) => {
         if (!abortController.signal.aborted) {
-            buffer = Buffer.concat([buffer, Buffer.from(chunk)])
+            buffer = Buffer.concat([buffer, Buffer.from(chunk)]);
         }
-    })
+    });
     stream.on('end', () => {
-        isEnded = true
-    })
+        isEnded = true;
+    });
     stream.on('error', (error) => {
-        reject(error)
-    })
+        reject(error);
+    });
     // Handle abort signal
     abortController.signal.addEventListener('abort', () => {
         if (!stream.destroyed) {
-            stream.destroy()
+            stream.destroy();
         }
-        onStreamDestroy?.()
-        reject(new Error('TTS generation aborted'))
-    })
-    processChunks().catch(reject)
-}
+        onStreamDestroy?.();
+        reject(new Error('TTS generation aborted'));
+    });
+    processChunks().catch(reject);
+};
 const sleep = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-}
+    return new Promise((resolve) => setTimeout(resolve, ms));
+};
 const getVoices = async (provider, credentialId, options) => {
-    const credentialData = await (0, utils_1.getCredentialData)(credentialId ?? '', options)
+    const credentialData = await (0, utils_1.getCredentialData)(credentialId ?? '', options);
     switch (provider) {
         case TextToSpeechType.OPENAI_TTS:
             return [
@@ -175,25 +161,25 @@ const getVoices = async (provider, credentialId, options) => {
                 { id: 'onyx', name: 'Onyx' },
                 { id: 'sage', name: 'Sage' },
                 { id: 'shimmer', name: 'Shimmer' }
-            ]
+            ];
         case TextToSpeechType.ELEVEN_LABS_TTS: {
             const client = new elevenlabs_js_1.ElevenLabsClient({
                 apiKey: credentialData.elevenLabsApiKey
-            })
+            });
             const voices = await client.voices.search({
                 pageSize: 100,
                 voiceType: 'default',
                 category: 'premade'
-            })
+            });
             return voices.voices.map((voice) => ({
                 id: voice.voiceId,
                 name: voice.name,
                 category: voice.category
-            }))
+            }));
         }
         default:
-            throw new Error(`Unsupported TTS provider: ${provider}`)
+            throw new Error(`Unsupported TTS provider: ${provider}`);
     }
-}
-exports.getVoices = getVoices
+};
+exports.getVoices = getVoices;
 //# sourceMappingURL=textToSpeech.js.map

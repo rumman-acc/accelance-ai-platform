@@ -1,17 +1,17 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const langgraph_1 = require('@langchain/langgraph')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const langgraph_1 = require("@langchain/langgraph");
 class Start_SeqAgents {
     constructor() {
-        this.label = 'Start'
-        this.name = 'seqStart'
-        this.version = 2.0
-        this.type = 'Start'
-        this.icon = 'start.svg'
-        this.category = 'Sequential Agents'
-        this.description = 'Starting point of the conversation'
-        this.baseClasses = [this.type]
-        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-1.-start-node'
+        this.label = 'Start';
+        this.name = 'seqStart';
+        this.version = 2.0;
+        this.type = 'Start';
+        this.icon = 'start.svg';
+        this.category = 'Sequential Agents';
+        this.description = 'Starting point of the conversation';
+        this.baseClasses = [this.type];
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-1.-start-node';
         this.inputs = [
             {
                 label: 'Chat Model',
@@ -30,8 +30,7 @@ class Start_SeqAgents {
                 label: 'State',
                 name: 'state',
                 type: 'State',
-                description:
-                    'State is an object that is updated by nodes in the graph, passing from one node to another. By default, state contains "messages" that got updated with each message sent and received.',
+                description: 'State is an object that is updated by nodes in the graph, passing from one node to another. By default, state contains "messages" that got updated with each message sent and received.',
                 optional: true
             },
             {
@@ -42,11 +41,11 @@ class Start_SeqAgents {
                 optional: true,
                 list: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const moderations = nodeData.inputs?.inputModeration ?? []
-        const model = nodeData.inputs?.model
+        const moderations = nodeData.inputs?.inputModeration ?? [];
+        const model = nodeData.inputs?.model;
         const returnOutput = {
             id: nodeData.id,
             node: langgraph_1.START,
@@ -58,9 +57,9 @@ class Start_SeqAgents {
             startLLM: model,
             moderations,
             checkpointMemory: nodeData.inputs?.agentMemory
-        }
-        return returnOutput
+        };
+        return returnOutput;
     }
 }
-module.exports = { nodeClass: Start_SeqAgents }
+module.exports = { nodeClass: Start_SeqAgents };
 //# sourceMappingURL=Start.js.map

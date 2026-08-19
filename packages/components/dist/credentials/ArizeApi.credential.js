@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class ArizeApi {
     constructor() {
-        this.label = 'Arize API'
-        this.name = 'arizeApi'
-        this.version = 1.0
+        this.label = 'Arize API';
+        this.name = 'arizeApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://docs.arize.com/arize">official guide</a> on how to get API keys on Arize.'
+            'Refer to <a target="_blank" href="https://docs.arize.com/arize">official guide</a> on how to get API keys on Arize.';
         this.inputs = [
             {
                 label: 'API Key',
@@ -26,8 +26,8 @@ class ArizeApi {
                 type: 'string',
                 default: 'https://otlp.arize.com'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: ArizeApi }
+module.exports = { credClass: ArizeApi };
 //# sourceMappingURL=ArizeApi.credential.js.map

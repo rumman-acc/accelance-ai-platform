@@ -1,17 +1,17 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const textsplitters_1 = require('@langchain/textsplitters')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const textsplitters_1 = require("@langchain/textsplitters");
 class TokenTextSplitter_TextSplitters {
     constructor() {
-        this.label = 'Token Text Splitter'
-        this.name = 'tokenTextSplitter'
-        this.version = 1.0
-        this.type = 'TokenTextSplitter'
-        this.icon = 'tiktoken.svg'
-        this.category = 'Text Splitters'
-        this.description = `Splits a raw text string by first converting the text into BPE tokens, then split these tokens into chunks and convert the tokens within a single chunk back into text.`
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(textsplitters_1.TokenTextSplitter)]
+        this.label = 'Token Text Splitter';
+        this.name = 'tokenTextSplitter';
+        this.version = 1.0;
+        this.type = 'TokenTextSplitter';
+        this.icon = 'tiktoken.svg';
+        this.category = 'Text Splitters';
+        this.description = `Splits a raw text string by first converting the text into BPE tokens, then split these tokens into chunks and convert the tokens within a single chunk back into text.`;
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(textsplitters_1.TokenTextSplitter)];
         this.inputs = [
             {
                 label: 'Encoding Name',
@@ -57,19 +57,21 @@ class TokenTextSplitter_TextSplitters {
                 default: 200,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const encodingName = nodeData.inputs?.encodingName
-        const chunkSize = nodeData.inputs?.chunkSize
-        const chunkOverlap = nodeData.inputs?.chunkOverlap
-        const obj = {}
-        obj.encodingName = encodingName
-        if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10)
-        if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
-        const splitter = new textsplitters_1.TokenTextSplitter(obj)
-        return splitter
+        const encodingName = nodeData.inputs?.encodingName;
+        const chunkSize = nodeData.inputs?.chunkSize;
+        const chunkOverlap = nodeData.inputs?.chunkOverlap;
+        const obj = {};
+        obj.encodingName = encodingName;
+        if (chunkSize)
+            obj.chunkSize = parseInt(chunkSize, 10);
+        if (chunkOverlap)
+            obj.chunkOverlap = parseInt(chunkOverlap, 10);
+        const splitter = new textsplitters_1.TokenTextSplitter(obj);
+        return splitter;
     }
 }
-module.exports = { nodeClass: TokenTextSplitter_TextSplitters }
+module.exports = { nodeClass: TokenTextSplitter_TextSplitters };
 //# sourceMappingURL=TokenTextSplitter.js.map

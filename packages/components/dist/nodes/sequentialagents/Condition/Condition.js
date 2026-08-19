@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const commonUtils_1 = require('../commonUtils')
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const commonUtils_1 = require("../commonUtils");
+const utils_1 = require("../../../src/utils");
 const howToUseCode = `
 1. Must return a string value at the end of function. For example:
     \`\`\`js
@@ -44,7 +44,7 @@ const howToUseCode = `
 
 4. You can get custom variables: \`$vars.<variable-name>\`
 
-`
+`;
 const defaultFunc = `const state = $flow.state;
                 
 const messages = state.messages;
@@ -56,19 +56,19 @@ if (lastMessage.content) {
     return "Agent";
 }
 
-return "End";`
-const TAB_IDENTIFIER = 'selectedConditionFunctionTab'
+return "End";`;
+const TAB_IDENTIFIER = 'selectedConditionFunctionTab';
 class Condition_SeqAgents {
     constructor() {
-        this.label = 'Condition'
-        this.name = 'seqCondition'
-        this.version = 2.1
-        this.type = 'Condition'
-        this.icon = 'condition.svg'
-        this.category = 'Sequential Agents'
-        this.description = 'Conditional function to determine which route to take next'
-        this.baseClasses = [this.type]
-        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-7.-conditional-node'
+        this.label = 'Condition';
+        this.name = 'seqCondition';
+        this.version = 2.1;
+        this.type = 'Condition';
+        this.icon = 'condition.svg';
+        this.category = 'Sequential Agents';
+        this.description = 'Conditional function to determine which route to take next';
+        this.baseClasses = [this.type];
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-7.-conditional-node';
         this.inputs = [
             {
                 label: 'Condition Name',
@@ -81,8 +81,7 @@ class Condition_SeqAgents {
                 label: 'Sequential Node',
                 name: 'sequentialNode',
                 type: 'Start | Agent | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
-                description:
-                    'Can be connected to one of the following nodes: Start, Agent, LLM Node, Tool Node, Custom Function, Execute Flow',
+                description: 'Can be connected to one of the following nodes: Start, Agent, LLM Node, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -179,7 +178,7 @@ class Condition_SeqAgents {
                     }
                 ]
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Next',
@@ -193,16 +192,17 @@ class Condition_SeqAgents {
                 baseClasses: ['Condition'],
                 isAnchor: true
             }
-        ]
+        ];
     }
     async init(nodeData, input, options) {
-        const conditionLabel = nodeData.inputs?.conditionName
-        const conditionName = conditionLabel.toLowerCase().replace(/\s/g, '_').trim()
-        const output = nodeData.outputs?.output
-        const sequentialNodes = nodeData.inputs?.sequentialNode
-        if (!sequentialNodes || !sequentialNodes.length) throw new Error('Condition must have a predecessor!')
-        const startLLM = sequentialNodes[0].startLLM
-        const conditionalEdge = async (state) => await runCondition(nodeData, input, options, state)
+        const conditionLabel = nodeData.inputs?.conditionName;
+        const conditionName = conditionLabel.toLowerCase().replace(/\s/g, '_').trim();
+        const output = nodeData.outputs?.output;
+        const sequentialNodes = nodeData.inputs?.sequentialNode;
+        if (!sequentialNodes || !sequentialNodes.length)
+            throw new Error('Condition must have a predecessor!');
+        const startLLM = sequentialNodes[0].startLLM;
+        const conditionalEdge = async (state) => await runCondition(nodeData, input, options, state);
         const returnOutput = {
             id: nodeData.id,
             node: conditionalEdge,
@@ -214,18 +214,18 @@ class Condition_SeqAgents {
             startLLM,
             multiModalMessageContent: sequentialNodes[0]?.multiModalMessageContent,
             predecessorAgents: sequentialNodes
-        }
-        return returnOutput
+        };
+        return returnOutput;
     }
 }
 const runCondition = async (nodeData, input, options, state) => {
-    const appDataSource = options.appDataSource
-    const databaseEntities = options.databaseEntities
-    const conditionUI = nodeData.inputs?.conditionUI
-    const conditionFunction = nodeData.inputs?.conditionFunction
-    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`]
-    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'conditionUI'
-    const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options)
+    const appDataSource = options.appDataSource;
+    const databaseEntities = options.databaseEntities;
+    const conditionUI = nodeData.inputs?.conditionUI;
+    const conditionFunction = nodeData.inputs?.conditionFunction;
+    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`];
+    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'conditionUI';
+    const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options);
     const flow = {
         chatflowId: options.chatflowid,
         sessionId: options.sessionId,
@@ -233,49 +233,54 @@ const runCondition = async (nodeData, input, options, state) => {
         input,
         state,
         vars: (0, utils_1.prepareSandboxVars)(variables)
-    }
+    };
     if (selectedTab === 'conditionFunction' && conditionFunction) {
-        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow)
+        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow);
         try {
-            const response = await (0, utils_1.executeJavaScriptCode)(conditionFunction, sandbox)
-            if (typeof response !== 'string') throw new Error('Condition function must return a string')
-            return response
-        } catch (e) {
-            throw new Error(e)
+            const response = await (0, utils_1.executeJavaScriptCode)(conditionFunction, sandbox);
+            if (typeof response !== 'string')
+                throw new Error('Condition function must return a string');
+            return response;
         }
-    } else if (selectedTab === 'conditionUI' && conditionUI) {
+        catch (e) {
+            throw new Error(e);
+        }
+    }
+    else if (selectedTab === 'conditionUI' && conditionUI) {
         try {
-            const conditionItems = typeof conditionUI === 'string' ? JSON.parse(conditionUI) : conditionUI
+            const conditionItems = typeof conditionUI === 'string' ? JSON.parse(conditionUI) : conditionUI;
             for (const item of conditionItems) {
-                if (!item.variable) throw new Error('Condition variable is required!')
+                if (!item.variable)
+                    throw new Error('Condition variable is required!');
                 if (item.variable.startsWith('$flow')) {
-                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$flow.', ''))
+                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$flow.', ''));
                     if ((0, commonUtils_1.checkCondition)(variableValue, item.operation, item.value)) {
-                        return item.output
+                        return item.output;
                     }
-                } else if (item.variable.startsWith('$vars')) {
-                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$', ''))
+                }
+                else if (item.variable.startsWith('$vars')) {
+                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$', ''));
                     if ((0, commonUtils_1.checkCondition)(variableValue, item.operation, item.value)) {
-                        return item.output
+                        return item.output;
                     }
-                } else if (item.variable.startsWith('$')) {
-                    const nodeId = item.variable.replace('$', '')
-                    const messageOutputs = (state.messages ?? []).filter(
-                        (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === nodeId
-                    )
-                    const messageOutput = messageOutputs[messageOutputs.length - 1]
+                }
+                else if (item.variable.startsWith('$')) {
+                    const nodeId = item.variable.replace('$', '');
+                    const messageOutputs = (state.messages ?? []).filter((message) => message.additional_kwargs && message.additional_kwargs?.nodeId === nodeId);
+                    const messageOutput = messageOutputs[messageOutputs.length - 1];
                     if (messageOutput) {
                         if ((0, commonUtils_1.checkCondition)(messageOutput.content, item.operation, item.value)) {
-                            return item.output
+                            return item.output;
                         }
                     }
                 }
             }
-            return 'End'
-        } catch (exception) {
-            throw new Error('Invalid Condition: ' + exception)
+            return 'End';
+        }
+        catch (exception) {
+            throw new Error('Invalid Condition: ' + exception);
         }
     }
-}
-module.exports = { nodeClass: Condition_SeqAgents }
+};
+module.exports = { nodeClass: Condition_SeqAgents };
 //# sourceMappingURL=Condition.js.map

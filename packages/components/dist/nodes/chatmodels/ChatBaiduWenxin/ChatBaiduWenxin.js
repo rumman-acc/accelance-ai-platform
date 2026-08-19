@@ -1,30 +1,30 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const baidu_qianfan_1 = require('@langchain/baidu-qianfan')
-const modelLoader_1 = require('../../../src/modelLoader')
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const baidu_qianfan_1 = require("@langchain/baidu-qianfan");
+const modelLoader_1 = require("../../../src/modelLoader");
+const utils_1 = require("../../../src/utils");
 class ChatBaiduWenxin_ChatModels {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatBaiduWenxin')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatBaiduWenxin');
             }
-        }
-        this.label = 'Baidu Wenxin'
-        this.name = 'chatBaiduWenxin'
-        this.version = 3.0
-        this.type = 'ChatBaiduWenxin'
-        this.icon = 'baiduwenxin.svg'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around BaiduWenxin Chat Endpoints'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(baidu_qianfan_1.ChatBaiduQianfan)]
+        };
+        this.label = 'Baidu Wenxin';
+        this.name = 'chatBaiduWenxin';
+        this.version = 3.0;
+        this.type = 'ChatBaiduWenxin';
+        this.icon = 'baiduwenxin.svg';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around BaiduWenxin Chat Endpoints';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(baidu_qianfan_1.ChatBaiduQianfan)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['baiduQianfanApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -89,34 +89,38 @@ class ChatBaiduWenxin_ChatModels {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const cache = nodeData.inputs?.cache
-        const temperature = nodeData.inputs?.temperature
-        const modelName = nodeData.inputs?.modelName
-        const customModelName = nodeData.inputs?.customModelName
-        const streaming = nodeData.inputs?.streaming
-        const topP = nodeData.inputs?.topP
-        const penaltyScore = nodeData.inputs?.penaltyScore
-        const userId = nodeData.inputs?.userId
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const qianfanAccessKey = (0, utils_1.getCredentialParam)('qianfanAccessKey', credentialData, nodeData)
-        const qianfanSecretKey = (0, utils_1.getCredentialParam)('qianfanSecretKey', credentialData, nodeData)
+        const cache = nodeData.inputs?.cache;
+        const temperature = nodeData.inputs?.temperature;
+        const modelName = nodeData.inputs?.modelName;
+        const customModelName = nodeData.inputs?.customModelName;
+        const streaming = nodeData.inputs?.streaming;
+        const topP = nodeData.inputs?.topP;
+        const penaltyScore = nodeData.inputs?.penaltyScore;
+        const userId = nodeData.inputs?.userId;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const qianfanAccessKey = (0, utils_1.getCredentialParam)('qianfanAccessKey', credentialData, nodeData);
+        const qianfanSecretKey = (0, utils_1.getCredentialParam)('qianfanSecretKey', credentialData, nodeData);
         const obj = {
             streaming: streaming ?? true,
             qianfanAccessKey,
             qianfanSecretKey,
             modelName: customModelName || modelName,
             temperature: temperature ? parseFloat(temperature) : undefined
-        }
-        if (topP) obj.topP = parseFloat(topP)
-        if (penaltyScore) obj.penaltyScore = parseFloat(penaltyScore)
-        if (userId) obj.userId = userId
-        if (cache) obj.cache = cache
-        const model = new baidu_qianfan_1.ChatBaiduQianfan(obj)
-        return model
+        };
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (penaltyScore)
+            obj.penaltyScore = parseFloat(penaltyScore);
+        if (userId)
+            obj.userId = userId;
+        if (cache)
+            obj.cache = cache;
+        const model = new baidu_qianfan_1.ChatBaiduQianfan(obj);
+        return model;
     }
 }
-module.exports = { nodeClass: ChatBaiduWenxin_ChatModels }
+module.exports = { nodeClass: ChatBaiduWenxin_ChatModels };
 //# sourceMappingURL=ChatBaiduWenxin.js.map

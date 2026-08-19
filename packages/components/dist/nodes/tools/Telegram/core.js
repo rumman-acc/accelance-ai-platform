@@ -1,59 +1,60 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.createTelegramTools = exports.desc = void 0
-const v3_1 = require('zod/v3')
-const core_1 = require('../OpenAPIToolkit/core')
-const agents_1 = require('../../../src/agents')
-const httpSecurity_1 = require('../../../src/httpSecurity')
-exports.desc = `Use this when you want to send messages and manage a Telegram bot`
-const TELEGRAM_API_BASE_URL = 'https://api.telegram.org/bot'
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createTelegramTools = exports.desc = void 0;
+const v3_1 = require("zod/v3");
+const core_1 = require("../OpenAPIToolkit/core");
+const agents_1 = require("../../../src/agents");
+const httpSecurity_1 = require("../../../src/httpSecurity");
+exports.desc = `Use this when you want to send messages and manage a Telegram bot`;
+const TELEGRAM_API_BASE_URL = 'https://api.telegram.org/bot';
 // Define schemas for different Telegram operations
 const SendMessageSchema = v3_1.z.object({
     chatId: v3_1.z.string().describe('Unique identifier for the target chat'),
     text: v3_1.z.string().describe('Message text to send')
-})
+});
 const GetUpdatesSchema = v3_1.z.object({
     limit: v3_1.z.number().optional().default(20).describe('Maximum number of updates to retrieve')
-})
+});
 const GetChatSchema = v3_1.z.object({
     chatId: v3_1.z.string().describe('Unique identifier for the target chat')
-})
+});
 const SendPhotoSchema = v3_1.z.object({
     chatId: v3_1.z.string().describe('Unique identifier for the target chat'),
     photoUrl: v3_1.z.string().describe('URL of the photo to send'),
     caption: v3_1.z.string().optional().describe('Caption for the photo')
-})
-const GetMeSchema = v3_1.z.object({})
+});
+const GetMeSchema = v3_1.z.object({});
 class BaseTelegramTool extends core_1.DynamicStructuredTool {
     constructor(args) {
-        super(args)
-        this.botToken = ''
-        this.botToken = args.botToken ?? ''
+        super(args);
+        this.botToken = '';
+        this.botToken = args.botToken ?? '';
     }
     async makeTelegramRequest({ endpoint, method = 'GET', body, params }) {
-        const url = `${TELEGRAM_API_BASE_URL}${this.botToken}${endpoint}`
+        const url = `${TELEGRAM_API_BASE_URL}${this.botToken}${endpoint}`;
         const headers = {
             'Content-Type': 'application/json',
             ...this.headers
-        }
+        };
         const fetchOptions = {
             method,
             headers,
             body: body ? JSON.stringify(body) : undefined
-        }
-        const response = await (0, httpSecurity_1.secureFetch)(url, fetchOptions, 5)
-        const responseText = await response.text()
-        let data
+        };
+        const response = await (0, httpSecurity_1.secureFetch)(url, fetchOptions, 5);
+        const responseText = await response.text();
+        let data;
         try {
-            data = JSON.parse(responseText)
-        } catch (e) {
-            data = undefined
+            data = JSON.parse(responseText);
+        }
+        catch (e) {
+            data = undefined;
         }
         if (!response.ok || (data && data.ok === false)) {
-            const description = data?.description
-            throw new Error(`Telegram API Error ${response.status}: ${description || response.statusText}`)
+            const description = data?.description;
+            throw new Error(`Telegram API Error ${response.status}: ${description || response.statusText}`);
         }
-        return responseText + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
+        return responseText + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
     }
 }
 class SendMessageTool extends BaseTelegramTool {
@@ -65,27 +66,28 @@ class SendMessageTool extends BaseTelegramTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             botToken: args.botToken,
             maxOutputLength: args.maxOutputLength
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const endpoint = '/sendMessage'
+            const endpoint = '/sendMessage';
             const response = await this.makeTelegramRequest({
                 endpoint,
                 method: 'POST',
                 body: { chat_id: params.chatId, text: params.text },
                 params
-            })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error sending message: ${error}`, params)
+            });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error sending message: ${error}`, params);
         }
     }
 }
@@ -98,22 +100,23 @@ class GetUpdatesTool extends BaseTelegramTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             botToken: args.botToken,
             maxOutputLength: args.maxOutputLength
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const endpoint = `/getUpdates?limit=${params.limit}`
-            const response = await this.makeTelegramRequest({ endpoint, params })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting updates: ${error}`, params)
+            const endpoint = `/getUpdates?limit=${params.limit}`;
+            const response = await this.makeTelegramRequest({ endpoint, params });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting updates: ${error}`, params);
         }
     }
 }
@@ -126,22 +129,23 @@ class GetChatTool extends BaseTelegramTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             botToken: args.botToken,
             maxOutputLength: args.maxOutputLength
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const endpoint = `/getChat?chat_id=${params.chatId}`
-            const response = await this.makeTelegramRequest({ endpoint, params })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting chat: ${error}`, params)
+            const endpoint = `/getChat?chat_id=${params.chatId}`;
+            const response = await this.makeTelegramRequest({ endpoint, params });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting chat: ${error}`, params);
         }
     }
 }
@@ -154,24 +158,26 @@ class SendPhotoTool extends BaseTelegramTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             botToken: args.botToken,
             maxOutputLength: args.maxOutputLength
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const endpoint = '/sendPhoto'
-            const body = { chat_id: params.chatId, photo: params.photoUrl }
-            if (params.caption) body.caption = params.caption
-            const response = await this.makeTelegramRequest({ endpoint, method: 'POST', body, params })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error sending photo: ${error}`, params)
+            const endpoint = '/sendPhoto';
+            const body = { chat_id: params.chatId, photo: params.photoUrl };
+            if (params.caption)
+                body.caption = params.caption;
+            const response = await this.makeTelegramRequest({ endpoint, method: 'POST', body, params });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error sending photo: ${error}`, params);
         }
     }
 }
@@ -184,77 +190,68 @@ class GetMeTool extends BaseTelegramTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             botToken: args.botToken,
             maxOutputLength: args.maxOutputLength
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const endpoint = '/getMe'
-            const response = await this.makeTelegramRequest({ endpoint, params })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting bot info: ${error}`, params)
+            const endpoint = '/getMe';
+            const response = await this.makeTelegramRequest({ endpoint, params });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting bot info: ${error}`, params);
         }
     }
 }
 const createTelegramTools = (args) => {
-    const tools = []
-    const actions = args?.actions || []
-    const botToken = args?.botToken || ''
-    const maxOutputLength = args?.maxOutputLength || Infinity
-    const defaultParams = args?.defaultParams || {}
+    const tools = [];
+    const actions = args?.actions || [];
+    const botToken = args?.botToken || '';
+    const maxOutputLength = args?.maxOutputLength || Infinity;
+    const defaultParams = args?.defaultParams || {};
     if (actions.includes('send_message')) {
-        tools.push(
-            new SendMessageTool({
-                botToken,
-                maxOutputLength,
-                defaultParams
-            })
-        )
+        tools.push(new SendMessageTool({
+            botToken,
+            maxOutputLength,
+            defaultParams
+        }));
     }
     if (actions.includes('get_updates')) {
-        tools.push(
-            new GetUpdatesTool({
-                botToken,
-                maxOutputLength,
-                defaultParams
-            })
-        )
+        tools.push(new GetUpdatesTool({
+            botToken,
+            maxOutputLength,
+            defaultParams
+        }));
     }
     if (actions.includes('get_chat')) {
-        tools.push(
-            new GetChatTool({
-                botToken,
-                maxOutputLength,
-                defaultParams
-            })
-        )
+        tools.push(new GetChatTool({
+            botToken,
+            maxOutputLength,
+            defaultParams
+        }));
     }
     if (actions.includes('send_photo')) {
-        tools.push(
-            new SendPhotoTool({
-                botToken,
-                maxOutputLength,
-                defaultParams
-            })
-        )
+        tools.push(new SendPhotoTool({
+            botToken,
+            maxOutputLength,
+            defaultParams
+        }));
     }
     if (actions.includes('get_me')) {
-        tools.push(
-            new GetMeTool({
-                botToken,
-                maxOutputLength,
-                defaultParams
-            })
-        )
+        tools.push(new GetMeTool({
+            botToken,
+            maxOutputLength,
+            defaultParams
+        }));
     }
-    return tools
-}
-exports.createTelegramTools = createTelegramTools
+    return tools;
+};
+exports.createTelegramTools = createTelegramTools;
 //# sourceMappingURL=core.js.map

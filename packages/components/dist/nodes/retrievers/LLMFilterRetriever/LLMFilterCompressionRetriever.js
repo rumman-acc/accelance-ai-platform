@@ -1,19 +1,19 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const contextual_compression_1 = require('@langchain/classic/retrievers/contextual_compression')
-const chain_extract_1 = require('@langchain/classic/retrievers/document_compressors/chain_extract')
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const contextual_compression_1 = require("@langchain/classic/retrievers/contextual_compression");
+const chain_extract_1 = require("@langchain/classic/retrievers/document_compressors/chain_extract");
+const utils_1 = require("../../../src/utils");
 class LLMFilterCompressionRetriever_Retrievers {
     constructor() {
-        this.label = 'LLM Filter Retriever'
-        this.name = 'llmFilterRetriever'
-        this.version = 1.0
-        this.type = 'LLMFilterRetriever'
-        this.icon = 'llmFilterRetriever.svg'
-        this.category = 'Retrievers'
+        this.label = 'LLM Filter Retriever';
+        this.name = 'llmFilterRetriever';
+        this.version = 1.0;
+        this.type = 'LLMFilterRetriever';
+        this.icon = 'llmFilterRetriever.svg';
+        this.category = 'Retrievers';
         this.description =
-            'Iterate over the initially returned documents and extract, from each, only the content that is relevant to the query'
-        this.baseClasses = [this.type, 'BaseRetriever']
+            'Iterate over the initially returned documents and extract, from each, only the content that is relevant to the query';
+        this.baseClasses = [this.type, 'BaseRetriever'];
         this.inputs = [
             {
                 label: 'Vector Store Retriever',
@@ -33,7 +33,7 @@ class LLMFilterCompressionRetriever_Retrievers {
                 optional: true,
                 acceptVariable: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'LLM Filter Retriever',
@@ -52,28 +52,32 @@ class LLMFilterCompressionRetriever_Retrievers {
                 description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
-        ]
+        ];
     }
     async init(nodeData, input) {
-        const baseRetriever = nodeData.inputs?.baseRetriever
-        const model = nodeData.inputs?.model
-        const query = nodeData.inputs?.query
-        const output = nodeData.outputs?.output
-        if (!model) throw new Error('There must be a LLM model connected to LLM Filter Retriever')
+        const baseRetriever = nodeData.inputs?.baseRetriever;
+        const model = nodeData.inputs?.model;
+        const query = nodeData.inputs?.query;
+        const output = nodeData.outputs?.output;
+        if (!model)
+            throw new Error('There must be a LLM model connected to LLM Filter Retriever');
         const retriever = new contextual_compression_1.ContextualCompressionRetriever({
             baseCompressor: chain_extract_1.LLMChainExtractor.fromLLM(model),
             baseRetriever: baseRetriever
-        })
-        if (output === 'retriever') return retriever
-        else if (output === 'document') return await retriever._getRelevantDocuments(query ? query : input)
+        });
+        if (output === 'retriever')
+            return retriever;
+        else if (output === 'document')
+            return await retriever._getRelevantDocuments(query ? query : input);
         else if (output === 'text') {
-            let finaltext = ''
-            const docs = await retriever._getRelevantDocuments(query ? query : input)
-            for (const doc of docs) finaltext += `${doc.pageContent}\n`
-            return (0, utils_1.handleEscapeCharacters)(finaltext, false)
+            let finaltext = '';
+            const docs = await retriever._getRelevantDocuments(query ? query : input);
+            for (const doc of docs)
+                finaltext += `${doc.pageContent}\n`;
+            return (0, utils_1.handleEscapeCharacters)(finaltext, false);
         }
-        return retriever
+        return retriever;
     }
 }
-module.exports = { nodeClass: LLMFilterCompressionRetriever_Retrievers }
+module.exports = { nodeClass: LLMFilterCompressionRetriever_Retrievers };
 //# sourceMappingURL=LLMFilterCompressionRetriever.js.map

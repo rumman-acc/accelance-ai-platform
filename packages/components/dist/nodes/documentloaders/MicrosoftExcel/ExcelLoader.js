@@ -1,8 +1,8 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.LoadOfSheet = void 0
-const buffer_1 = require('@langchain/classic/document_loaders/fs/buffer')
-const xlsx_1 = require('xlsx')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LoadOfSheet = void 0;
+const buffer_1 = require("@langchain/classic/document_loaders/fs/buffer");
+const xlsx_1 = require("xlsx");
 /**
  * Document loader that uses SheetJS to load documents.
  *
@@ -12,9 +12,9 @@ const xlsx_1 = require('xlsx')
  */
 class LoadOfSheet extends buffer_1.BufferLoader {
     constructor(filePathOrBlob) {
-        super(filePathOrBlob)
-        this.attributes = []
-        this.attributes = []
+        super(filePathOrBlob);
+        this.attributes = [];
+        this.attributes = [];
     }
     /**
      * Parse document
@@ -26,44 +26,43 @@ class LoadOfSheet extends buffer_1.BufferLoader {
      * @returns Array of Documents
      */
     async parse(raw, metadata) {
-        const result = []
+        const result = [];
         this.attributes = [
             { name: 'worksheet', description: 'Sheet or Worksheet Name', type: 'string' },
             { name: 'rowNum', description: 'Row index', type: 'number' }
-        ]
-        const wb = (0, xlsx_1.read)(raw, { type: 'buffer' })
+        ];
+        const wb = (0, xlsx_1.read)(raw, { type: 'buffer' });
         for (let name of wb.SheetNames) {
-            const fields = {}
-            const ws = wb.Sheets[name]
-            if (!ws) continue
-            const aoo = xlsx_1.utils.sheet_to_json(ws)
+            const fields = {};
+            const ws = wb.Sheets[name];
+            if (!ws)
+                continue;
+            const aoo = xlsx_1.utils.sheet_to_json(ws);
             aoo.forEach((row) => {
                 result.push({
-                    pageContent:
-                        Object.entries(row)
-                            .map((kv) => `- ${kv[0]}: ${kv[1]}`)
-                            .join('\n') + '\n',
+                    pageContent: Object.entries(row)
+                        .map((kv) => `- ${kv[0]}: ${kv[1]}`)
+                        .join('\n') + '\n',
                     metadata: {
                         worksheet: name,
                         rowNum: row['__rowNum__'],
                         ...metadata,
                         ...row
                     }
-                })
+                });
                 Object.entries(row).forEach(([k, v]) => {
-                    if (v != null) (fields[k] || (fields[k] = {}))[v instanceof Date ? 'date' : typeof v] = true
-                })
-            })
-            Object.entries(fields).forEach(([k, v]) =>
-                this.attributes.push({
-                    name: k,
-                    description: k,
-                    type: Object.keys(v).join(' or ')
-                })
-            )
+                    if (v != null)
+                        (fields[k] || (fields[k] = {}))[v instanceof Date ? 'date' : typeof v] = true;
+                });
+            });
+            Object.entries(fields).forEach(([k, v]) => this.attributes.push({
+                name: k,
+                description: k,
+                type: Object.keys(v).join(' or ')
+            }));
         }
-        return result
+        return result;
     }
 }
-exports.LoadOfSheet = LoadOfSheet
+exports.LoadOfSheet = LoadOfSheet;
 //# sourceMappingURL=ExcelLoader.js.map

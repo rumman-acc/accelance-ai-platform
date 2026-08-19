@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class Asana_Tools {
     constructor() {
-        this.label = 'Asana'
-        this.name = 'asanaTool'
-        this.version = 1.0
-        this.type = 'Asana'
-        this.icon = 'asana.svg'
-        this.category = 'Tools'
-        this.description = 'Manage Asana tasks and projects'
-        this.baseClasses = [this.type, 'Tool']
+        this.label = 'Asana';
+        this.name = 'asanaTool';
+        this.version = 1.0;
+        this.type = 'Asana';
+        this.icon = 'asana.svg';
+        this.category = 'Tools';
+        this.description = 'Manage Asana tasks and projects';
+        this.baseClasses = [this.type, 'Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['asanaApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Actions',
@@ -46,21 +46,21 @@ class Asana_Tools {
                     }
                 ]
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const personalAccessToken = (0, utils_1.getCredentialParam)('personalAccessToken', credentialData, nodeData)
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const personalAccessToken = (0, utils_1.getCredentialParam)('personalAccessToken', credentialData, nodeData);
         if (!personalAccessToken) {
-            throw new Error('No Asana Personal Access Token provided')
+            throw new Error('No Asana Personal Access Token provided');
         }
-        const actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.actions)
+        const actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.actions);
         const tools = (0, core_1.createAsanaTools)({
             actions,
             personalAccessToken
-        })
-        return tools
+        });
+        return tools;
     }
 }
-module.exports = { nodeClass: Asana_Tools }
+module.exports = { nodeClass: Asana_Tools };
 //# sourceMappingURL=Asana.js.map

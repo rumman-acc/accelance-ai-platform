@@ -1,18 +1,18 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const src_1 = require('../../../src')
-const Moderation_1 = require('../Moderation')
-const SimplePromptModerationRunner_1 = require('./SimplePromptModerationRunner')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const src_1 = require("../../../src");
+const Moderation_1 = require("../Moderation");
+const SimplePromptModerationRunner_1 = require("./SimplePromptModerationRunner");
 class SimplePromptModeration {
     constructor() {
-        this.label = 'Simple Prompt Moderation'
-        this.name = 'inputModerationSimple'
-        this.version = 2.0
-        this.type = 'Moderation'
-        this.icon = 'moderation.svg'
-        this.category = 'Moderation'
-        this.description = 'Check whether input consists of any text from Deny list, and prevent being sent to LLM'
-        this.baseClasses = [this.type, ...(0, src_1.getBaseClasses)(Moderation_1.Moderation)]
+        this.label = 'Simple Prompt Moderation';
+        this.name = 'inputModerationSimple';
+        this.version = 2.0;
+        this.type = 'Moderation';
+        this.icon = 'moderation.svg';
+        this.category = 'Moderation';
+        this.description = 'Check whether input consists of any text from Deny list, and prevent being sent to LLM';
+        this.baseClasses = [this.type, ...(0, src_1.getBaseClasses)(Moderation_1.Moderation)];
         this.inputs = [
             {
                 label: 'Deny List',
@@ -37,14 +37,14 @@ class SimplePromptModeration {
                 default: 'Cannot Process! Input violates content moderation policies.',
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const denyList = nodeData.inputs?.denyList
-        const model = nodeData.inputs?.model
-        const moderationErrorMessage = nodeData.inputs?.moderationErrorMessage
-        return new SimplePromptModerationRunner_1.SimplePromptModerationRunner(denyList, moderationErrorMessage, model)
+        const denyList = nodeData.inputs?.denyList;
+        const model = nodeData.inputs?.model;
+        const moderationErrorMessage = nodeData.inputs?.moderationErrorMessage;
+        return new SimplePromptModerationRunner_1.SimplePromptModerationRunner(denyList, moderationErrorMessage, model);
     }
 }
-module.exports = { nodeClass: SimplePromptModeration }
+module.exports = { nodeClass: SimplePromptModeration };
 //# sourceMappingURL=SimplePromptModeration.js.map

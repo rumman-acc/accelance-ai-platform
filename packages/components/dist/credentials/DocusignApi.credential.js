@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class DocusignApi {
     constructor() {
-        this.label = 'DocuSign API'
-        this.name = 'docusignApi'
-        this.version = 1.0
+        this.label = 'DocuSign API';
+        this.name = 'docusignApi';
+        this.version = 1.0;
         this.description =
-            "Requires a pre-obtained OAuth2 access token (via DocuSign's JWT Grant or Authorization Code flow). This connector does not perform the OAuth dance itself. Access tokens are short-lived, so this is best suited to automation where the token is refreshed externally/periodically."
+            "Requires a pre-obtained OAuth2 access token (via DocuSign's JWT Grant or Authorization Code flow). This connector does not perform the OAuth dance itself. Access tokens are short-lived, so this is best suited to automation where the token is refreshed externally/periodically.";
         this.inputs = [
             {
                 label: 'Account Base URI',
@@ -27,8 +27,8 @@ class DocusignApi {
                 type: 'password',
                 placeholder: '<DOCUSIGN_ACCESS_TOKEN>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: DocusignApi }
+module.exports = { credClass: DocusignApi };
 //# sourceMappingURL=DocusignApi.credential.js.map

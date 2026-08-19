@@ -1,32 +1,32 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const anthropic_1 = require('@langchain/anthropic')
-const utils_1 = require('../../../src/utils')
-const FlowiseChatAnthropic_1 = require('./FlowiseChatAnthropic')
-const modelLoader_1 = require('../../../src/modelLoader')
-const anthropicUtils_1 = require('../../../src/anthropicUtils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const anthropic_1 = require("@langchain/anthropic");
+const utils_1 = require("../../../src/utils");
+const FlowiseChatAnthropic_1 = require("./FlowiseChatAnthropic");
+const modelLoader_1 = require("../../../src/modelLoader");
+const anthropicUtils_1 = require("../../../src/anthropicUtils");
 class ChatAnthropic_ChatModels {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatAnthropic')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatAnthropic');
             }
-        }
-        this.label = 'Anthropic Claude'
-        this.name = 'chatAnthropic'
-        this.version = 8.0
-        this.type = 'ChatAnthropic'
-        this.icon = 'Anthropic.svg'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around ChatAnthropic large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(anthropic_1.ChatAnthropic)]
+        };
+        this.label = 'Anthropic Claude';
+        this.name = 'chatAnthropic';
+        this.version = 8.0;
+        this.type = 'ChatAnthropic';
+        this.icon = 'Anthropic.svg';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around ChatAnthropic large language models that use the Chat endpoint';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(anthropic_1.ChatAnthropic)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['anthropicApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -61,8 +61,7 @@ class ChatAnthropic_ChatModels {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                description: 'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             },
@@ -96,8 +95,7 @@ class ChatAnthropic_ChatModels {
             },
             {
                 label: 'Adaptive Thinking',
-                description:
-                    'Claude evaluates the complexity of each request and determines whether and how much to use extended thinking.',
+                description: 'Claude evaluates the complexity of each request and determines whether and how much to use extended thinking.',
                 name: 'adaptiveThinking',
                 type: 'boolean',
                 default: false,
@@ -162,63 +160,68 @@ class ChatAnthropic_ChatModels {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const temperature = nodeData.inputs?.temperature
-        const modelName = nodeData.inputs?.modelName
-        const maxTokens = nodeData.inputs?.maxTokensToSample
-        const topP = nodeData.inputs?.topP
-        const topK = nodeData.inputs?.topK
-        const streaming = nodeData.inputs?.streaming
-        const cache = nodeData.inputs?.cache
-        const extendedThinking = nodeData.inputs?.extendedThinking
-        const budgetTokens = nodeData.inputs?.budgetTokens
-        const adaptiveThinking = nodeData.inputs?.adaptiveThinking
-        const thinkingEffort = nodeData.inputs?.thinkingEffort
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const anthropicApiKey = (0, utils_1.getCredentialParam)('anthropicApiKey', credentialData, nodeData)
-        const allowImageUploads = nodeData.inputs?.allowImageUploads
-        const samplingSupported = (0, anthropicUtils_1.supportsSamplingParams)(modelName)
-        const thinkingEnabled = adaptiveThinking || extendedThinking
+        const temperature = nodeData.inputs?.temperature;
+        const modelName = nodeData.inputs?.modelName;
+        const maxTokens = nodeData.inputs?.maxTokensToSample;
+        const topP = nodeData.inputs?.topP;
+        const topK = nodeData.inputs?.topK;
+        const streaming = nodeData.inputs?.streaming;
+        const cache = nodeData.inputs?.cache;
+        const extendedThinking = nodeData.inputs?.extendedThinking;
+        const budgetTokens = nodeData.inputs?.budgetTokens;
+        const adaptiveThinking = nodeData.inputs?.adaptiveThinking;
+        const thinkingEffort = nodeData.inputs?.thinkingEffort;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const anthropicApiKey = (0, utils_1.getCredentialParam)('anthropicApiKey', credentialData, nodeData);
+        const allowImageUploads = nodeData.inputs?.allowImageUploads;
+        const samplingSupported = (0, anthropicUtils_1.supportsSamplingParams)(modelName);
+        const thinkingEnabled = adaptiveThinking || extendedThinking;
         const obj = {
             modelName,
             anthropicApiKey,
             streaming: streaming ?? true
-        }
+        };
         // Temperature is incompatible with thinking modes and with models that
         // don't support sampling parameters.
         if (samplingSupported && !thinkingEnabled) {
-            obj.temperature = parseFloat(temperature)
+            obj.temperature = parseFloat(temperature);
         }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (samplingSupported && topP) obj.topP = parseFloat(topP)
-        if (samplingSupported && topK) obj.topK = parseFloat(topK)
-        if (cache) obj.cache = cache
+        if (maxTokens)
+            obj.maxTokens = parseInt(maxTokens, 10);
+        if (samplingSupported && topP)
+            obj.topP = parseFloat(topP);
+        if (samplingSupported && topK)
+            obj.topK = parseFloat(topK);
+        if (cache)
+            obj.cache = cache;
         if (adaptiveThinking) {
             obj.thinking = {
                 type: 'adaptive'
-            }
+            };
             if (thinkingEffort) {
                 obj.outputConfig = {
                     effort: thinkingEffort
-                }
+                };
             }
-        } else if (extendedThinking) {
+        }
+        else if (extendedThinking) {
             obj.thinking = {
                 type: 'enabled',
                 budget_tokens: parseInt(budgetTokens ?? '1024', 10)
-            }
+            };
         }
         const multiModalOption = {
             image: {
                 allowImageUploads: allowImageUploads ?? false
             }
-        }
-        const model = new FlowiseChatAnthropic_1.ChatAnthropic(nodeData.id, obj)
-        model.setMultiModalOption(multiModalOption)
-        return model
+        };
+        const model = new FlowiseChatAnthropic_1.ChatAnthropic(nodeData.id, obj);
+        model.setMultiModalOption(multiModalOption);
+        return model;
     }
 }
-module.exports = { nodeClass: ChatAnthropic_ChatModels }
+module.exports = { nodeClass: ChatAnthropic_ChatModels };
 //# sourceMappingURL=ChatAnthropic.js.map

@@ -6,7 +6,7 @@
  * @param query - The Cypher query to validate
  * @throws Error if query contains write operations
  */
-export declare function validateCypherQuery(query: string): void
+export declare function validateCypherQuery(query: string): void;
 /**
  * Normalize and harden user input before sending to the LLM.
  *
@@ -14,7 +14,7 @@ export declare function validateCypherQuery(query: string): void
  * This is NOT a substitute for Cypher validation.
  * It only reduces obvious abuse patterns and normalizes input.
  */
-export declare function sanitizeUserInput(input: string, maxLength?: number): string
+export declare function sanitizeUserInput(input: string, maxLength?: number): string;
 /**
  * Enhanced prompt injection detection using multiple techniques
  *
@@ -36,4 +36,4 @@ export declare function sanitizeUserInput(input: string, maxLength?: number): st
  * @param input - User input to analyze
  * @returns true if potential injection detected, false otherwise
  */
-export declare function detectPromptInjection(input: string): boolean
+export declare function detectPromptInjection(input: string): boolean;

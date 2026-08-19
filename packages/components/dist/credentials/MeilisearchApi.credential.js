@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class MeilisearchApi {
     constructor() {
-        this.label = 'Meilisearch API'
-        this.name = 'meilisearchApi'
-        this.version = 1.0
+        this.label = 'Meilisearch API';
+        this.name = 'meilisearchApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://meilisearch.com">official guide</a> on how to get an API Key, you need a search API KEY for basic searching functionality, admin API KEY is optional but needed for upsert functionality '
+            'Refer to <a target="_blank" href="https://meilisearch.com">official guide</a> on how to get an API Key, you need a search API KEY for basic searching functionality, admin API KEY is optional but needed for upsert functionality ';
         this.inputs = [
             {
                 label: 'Meilisearch Search API Key',
@@ -19,8 +19,8 @@ class MeilisearchApi {
                 type: 'password',
                 optional: true
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: MeilisearchApi }
+module.exports = { credClass: MeilisearchApi };
 //# sourceMappingURL=MeilisearchApi.credential.js.map

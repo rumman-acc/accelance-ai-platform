@@ -1,11 +1,11 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class OxylabsApiCredential {
     constructor() {
-        this.label = 'Oxylabs API'
-        this.name = 'oxylabsApi'
-        this.version = 1.0
-        this.description = 'Oxylabs API credentials description, to add more info'
+        this.label = 'Oxylabs API';
+        this.name = 'oxylabsApi';
+        this.version = 1.0;
+        this.description = 'Oxylabs API credentials description, to add more info';
         this.inputs = [
             {
                 label: 'Oxylabs Username',
@@ -17,8 +17,8 @@ class OxylabsApiCredential {
                 name: 'password',
                 type: 'password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: OxylabsApiCredential }
+module.exports = { credClass: OxylabsApiCredential };
 //# sourceMappingURL=OxylabsApi.credential.js.map

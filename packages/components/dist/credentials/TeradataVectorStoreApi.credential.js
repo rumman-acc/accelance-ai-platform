@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class TeradataVectorStoreApiCredentials {
     constructor() {
-        this.label = 'Teradata Vector Store API Credentials'
-        this.name = 'teradataVectorStoreApiCredentials'
-        this.version = 1.0
+        this.label = 'Teradata Vector Store API Credentials';
+        this.name = 'teradataVectorStoreApiCredentials';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Teradata Host IP',
@@ -35,8 +35,8 @@ class TeradataVectorStoreApiCredentials {
                 description: 'Bearer token for JWT authentication',
                 optional: true
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: TeradataVectorStoreApiCredentials }
+module.exports = { credClass: TeradataVectorStoreApiCredentials };
 //# sourceMappingURL=TeradataVectorStoreApi.credential.js.map

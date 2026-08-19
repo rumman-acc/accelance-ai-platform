@@ -1,17 +1,17 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const scopes = [
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/drive.appdata',
     'https://www.googleapis.com/auth/drive.photos.readonly'
-]
+];
 class GoogleDriveOAuth2 {
     constructor() {
-        this.label = 'Google Drive OAuth2'
-        this.name = 'googleDriveOAuth2'
-        this.version = 1.0
+        this.label = 'Google Drive OAuth2';
+        this.name = 'googleDriveOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/google-drive">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/google-drive">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -49,8 +49,8 @@ class GoogleDriveOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: GoogleDriveOAuth2 }
+module.exports = { credClass: GoogleDriveOAuth2 };
 //# sourceMappingURL=GoogleDriveOAuth2.credential.js.map

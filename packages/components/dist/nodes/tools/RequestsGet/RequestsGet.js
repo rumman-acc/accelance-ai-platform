@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 const codeExample = `{
     "id": {
         "type": "string",
@@ -14,17 +14,17 @@ const codeExample = `{
         "in": "query",
         "description": "Limit the number of items to get. ?limit=10"
     }
-}`
+}`;
 class RequestsGet_Tools {
     constructor() {
-        this.label = 'Requests Get'
-        this.name = 'requestsGet'
-        this.version = 2.0
-        this.type = 'RequestsGet'
-        this.icon = 'get.png'
-        this.category = 'Tools'
-        this.description = 'Execute HTTP GET requests'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.RequestsGetTool), 'Tool']
+        this.label = 'Requests Get';
+        this.name = 'requestsGet';
+        this.version = 2.0;
+        this.type = 'RequestsGet';
+        this.icon = 'get.png';
+        this.category = 'Tools';
+        this.description = 'Execute HTTP GET requests';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.RequestsGetTool), 'Tool'];
         this.inputs = [
             {
                 label: 'URL',
@@ -96,32 +96,35 @@ class RequestsGet_Tools {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const headers = nodeData.inputs?.headers || nodeData.inputs?.requestsGetHeaders
-        const url = nodeData.inputs?.url || nodeData.inputs?.requestsGetUrl
-        const description = nodeData.inputs?.description || nodeData.inputs?.requestsGetDescription
-        const name = nodeData.inputs?.name || nodeData.inputs?.requestsGetName
-        const queryParamsSchema = nodeData.inputs?.queryParamsSchema || nodeData.inputs?.requestsGetQueryParamsSchema
-        const maxOutputLength = nodeData.inputs?.requestsGetMaxOutputLength
-        const obj = {}
-        if (url) obj.url = (0, utils_1.stripHTMLFromToolInput)(url)
-        if (description) obj.description = description
+        const headers = nodeData.inputs?.headers || nodeData.inputs?.requestsGetHeaders;
+        const url = nodeData.inputs?.url || nodeData.inputs?.requestsGetUrl;
+        const description = nodeData.inputs?.description || nodeData.inputs?.requestsGetDescription;
+        const name = nodeData.inputs?.name || nodeData.inputs?.requestsGetName;
+        const queryParamsSchema = nodeData.inputs?.queryParamsSchema || nodeData.inputs?.requestsGetQueryParamsSchema;
+        const maxOutputLength = nodeData.inputs?.requestsGetMaxOutputLength;
+        const obj = {};
+        if (url)
+            obj.url = (0, utils_1.stripHTMLFromToolInput)(url);
+        if (description)
+            obj.description = description;
         if (name)
             obj.name = name
                 .toLowerCase()
                 .replace(/ /g, '_')
-                .replace(/[^a-z0-9_-]/g, '')
-        if (queryParamsSchema) obj.queryParamsSchema = queryParamsSchema
-        if (maxOutputLength) obj.maxOutputLength = parseInt(maxOutputLength, 10)
+                .replace(/[^a-z0-9_-]/g, '');
+        if (queryParamsSchema)
+            obj.queryParamsSchema = queryParamsSchema;
+        if (maxOutputLength)
+            obj.maxOutputLength = parseInt(maxOutputLength, 10);
         if (headers) {
-            const parsedHeaders =
-                typeof headers === 'object' ? headers : (0, utils_1.parseJsonBody)((0, utils_1.stripHTMLFromToolInput)(headers))
-            obj.headers = parsedHeaders
+            const parsedHeaders = typeof headers === 'object' ? headers : (0, utils_1.parseJsonBody)((0, utils_1.stripHTMLFromToolInput)(headers));
+            obj.headers = parsedHeaders;
         }
-        return new core_1.RequestsGetTool(obj)
+        return new core_1.RequestsGetTool(obj);
     }
 }
-module.exports = { nodeClass: RequestsGet_Tools }
+module.exports = { nodeClass: RequestsGet_Tools };
 //# sourceMappingURL=RequestsGet.js.map

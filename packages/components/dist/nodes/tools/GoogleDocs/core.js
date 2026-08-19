@@ -1,16 +1,14 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.createGoogleDocsTools = exports.desc = void 0
-const v3_1 = require('zod/v3')
-const node_fetch_1 = __importDefault(require('node-fetch'))
-const core_1 = require('../OpenAPIToolkit/core')
-const agents_1 = require('../../../src/agents')
-exports.desc = `Use this when you want to access Google Docs API for managing documents`
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createGoogleDocsTools = exports.desc = void 0;
+const v3_1 = require("zod/v3");
+const node_fetch_1 = __importDefault(require("node-fetch"));
+const core_1 = require("../OpenAPIToolkit/core");
+const agents_1 = require("../../../src/agents");
+exports.desc = `Use this when you want to access Google Docs API for managing documents`;
 // Define schemas for different Google Docs operations
 // Document Schemas
 const CreateDocumentSchema = v3_1.z.object({
@@ -20,10 +18,10 @@ const CreateDocumentSchema = v3_1.z.object({
     imageUrl: v3_1.z.string().optional().describe('URL of the image to insert after creating document'),
     rows: v3_1.z.number().optional().describe('Number of rows in the table to create'),
     columns: v3_1.z.number().optional().describe('Number of columns in the table to create')
-})
+});
 const GetDocumentSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID to retrieve')
-})
+});
 const UpdateDocumentSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID to update'),
     text: v3_1.z.string().optional().describe('Text content to insert'),
@@ -34,81 +32,81 @@ const UpdateDocumentSchema = v3_1.z.object({
     imageUrl: v3_1.z.string().optional().describe('URL of the image to insert'),
     rows: v3_1.z.number().optional().describe('Number of rows in the table to create'),
     columns: v3_1.z.number().optional().describe('Number of columns in the table to create')
-})
+});
 const InsertTextSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID'),
     text: v3_1.z.string().describe('Text to insert'),
     index: v3_1.z.number().optional().default(1).describe('Index where to insert text (1-based, default: 1 for beginning)')
-})
+});
 const ReplaceTextSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID'),
     replaceText: v3_1.z.string().describe('Text to replace'),
     newText: v3_1.z.string().describe('New text to replace with'),
     matchCase: v3_1.z.boolean().optional().default(false).describe('Whether the search should be case-sensitive')
-})
+});
 const AppendTextSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID'),
     text: v3_1.z.string().describe('Text to append to the document')
-})
+});
 const GetTextContentSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID to get text content from')
-})
+});
 const InsertImageSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID'),
     imageUrl: v3_1.z.string().describe('URL of the image to insert'),
     index: v3_1.z.number().optional().default(1).describe('Index where to insert image (1-based)')
-})
+});
 const CreateTableSchema = v3_1.z.object({
     documentId: v3_1.z.string().describe('Document ID'),
     rows: v3_1.z.number().describe('Number of rows in the table'),
     columns: v3_1.z.number().describe('Number of columns in the table'),
     index: v3_1.z.number().optional().default(1).describe('Index where to insert table (1-based)')
-})
+});
 class BaseGoogleDocsTool extends core_1.DynamicStructuredTool {
     constructor(args) {
-        super(args)
-        this.accessToken = ''
-        this.accessToken = args.accessToken ?? ''
+        super(args);
+        this.accessToken = '';
+        this.accessToken = args.accessToken ?? '';
     }
     async makeGoogleDocsRequest({ endpoint, method = 'GET', body, params }) {
-        const url = `https://docs.googleapis.com/v1/${endpoint}`
+        const url = `https://docs.googleapis.com/v1/${endpoint}`;
         const headers = {
             Authorization: `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
             Accept: 'application/json',
             ...this.headers
-        }
+        };
         const response = await (0, node_fetch_1.default)(url, {
             method,
             headers,
             body: body ? JSON.stringify(body) : undefined
-        })
+        });
         if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Google Docs API Error ${response.status}: ${response.statusText} - ${errorText}`)
+            const errorText = await response.text();
+            throw new Error(`Google Docs API Error ${response.status}: ${response.statusText} - ${errorText}`);
         }
-        const data = await response.text()
-        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
+        const data = await response.text();
+        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
     }
     async makeDriveRequest({ endpoint, method = 'GET', body, params }) {
-        const url = `https://www.googleapis.com/drive/v3/${endpoint}`
+        const url = `https://www.googleapis.com/drive/v3/${endpoint}`;
         const headers = {
             Authorization: `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
             Accept: 'application/json',
             ...this.headers
-        }
+        };
         const response = await (0, node_fetch_1.default)(url, {
             method,
             headers,
             body: body ? JSON.stringify(body) : undefined
-        })
+        });
         if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Google Drive API Error ${response.status}: ${response.statusText} - ${errorText}`)
+            const errorText = await response.text();
+            throw new Error(`Google Drive API Error ${response.status}: ${response.statusText} - ${errorText}`);
         }
-        const data = await response.text()
-        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
+        const data = await response.text();
+        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
     }
 }
 // Document Tools
@@ -121,31 +119,31 @@ class CreateDocumentTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
             const documentData = {
                 title: params.title
-            }
-            const endpoint = 'documents'
+            };
+            const endpoint = 'documents';
             const createResponse = await this.makeGoogleDocsRequest({
                 endpoint,
                 method: 'POST',
                 body: documentData,
                 params
-            })
+            });
             // Get the document ID from the response
-            const documentResponse = JSON.parse(createResponse.split(agents_1.TOOL_ARGS_PREFIX)[0])
-            const documentId = documentResponse.documentId
+            const documentResponse = JSON.parse(createResponse.split(agents_1.TOOL_ARGS_PREFIX)[0]);
+            const documentId = documentResponse.documentId;
             // Now add content if provided
-            const requests = []
+            const requests = [];
             if (params.text) {
                 requests.push({
                     insertText: {
@@ -154,7 +152,7 @@ class CreateDocumentTool extends BaseGoogleDocsTool {
                         },
                         text: params.text
                     }
-                })
+                });
             }
             if (params.imageUrl) {
                 requests.push({
@@ -164,7 +162,7 @@ class CreateDocumentTool extends BaseGoogleDocsTool {
                         },
                         uri: params.imageUrl
                     }
-                })
+                });
             }
             if (params.rows && params.columns) {
                 requests.push({
@@ -175,21 +173,22 @@ class CreateDocumentTool extends BaseGoogleDocsTool {
                         rows: params.rows,
                         columns: params.columns
                     }
-                })
+                });
             }
             // If we have content to add, make a batch update
             if (requests.length > 0) {
-                const updateEndpoint = `documents/${encodeURIComponent(documentId)}:batchUpdate`
+                const updateEndpoint = `documents/${encodeURIComponent(documentId)}:batchUpdate`;
                 await this.makeGoogleDocsRequest({
                     endpoint: updateEndpoint,
                     method: 'POST',
                     body: { requests },
                     params: {}
-                })
+                });
             }
-            return createResponse
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error creating document: ${error}`, params)
+            return createResponse;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error creating document: ${error}`, params);
         }
     }
 }
@@ -202,26 +201,26 @@ class GetDocumentTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const queryParams = new URLSearchParams()
+            const queryParams = new URLSearchParams();
             if (params.includeTabsContent) {
-                queryParams.set('includeTabsContent', 'true')
+                queryParams.set('includeTabsContent', 'true');
             }
-            const endpoint =
-                `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '')
-            const response = await this.makeGoogleDocsRequest({ endpoint, params })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting document: ${error}`, params)
+            const endpoint = `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '');
+            const response = await this.makeGoogleDocsRequest({ endpoint, params });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting document: ${error}`, params);
         }
     }
 }
@@ -234,17 +233,17 @@ class UpdateDocumentTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const requests = []
+            const requests = [];
             // Insert text
             if (params.text) {
                 requests.push({
@@ -254,7 +253,7 @@ class UpdateDocumentTool extends BaseGoogleDocsTool {
                         },
                         text: params.text
                     }
-                })
+                });
             }
             // Replace text
             if (params.replaceText && params.newText) {
@@ -266,7 +265,7 @@ class UpdateDocumentTool extends BaseGoogleDocsTool {
                         },
                         replaceText: params.newText
                     }
-                })
+                });
             }
             // Insert image
             if (params.imageUrl) {
@@ -277,7 +276,7 @@ class UpdateDocumentTool extends BaseGoogleDocsTool {
                         },
                         uri: params.imageUrl
                     }
-                })
+                });
             }
             // Create table
             if (params.rows && params.columns) {
@@ -289,22 +288,24 @@ class UpdateDocumentTool extends BaseGoogleDocsTool {
                         rows: params.rows,
                         columns: params.columns
                     }
-                })
+                });
             }
             if (requests.length > 0) {
-                const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`
+                const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`;
                 const response = await this.makeGoogleDocsRequest({
                     endpoint,
                     method: 'POST',
                     body: { requests },
                     params
-                })
-                return response
-            } else {
-                return `No updates specified` + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
+                });
+                return response;
             }
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error updating document: ${error}`, params)
+            else {
+                return `No updates specified` + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
+            }
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error updating document: ${error}`, params);
         }
     }
 }
@@ -317,15 +318,15 @@ class InsertTextTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
             const requests = [
                 {
@@ -336,17 +337,18 @@ class InsertTextTool extends BaseGoogleDocsTool {
                         text: params.text
                     }
                 }
-            ]
-            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`
+            ];
+            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`;
             const response = await this.makeGoogleDocsRequest({
                 endpoint,
                 method: 'POST',
                 body: { requests },
                 params
-            })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error inserting text: ${error}`, params)
+            });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error inserting text: ${error}`, params);
         }
     }
 }
@@ -359,15 +361,15 @@ class ReplaceTextTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
             const requests = [
                 {
@@ -379,17 +381,18 @@ class ReplaceTextTool extends BaseGoogleDocsTool {
                         replaceText: params.newText
                     }
                 }
-            ]
-            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`
+            ];
+            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`;
             const response = await this.makeGoogleDocsRequest({
                 endpoint,
                 method: 'POST',
                 body: { requests },
                 params
-            })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error replacing text: ${error}`, params)
+            });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error replacing text: ${error}`, params);
         }
     }
 }
@@ -402,22 +405,22 @@ class AppendTextTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
             // First get the document to find the end index
-            const getEndpoint = `documents/${encodeURIComponent(params.documentId)}`
-            const docResponse = await this.makeGoogleDocsRequest({ endpoint: getEndpoint, params: {} })
-            const docData = JSON.parse(docResponse.split(agents_1.TOOL_ARGS_PREFIX)[0])
+            const getEndpoint = `documents/${encodeURIComponent(params.documentId)}`;
+            const docResponse = await this.makeGoogleDocsRequest({ endpoint: getEndpoint, params: {} });
+            const docData = JSON.parse(docResponse.split(agents_1.TOOL_ARGS_PREFIX)[0]);
             // Get the end index of the document body
-            const endIndex = docData.body.content[docData.body.content.length - 1].endIndex - 1
+            const endIndex = docData.body.content[docData.body.content.length - 1].endIndex - 1;
             const requests = [
                 {
                     insertText: {
@@ -427,17 +430,18 @@ class AppendTextTool extends BaseGoogleDocsTool {
                         text: params.text
                     }
                 }
-            ]
-            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`
+            ];
+            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`;
             const response = await this.makeGoogleDocsRequest({
                 endpoint,
                 method: 'POST',
                 body: { requests },
                 params
-            })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error appending text: ${error}`, params)
+            });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error appending text: ${error}`, params);
         }
     }
 }
@@ -450,50 +454,51 @@ class GetTextContentTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'GET',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const queryParams = new URLSearchParams()
+            const queryParams = new URLSearchParams();
             if (params.includeTabsContent) {
-                queryParams.set('includeTabsContent', 'true')
+                queryParams.set('includeTabsContent', 'true');
             }
-            const endpoint =
-                `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '')
-            const response = await this.makeGoogleDocsRequest({ endpoint, params })
-            const docData = JSON.parse(response.split(agents_1.TOOL_ARGS_PREFIX)[0])
-            let textContent = ''
+            const endpoint = `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '');
+            const response = await this.makeGoogleDocsRequest({ endpoint, params });
+            const docData = JSON.parse(response.split(agents_1.TOOL_ARGS_PREFIX)[0]);
+            let textContent = '';
             const extractText = (element) => {
                 if (element.paragraph) {
                     element.paragraph.elements?.forEach((elem) => {
                         if (elem.textRun) {
-                            textContent += elem.textRun.content
+                            textContent += elem.textRun.content;
                         }
-                    })
+                    });
                 }
-            }
+            };
             const extractFromTabs = (tabs) => {
                 for (const tab of tabs) {
-                    tab.documentTab?.body?.content?.forEach(extractText)
+                    tab.documentTab?.body?.content?.forEach(extractText);
                     if (tab.childTabs?.length) {
-                        extractFromTabs(tab.childTabs)
+                        extractFromTabs(tab.childTabs);
                     }
                 }
-            }
+            };
             if (docData.tabs?.length) {
-                extractFromTabs(docData.tabs)
-            } else {
-                docData.body?.content?.forEach(extractText)
+                extractFromTabs(docData.tabs);
             }
-            return JSON.stringify({ textContent }) + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting text content: ${error}`, params)
+            else {
+                docData.body?.content?.forEach(extractText);
+            }
+            return JSON.stringify({ textContent }) + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting text content: ${error}`, params);
         }
     }
 }
@@ -506,15 +511,15 @@ class InsertImageTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
             const requests = [
                 {
@@ -525,17 +530,18 @@ class InsertImageTool extends BaseGoogleDocsTool {
                         uri: params.imageUrl
                     }
                 }
-            ]
-            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`
+            ];
+            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`;
             const response = await this.makeGoogleDocsRequest({
                 endpoint,
                 method: 'POST',
                 body: { requests },
                 params
-            })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error inserting image: ${error}`, params)
+            });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error inserting image: ${error}`, params);
         }
     }
 }
@@ -548,15 +554,15 @@ class CreateTableTool extends BaseGoogleDocsTool {
             baseUrl: '',
             method: 'POST',
             headers: {}
-        }
+        };
         super({
             ...toolInput,
             accessToken: args.accessToken
-        })
-        this.defaultParams = args.defaultParams || {}
+        });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
             const requests = [
                 {
@@ -568,51 +574,52 @@ class CreateTableTool extends BaseGoogleDocsTool {
                         columns: params.columns
                     }
                 }
-            ]
-            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`
+            ];
+            const endpoint = `documents/${encodeURIComponent(params.documentId)}:batchUpdate`;
             const response = await this.makeGoogleDocsRequest({
                 endpoint,
                 method: 'POST',
                 body: { requests },
                 params
-            })
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error creating table: ${error}`, params)
+            });
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error creating table: ${error}`, params);
         }
     }
 }
 const createGoogleDocsTools = (args) => {
-    const actions = args?.actions || []
-    const tools = []
+    const actions = args?.actions || [];
+    const tools = [];
     if (actions.includes('createDocument') || actions.length === 0) {
-        tools.push(new CreateDocumentTool(args))
+        tools.push(new CreateDocumentTool(args));
     }
     if (actions.includes('getDocument') || actions.length === 0) {
-        tools.push(new GetDocumentTool(args))
+        tools.push(new GetDocumentTool(args));
     }
     if (actions.includes('updateDocument') || actions.length === 0) {
-        tools.push(new UpdateDocumentTool(args))
+        tools.push(new UpdateDocumentTool(args));
     }
     if (actions.includes('insertText') || actions.length === 0) {
-        tools.push(new InsertTextTool(args))
+        tools.push(new InsertTextTool(args));
     }
     if (actions.includes('replaceText') || actions.length === 0) {
-        tools.push(new ReplaceTextTool(args))
+        tools.push(new ReplaceTextTool(args));
     }
     if (actions.includes('appendText') || actions.length === 0) {
-        tools.push(new AppendTextTool(args))
+        tools.push(new AppendTextTool(args));
     }
     if (actions.includes('getTextContent') || actions.length === 0) {
-        tools.push(new GetTextContentTool(args))
+        tools.push(new GetTextContentTool(args));
     }
     if (actions.includes('insertImage') || actions.length === 0) {
-        tools.push(new InsertImageTool(args))
+        tools.push(new InsertImageTool(args));
     }
     if (actions.includes('createTable') || actions.length === 0) {
-        tools.push(new CreateTableTool(args))
+        tools.push(new CreateTableTool(args));
     }
-    return tools
-}
-exports.createGoogleDocsTools = createGoogleDocsTools
+    return tools;
+};
+exports.createGoogleDocsTools = createGoogleDocsTools;
 //# sourceMappingURL=core.js.map

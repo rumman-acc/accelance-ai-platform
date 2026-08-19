@@ -1,24 +1,24 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const src_1 = require('../../../src')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const src_1 = require("../../../src");
+const core_1 = require("./core");
 class Jira_Tools {
     constructor() {
-        this.label = 'Jira'
-        this.name = 'jiraTool'
-        this.version = 2.0
-        this.type = 'Jira'
-        this.icon = 'jira.svg'
-        this.category = 'Tools'
-        this.description = 'Perform Jira operations for issues, comments, and users'
-        this.baseClasses = [this.type, 'Tool']
+        this.label = 'Jira';
+        this.name = 'jiraTool';
+        this.version = 2.0;
+        this.type = 'Jira';
+        this.icon = 'jira.svg';
+        this.category = 'Tools';
+        this.description = 'Perform Jira operations for issues, comments, and users';
+        this.baseClasses = [this.type, 'Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['jiraApi', 'jiraApiBearerToken']
-        }
+        };
         this.inputs = [
             {
                 label: 'Host',
@@ -376,99 +376,122 @@ class Jira_Tools {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const jiraHost = nodeData.inputs?.jiraHost
+        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const jiraHost = nodeData.inputs?.jiraHost;
         if (!jiraHost) {
-            throw new Error('No Jira host provided')
+            throw new Error('No Jira host provided');
         }
-        const bearerToken = (0, utils_1.getCredentialParam)('bearerToken', credentialData, nodeData)
-        const username = (0, utils_1.getCredentialParam)('username', credentialData, nodeData)
-        const accessToken = (0, utils_1.getCredentialParam)('accessToken', credentialData, nodeData)
-        let authType
+        const bearerToken = (0, utils_1.getCredentialParam)('bearerToken', credentialData, nodeData);
+        const username = (0, utils_1.getCredentialParam)('username', credentialData, nodeData);
+        const accessToken = (0, utils_1.getCredentialParam)('accessToken', credentialData, nodeData);
+        let authType;
         if (bearerToken) {
-            authType = 'bearer'
-        } else if (username && accessToken) {
-            authType = 'basic'
-        } else {
-            throw new Error('Invalid credentials: provide either Bearer Token or Username + Access Token')
+            authType = 'bearer';
+        }
+        else if (username && accessToken) {
+            authType = 'basic';
+        }
+        else {
+            throw new Error('Invalid credentials: provide either Bearer Token or Username + Access Token');
         }
         // Read SSL certificate from tool inputs if provided
-        let sslCertificate
-        const caFileBase64 = nodeData.inputs?.caFile
+        let sslCertificate;
+        const caFileBase64 = nodeData.inputs?.caFile;
         if (caFileBase64) {
             if (caFileBase64.startsWith('FILE-STORAGE::')) {
-                let file = caFileBase64.replace('FILE-STORAGE::', '')
-                file = file.replace('[', '').replace(']', '')
-                const orgId = options.orgId
-                const chatflowid = options.chatflowid
-                const fileData = await (0, src_1.getFileFromStorage)(file, orgId, chatflowid)
-                sslCertificate = fileData.toString()
-            } else {
-                const splitDataURI = caFileBase64.split(',')
-                splitDataURI.pop()
-                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                sslCertificate = bf.toString('utf-8')
+                let file = caFileBase64.replace('FILE-STORAGE::', '');
+                file = file.replace('[', '').replace(']', '');
+                const orgId = options.orgId;
+                const chatflowid = options.chatflowid;
+                const fileData = await (0, src_1.getFileFromStorage)(file, orgId, chatflowid);
+                sslCertificate = fileData.toString();
+            }
+            else {
+                const splitDataURI = caFileBase64.split(',');
+                splitDataURI.pop();
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64');
+                sslCertificate = bf.toString('utf-8');
             }
         }
         // Get all actions based on type
-        const jiraType = nodeData.inputs?.jiraType
-        let actions = []
+        const jiraType = nodeData.inputs?.jiraType;
+        let actions = [];
         if (jiraType === 'issues') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.issueActions)
-        } else if (jiraType === 'comments') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.commentActions)
-        } else if (jiraType === 'users') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.userActions)
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.issueActions);
         }
-        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
+        else if (jiraType === 'comments') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.commentActions);
+        }
+        else if (jiraType === 'users') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.userActions);
+        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData);
         // Basic Auth (username + API token) = Jira Cloud = API v3
         // Bearer Token (PAT) = Jira Server/DC = API v2
-        const apiVersion = authType === 'bearer' ? '2' : '3'
+        const apiVersion = authType === 'bearer' ? '2' : '3';
         const authConfig = {
             authType,
             username,
             accessToken,
             bearerToken,
             sslCertificate
-        }
+        };
         const tools = (0, core_1.createJiraTools)({
             actions,
             jiraHost,
             defaultParams,
             apiVersion,
             authConfig
-        })
-        return tools
+        });
+        return tools;
     }
     transformNodeInputsToToolArgs(nodeData) {
         // Collect default parameters from inputs
-        const defaultParams = {}
+        const defaultParams = {};
         // Issue parameters
-        if (nodeData.inputs?.projectKey) defaultParams.projectKey = nodeData.inputs.projectKey
-        if (nodeData.inputs?.issueType) defaultParams.issueType = nodeData.inputs.issueType
-        if (nodeData.inputs?.issueSummary) defaultParams.issueSummary = nodeData.inputs.issueSummary
-        if (nodeData.inputs?.issueDescription) defaultParams.issueDescription = nodeData.inputs.issueDescription
-        if (nodeData.inputs?.issuePriority) defaultParams.issuePriority = nodeData.inputs.issuePriority
-        if (nodeData.inputs?.issueKey) defaultParams.issueKey = nodeData.inputs.issueKey
-        if (nodeData.inputs?.assigneeAccountId) defaultParams.assigneeAccountId = nodeData.inputs.assigneeAccountId
-        if (nodeData.inputs?.transitionId) defaultParams.transitionId = nodeData.inputs.transitionId
-        if (nodeData.inputs?.jqlQuery) defaultParams.jqlQuery = nodeData.inputs.jqlQuery
-        if (nodeData.inputs?.issueMaxResults) defaultParams.issueMaxResults = nodeData.inputs.issueMaxResults
+        if (nodeData.inputs?.projectKey)
+            defaultParams.projectKey = nodeData.inputs.projectKey;
+        if (nodeData.inputs?.issueType)
+            defaultParams.issueType = nodeData.inputs.issueType;
+        if (nodeData.inputs?.issueSummary)
+            defaultParams.issueSummary = nodeData.inputs.issueSummary;
+        if (nodeData.inputs?.issueDescription)
+            defaultParams.issueDescription = nodeData.inputs.issueDescription;
+        if (nodeData.inputs?.issuePriority)
+            defaultParams.issuePriority = nodeData.inputs.issuePriority;
+        if (nodeData.inputs?.issueKey)
+            defaultParams.issueKey = nodeData.inputs.issueKey;
+        if (nodeData.inputs?.assigneeAccountId)
+            defaultParams.assigneeAccountId = nodeData.inputs.assigneeAccountId;
+        if (nodeData.inputs?.transitionId)
+            defaultParams.transitionId = nodeData.inputs.transitionId;
+        if (nodeData.inputs?.jqlQuery)
+            defaultParams.jqlQuery = nodeData.inputs.jqlQuery;
+        if (nodeData.inputs?.issueMaxResults)
+            defaultParams.issueMaxResults = nodeData.inputs.issueMaxResults;
         // Comment parameters
-        if (nodeData.inputs?.commentIssueKey) defaultParams.commentIssueKey = nodeData.inputs.commentIssueKey
-        if (nodeData.inputs?.commentText) defaultParams.commentText = nodeData.inputs.commentText
-        if (nodeData.inputs?.commentId) defaultParams.commentId = nodeData.inputs.commentId
+        if (nodeData.inputs?.commentIssueKey)
+            defaultParams.commentIssueKey = nodeData.inputs.commentIssueKey;
+        if (nodeData.inputs?.commentText)
+            defaultParams.commentText = nodeData.inputs.commentText;
+        if (nodeData.inputs?.commentId)
+            defaultParams.commentId = nodeData.inputs.commentId;
         // User parameters
-        if (nodeData.inputs?.userQuery) defaultParams.userQuery = nodeData.inputs.userQuery
-        if (nodeData.inputs?.userAccountId) defaultParams.userAccountId = nodeData.inputs.userAccountId
-        if (nodeData.inputs?.userEmail) defaultParams.userEmail = nodeData.inputs.userEmail
-        if (nodeData.inputs?.userDisplayName) defaultParams.userDisplayName = nodeData.inputs.userDisplayName
-        if (nodeData.inputs?.userMaxResults) defaultParams.userMaxResults = nodeData.inputs.userMaxResults
-        return defaultParams
+        if (nodeData.inputs?.userQuery)
+            defaultParams.userQuery = nodeData.inputs.userQuery;
+        if (nodeData.inputs?.userAccountId)
+            defaultParams.userAccountId = nodeData.inputs.userAccountId;
+        if (nodeData.inputs?.userEmail)
+            defaultParams.userEmail = nodeData.inputs.userEmail;
+        if (nodeData.inputs?.userDisplayName)
+            defaultParams.userDisplayName = nodeData.inputs.userDisplayName;
+        if (nodeData.inputs?.userMaxResults)
+            defaultParams.userMaxResults = nodeData.inputs.userMaxResults;
+        return defaultParams;
     }
 }
-module.exports = { nodeClass: Jira_Tools }
+module.exports = { nodeClass: Jira_Tools };
 //# sourceMappingURL=Jira.js.map

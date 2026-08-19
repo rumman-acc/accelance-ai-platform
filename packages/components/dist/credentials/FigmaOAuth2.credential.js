@@ -1,5 +1,5 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // NOTE: Figma's Remote MCP Server (https://mcp.figma.com/mcp) documents OAuth as its only
 // supported auth path for MCP clients. This credential uses Figma's standard, long-standing
 // OAuth2 app flow (same one used for the regular Figma REST API) to obtain that token — Figma
@@ -8,11 +8,11 @@ Object.defineProperty(exports, '__esModule', { value: true })
 // credential/node pair needs revisiting once a real Figma OAuth app is registered and tested.
 class FigmaOAuth2 {
     constructor() {
-        this.label = 'Figma OAuth2'
-        this.name = 'figmaOAuth2'
-        this.version = 1.0
+        this.label = 'Figma OAuth2';
+        this.name = 'figmaOAuth2';
+        this.version = 1.0;
         this.description =
-            'Register an OAuth2 app at <a target="_blank" href="https://www.figma.com/developers/apps">Figma developer apps</a> to get a Client ID/Secret.'
+            'Register an OAuth2 app at <a target="_blank" href="https://www.figma.com/developers/apps">Figma developer apps</a> to get a Client ID/Secret.';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -43,8 +43,8 @@ class FigmaOAuth2 {
                 hidden: true,
                 default: 'files:read'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: FigmaOAuth2 }
+module.exports = { credClass: FigmaOAuth2 };
 //# sourceMappingURL=FigmaOAuth2.credential.js.map

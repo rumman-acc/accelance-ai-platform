@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const v3_1 = require('zod/v3')
-const core_1 = require('../CustomTool/core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const v3_1 = require("zod/v3");
+const core_1 = require("../CustomTool/core");
 const code = `
 const now = new Date();
                 
@@ -34,17 +34,17 @@ return {
     iso8601: now.toISOString(),
     unix_timestamp: Math.floor(now.getTime() / 1000)
 };
-`
+`;
 class CurrentDateTime_Tools {
     constructor() {
-        this.label = 'CurrentDateTime'
-        this.name = 'currentDateTime'
-        this.version = 1.0
-        this.type = 'CurrentDateTime'
-        this.icon = 'currentDateTime.svg'
-        this.category = 'Tools'
-        this.description = 'Get todays day, date and time.'
-        this.baseClasses = [this.type, 'Tool']
+        this.label = 'CurrentDateTime';
+        this.name = 'currentDateTime';
+        this.version = 1.0;
+        this.type = 'CurrentDateTime';
+        this.icon = 'currentDateTime.svg';
+        this.category = 'Tools';
+        this.description = 'Get todays day, date and time.';
+        this.baseClasses = [this.type, 'Tool'];
     }
     async init() {
         const obj = {
@@ -52,10 +52,10 @@ class CurrentDateTime_Tools {
             description: 'Useful to get current day, date and time.',
             schema: v3_1.z.object({}),
             code: code
-        }
-        let dynamicStructuredTool = new core_1.DynamicStructuredTool(obj)
-        return dynamicStructuredTool
+        };
+        let dynamicStructuredTool = new core_1.DynamicStructuredTool(obj);
+        return dynamicStructuredTool;
     }
 }
-module.exports = { nodeClass: CurrentDateTime_Tools }
+module.exports = { nodeClass: CurrentDateTime_Tools };
 //# sourceMappingURL=CurrentDateTime.js.map

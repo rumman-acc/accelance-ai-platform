@@ -1,25 +1,25 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const generative_ai_1 = require('@google/generative-ai')
-const utils_1 = require('../../../src/utils')
-const modelLoader_1 = require('../../../src/modelLoader')
-const FlowiseChatGoogleGenerativeAI_1 = require('./FlowiseChatGoogleGenerativeAI')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const generative_ai_1 = require("@google/generative-ai");
+const utils_1 = require("../../../src/utils");
+const modelLoader_1 = require("../../../src/modelLoader");
+const FlowiseChatGoogleGenerativeAI_1 = require("./FlowiseChatGoogleGenerativeAI");
 class GoogleGenerativeAI_ChatModels {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatGoogleGenerativeAI')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'chatGoogleGenerativeAI');
             }
-        }
-        this.label = 'Google Gemini'
-        this.name = 'chatGoogleGenerativeAI'
-        this.version = 3.1
-        this.type = 'ChatGoogleGenerativeAI'
-        this.icon = 'GoogleGemini.svg'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around Google Gemini large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(FlowiseChatGoogleGenerativeAI_1.ChatGoogleGenerativeAI)]
+        };
+        this.label = 'Google Gemini';
+        this.name = 'chatGoogleGenerativeAI';
+        this.version = 3.1;
+        this.type = 'ChatGoogleGenerativeAI';
+        this.icon = 'GoogleGemini.svg';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around Google Gemini large language models that use the Chat endpoint';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(FlowiseChatGoogleGenerativeAI_1.ChatGoogleGenerativeAI)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -27,7 +27,7 @@ class GoogleGenerativeAI_ChatModels {
             credentialNames: ['googleGenerativeAI'],
             optional: false,
             description: 'Google Generative AI credential.'
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -71,8 +71,7 @@ class GoogleGenerativeAI_ChatModels {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                description: 'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             },
@@ -143,8 +142,7 @@ class GoogleGenerativeAI_ChatModels {
                 label: 'Safety Settings',
                 name: 'safetySettings',
                 type: 'array',
-                description:
-                    'Safety settings for the model. Refer to the <a href="https://ai.google.dev/gemini-api/docs/safety-settings">official guide</a> on how to use Safety Settings',
+                description: 'Safety settings for the model. Refer to the <a href="https://ai.google.dev/gemini-api/docs/safety-settings">official guide</a> on how to use Safety Settings',
                 array: [
                     {
                         label: 'Harm Category',
@@ -222,85 +220,94 @@ class GoogleGenerativeAI_ChatModels {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const apiKey = (0, utils_1.getCredentialParam)('googleGenerativeAPIKey', credentialData, nodeData)
-        const temperature = nodeData.inputs?.temperature
-        const modelName = nodeData.inputs?.modelName
-        const customModelName = nodeData.inputs?.customModelName
-        const maxOutputTokens = nodeData.inputs?.maxOutputTokens
-        const topP = nodeData.inputs?.topP
-        const topK = nodeData.inputs?.topK
-        const _safetySettings = nodeData.inputs?.safetySettings
-        const cache = nodeData.inputs?.cache
-        const streaming = nodeData.inputs?.streaming
-        const baseUrl = nodeData.inputs?.baseUrl
-        const thinkingBudget = nodeData.inputs?.thinkingBudget
-        const thinkingLevel = nodeData.inputs?.thinkingLevel
-        const allowImageUploads = nodeData.inputs?.allowImageUploads
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const apiKey = (0, utils_1.getCredentialParam)('googleGenerativeAPIKey', credentialData, nodeData);
+        const temperature = nodeData.inputs?.temperature;
+        const modelName = nodeData.inputs?.modelName;
+        const customModelName = nodeData.inputs?.customModelName;
+        const maxOutputTokens = nodeData.inputs?.maxOutputTokens;
+        const topP = nodeData.inputs?.topP;
+        const topK = nodeData.inputs?.topK;
+        const _safetySettings = nodeData.inputs?.safetySettings;
+        const cache = nodeData.inputs?.cache;
+        const streaming = nodeData.inputs?.streaming;
+        const baseUrl = nodeData.inputs?.baseUrl;
+        const thinkingBudget = nodeData.inputs?.thinkingBudget;
+        const thinkingLevel = nodeData.inputs?.thinkingLevel;
+        const allowImageUploads = nodeData.inputs?.allowImageUploads;
         const obj = {
             apiKey: apiKey,
             model: customModelName || modelName,
             streaming: streaming ?? true
-        }
+        };
         // this extra metadata is needed, as langchain does not show the model name in the callbacks.
         obj.metadata = {
             fw_model_name: customModelName || modelName
-        }
-        if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (topK) obj.topK = parseFloat(topK)
-        if (cache) obj.cache = cache
-        if (temperature) obj.temperature = parseFloat(temperature)
-        if (baseUrl) obj.baseUrl = baseUrl
+        };
+        if (maxOutputTokens)
+            obj.maxOutputTokens = parseInt(maxOutputTokens, 10);
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (topK)
+            obj.topK = parseFloat(topK);
+        if (cache)
+            obj.cache = cache;
+        if (temperature)
+            obj.temperature = parseFloat(temperature);
+        if (baseUrl)
+            obj.baseUrl = baseUrl;
         if (thinkingLevel) {
             obj.thinkingConfig = {
                 thinkingLevel: thinkingLevel,
                 includeThoughts: true
-            }
-        } else if (thinkingBudget) {
+            };
+        }
+        else if (thinkingBudget) {
             obj.thinkingConfig = {
                 thinkingBudget: parseInt(thinkingBudget, 10),
                 includeThoughts: true
-            }
+            };
         }
-        let safetySettings = []
+        let safetySettings = [];
         if (_safetySettings) {
             try {
-                const parsedSafetySettings = typeof _safetySettings === 'string' ? JSON.parse(_safetySettings) : _safetySettings
+                const parsedSafetySettings = typeof _safetySettings === 'string' ? JSON.parse(_safetySettings) : _safetySettings;
                 if (Array.isArray(parsedSafetySettings)) {
                     const validSettings = parsedSafetySettings
                         .filter((setting) => setting.harmCategory && setting.harmBlockThreshold)
                         .map((setting) => ({
-                            category: setting.harmCategory,
-                            threshold: setting.harmBlockThreshold
-                        }))
+                        category: setting.harmCategory,
+                        threshold: setting.harmBlockThreshold
+                    }));
                     // Remove duplicates by keeping only the first occurrence of each harm category
-                    const seenCategories = new Set()
+                    const seenCategories = new Set();
                     safetySettings = validSettings.filter((setting) => {
                         if (seenCategories.has(setting.category)) {
-                            return false
+                            return false;
                         }
-                        seenCategories.add(setting.category)
-                        return true
-                    })
+                        seenCategories.add(setting.category);
+                        return true;
+                    });
                 }
-            } catch (error) {
-                console.warn('Failed to parse safety settings:', error)
+            }
+            catch (error) {
+                console.warn('Failed to parse safety settings:', error);
             }
         }
-        if (safetySettings.length > 0) obj.safetySettings = safetySettings
+        if (safetySettings.length > 0)
+            obj.safetySettings = safetySettings;
         const multiModalOption = {
             image: {
                 allowImageUploads: allowImageUploads ?? false
             }
-        }
-        const model = new FlowiseChatGoogleGenerativeAI_1.ChatGoogleGenerativeAI(nodeData.id, obj)
-        model.setMultiModalOption(multiModalOption)
-        return model
+        };
+        const model = new FlowiseChatGoogleGenerativeAI_1.ChatGoogleGenerativeAI(nodeData.id, obj);
+        model.setMultiModalOption(multiModalOption);
+        return model;
     }
 }
-module.exports = { nodeClass: GoogleGenerativeAI_ChatModels }
+module.exports = { nodeClass: GoogleGenerativeAI_ChatModels };
 //# sourceMappingURL=ChatGoogleGenerativeAI.js.map

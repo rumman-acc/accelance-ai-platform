@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class ChromaApi {
     constructor() {
-        this.label = 'Chroma API'
-        this.name = 'chromaApi'
-        this.version = 1.0
+        this.label = 'Chroma API';
+        this.name = 'chromaApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Chroma Api Key',
@@ -21,8 +21,8 @@ class ChromaApi {
                 name: 'chromaDatabase',
                 type: 'string'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: ChromaApi }
+module.exports = { credClass: ChromaApi };
 //# sourceMappingURL=ChromaApi.credential.js.map

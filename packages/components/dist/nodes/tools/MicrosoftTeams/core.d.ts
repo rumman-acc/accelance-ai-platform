@@ -1,9 +1,9 @@
-import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { DynamicStructuredTool } from '../OpenAPIToolkit/core';
 interface TeamsToolOptions {
-    accessToken: string
-    actions: string[]
-    defaultParams: any
-    type: string
+    accessToken: string;
+    actions: string[];
+    defaultParams: any;
+    type: string;
 }
-export declare function createTeamsTools(options: TeamsToolOptions): DynamicStructuredTool[]
-export {}
+export declare function createTeamsTools(options: TeamsToolOptions): DynamicStructuredTool[];
+export {};

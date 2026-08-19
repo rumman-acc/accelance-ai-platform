@@ -1,5 +1,5 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const scopes = [
     'openid',
     'offline_access',
@@ -14,14 +14,14 @@ const scopes = [
     'Mail.Send',
     'Mail.Send.Shared',
     'MailboxSettings.Read'
-]
+];
 class MsoftOutlookOAuth2 {
     constructor() {
-        this.label = 'Microsoft Outlook OAuth2'
-        this.name = 'microsoftOutlookOAuth2'
-        this.version = 1.0
+        this.label = 'Microsoft Outlook OAuth2';
+        this.name = 'microsoftOutlookOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -52,8 +52,8 @@ class MsoftOutlookOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: MsoftOutlookOAuth2 }
+module.exports = { credClass: MsoftOutlookOAuth2 };
 //# sourceMappingURL=MicrosoftOutlookOAuth2.credential.js.map

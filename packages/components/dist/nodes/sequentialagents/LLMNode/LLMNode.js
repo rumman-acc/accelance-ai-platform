@@ -1,14 +1,14 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const v3_1 = require('zod/v3')
-const runnables_1 = require('@langchain/core/runnables')
-const prompts_1 = require('@langchain/core/prompts')
-const messages_1 = require('@langchain/core/messages')
-const utils_1 = require('../../../src/utils')
-const commonUtils_1 = require('../commonUtils')
-const TAB_IDENTIFIER = 'selectedUpdateStateMemoryTab'
-const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const v3_1 = require("zod/v3");
+const runnables_1 = require("@langchain/core/runnables");
+const prompts_1 = require("@langchain/core/prompts");
+const messages_1 = require("@langchain/core/messages");
+const utils_1 = require("../../../src/utils");
+const commonUtils_1 = require("../commonUtils");
+const TAB_IDENTIFIER = 'selectedUpdateStateMemoryTab';
+const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`;
 const howToUseCode = `
 1. Return the key value JSON object. For example: if you have the following State:
     \`\`\`json
@@ -53,7 +53,7 @@ const howToUseCode = `
 
 4. You can get custom variables: \`$vars.<variable-name>\`
 
-`
+`;
 const howToUse = `
 1. Key and value pair to be updated. For example: if you have the following State:
     | Key       | Operation     | Default Value     |
@@ -92,7 +92,7 @@ const howToUse = `
 
 4. You can get custom variables: \`$vars.<variable-name>\`
 
-`
+`;
 const defaultFunc = `const result = $flow.output;
 
 /* Suppose we have a custom State schema like this:
@@ -106,7 +106,7 @@ const defaultFunc = `const result = $flow.output;
 
 return {
   aggregate: [result.content]
-};`
+};`;
 const messageHistoryExample = `const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');
 
 return [
@@ -130,18 +130,18 @@ return [
         content: "The answer is 172.558.",
     }),
     new AIMessage("The answer is 172.558."),
-]`
+]`;
 class LLMNode_SeqAgents {
     constructor() {
-        this.label = 'LLM Node'
-        this.name = 'seqLLMNode'
-        this.version = 4.1
-        this.type = 'LLMNode'
-        this.icon = 'llmNode.svg'
-        this.category = 'Sequential Agents'
-        this.description = 'Run Chat Model and return the output'
-        this.baseClasses = [this.type]
-        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-5.-llm-node'
+        this.label = 'LLM Node';
+        this.name = 'seqLLMNode';
+        this.version = 4.1;
+        this.type = 'LLMNode';
+        this.icon = 'llmNode.svg';
+        this.category = 'Sequential Agents';
+        this.description = 'Run Chat Model and return the output';
+        this.baseClasses = [this.type];
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-5.-llm-node';
         this.inputs = [
             {
                 label: 'Name',
@@ -160,8 +160,7 @@ class LLMNode_SeqAgents {
             {
                 label: 'Prepend Messages History',
                 name: 'messageHistory',
-                description:
-                    'Prepend a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
+                description: 'Prepend a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
                 type: 'code',
                 hideCodeExecute: true,
                 codeExample: messageHistoryExample,
@@ -191,15 +190,13 @@ class LLMNode_SeqAgents {
                     {
                         label: 'Empty',
                         name: 'empty',
-                        description:
-                            'Do not use any messages from the conversation history. ' +
+                        description: 'Do not use any messages from the conversation history. ' +
                             'Ensure to use either System Prompt, Human Prompt, or Messages History.'
                     }
                 ],
                 default: 'all_messages',
                 optional: true,
-                description:
-                    'Select which messages from the conversation history to include in the prompt. ' +
+                description: 'Select which messages from the conversation history to include in the prompt. ' +
                     'The selected messages will be inserted between the System Prompt (if defined) and ' +
                     '[Messages History, Human Prompt].',
                 additionalParams: true
@@ -217,8 +214,7 @@ class LLMNode_SeqAgents {
                 label: 'Sequential Node',
                 name: 'sequentialNode',
                 type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
-                description:
-                    'Can be connected to one of the following nodes: Start, Agent, Condition, LLM, Tool Node, Custom Function, Execute Flow',
+                description: 'Can be connected to one of the following nodes: Start, Agent, Condition, LLM, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -341,81 +337,64 @@ class LLMNode_SeqAgents {
                     }
                 ]
             }
-        ]
+        ];
     }
     async init(nodeData, input, options) {
         // Tools can be connected through ToolNodes
-        let tools = nodeData.inputs?.tools
-        tools = (0, lodash_1.flatten)(tools)
-        let systemPrompt = nodeData.inputs?.systemMessagePrompt
-        systemPrompt = (0, utils_1.transformBracesWithColon)(systemPrompt)
-        let humanPrompt = nodeData.inputs?.humanMessagePrompt
-        humanPrompt = (0, utils_1.transformBracesWithColon)(humanPrompt)
-        const llmNodeLabel = nodeData.inputs?.llmNodeName
-        const sequentialNodes = nodeData.inputs?.sequentialNode
-        const model = nodeData.inputs?.model
-        const promptValuesStr = nodeData.inputs?.promptValues
-        const output = nodeData.outputs?.output
-        const llmStructuredOutput = nodeData.inputs?.llmStructuredOutput
-        if (!llmNodeLabel) throw new Error('LLM Node name is required!')
-        const llmNodeName = llmNodeLabel.toLowerCase().replace(/\s/g, '_').trim()
-        if (!sequentialNodes || !sequentialNodes.length) throw new Error('Agent must have a predecessor!')
-        let llmNodeInputVariablesValues = {}
+        let tools = nodeData.inputs?.tools;
+        tools = (0, lodash_1.flatten)(tools);
+        let systemPrompt = nodeData.inputs?.systemMessagePrompt;
+        systemPrompt = (0, utils_1.transformBracesWithColon)(systemPrompt);
+        let humanPrompt = nodeData.inputs?.humanMessagePrompt;
+        humanPrompt = (0, utils_1.transformBracesWithColon)(humanPrompt);
+        const llmNodeLabel = nodeData.inputs?.llmNodeName;
+        const sequentialNodes = nodeData.inputs?.sequentialNode;
+        const model = nodeData.inputs?.model;
+        const promptValuesStr = nodeData.inputs?.promptValues;
+        const output = nodeData.outputs?.output;
+        const llmStructuredOutput = nodeData.inputs?.llmStructuredOutput;
+        if (!llmNodeLabel)
+            throw new Error('LLM Node name is required!');
+        const llmNodeName = llmNodeLabel.toLowerCase().replace(/\s/g, '_').trim();
+        if (!sequentialNodes || !sequentialNodes.length)
+            throw new Error('Agent must have a predecessor!');
+        let llmNodeInputVariablesValues = {};
         if (promptValuesStr) {
             try {
-                llmNodeInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the LLM Node's Prompt Input Values: " + exception)
+                llmNodeInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr);
+            }
+            catch (exception) {
+                throw new Error("Invalid JSON in the LLM Node's Prompt Input Values: " + exception);
             }
         }
-        llmNodeInputVariablesValues = (0, utils_1.handleEscapeCharacters)(llmNodeInputVariablesValues, true)
-        const startLLM = sequentialNodes[0].startLLM
-        const llm = model || startLLM
-        if (nodeData.inputs) nodeData.inputs.model = llm
-        const multiModalMessageContent =
-            sequentialNodes[0]?.multiModalMessageContent || (await (0, commonUtils_1.processImageMessage)(llm, nodeData, options))
-        const abortControllerSignal = options.signal
-        const llmNodeInputVariables = (0, lodash_1.uniq)([
-            ...(0, utils_1.getInputVariables)(systemPrompt),
-            ...(0, utils_1.getInputVariables)(humanPrompt)
-        ])
-        const missingInputVars = (0, lodash_1.difference)(llmNodeInputVariables, Object.keys(llmNodeInputVariablesValues)).join(' ')
-        const allVariablesSatisfied = missingInputVars.length === 0
+        llmNodeInputVariablesValues = (0, utils_1.handleEscapeCharacters)(llmNodeInputVariablesValues, true);
+        const startLLM = sequentialNodes[0].startLLM;
+        const llm = model || startLLM;
+        if (nodeData.inputs)
+            nodeData.inputs.model = llm;
+        const multiModalMessageContent = sequentialNodes[0]?.multiModalMessageContent || (await (0, commonUtils_1.processImageMessage)(llm, nodeData, options));
+        const abortControllerSignal = options.signal;
+        const llmNodeInputVariables = (0, lodash_1.uniq)([...(0, utils_1.getInputVariables)(systemPrompt), ...(0, utils_1.getInputVariables)(humanPrompt)]);
+        const missingInputVars = (0, lodash_1.difference)(llmNodeInputVariables, Object.keys(llmNodeInputVariablesValues)).join(' ');
+        const allVariablesSatisfied = missingInputVars.length === 0;
         if (!allVariablesSatisfied) {
-            const nodeInputVars = llmNodeInputVariables.join(' ')
-            const providedInputVars = Object.keys(llmNodeInputVariablesValues).join(' ')
-            throw new Error(
-                `LLM Node input variables values are not provided! Required: ${nodeInputVars}, Provided: ${providedInputVars}. Missing: ${missingInputVars}`
-            )
+            const nodeInputVars = llmNodeInputVariables.join(' ');
+            const providedInputVars = Object.keys(llmNodeInputVariablesValues).join(' ');
+            throw new Error(`LLM Node input variables values are not provided! Required: ${nodeInputVars}, Provided: ${providedInputVars}. Missing: ${missingInputVars}`);
         }
         const workerNode = async (state, config) => {
-            const bindModel = config.configurable?.bindModel?.[nodeData.id]
-            return await agentNode(
-                {
-                    state,
-                    llm,
-                    agent: await createAgent(
-                        nodeData,
-                        options,
-                        llmNodeName,
-                        state,
-                        bindModel || llm,
-                        [...tools],
-                        systemPrompt,
-                        humanPrompt,
-                        multiModalMessageContent,
-                        llmNodeInputVariablesValues,
-                        llmStructuredOutput
-                    ),
-                    name: llmNodeName,
-                    abortControllerSignal,
-                    nodeData,
-                    input,
-                    options
-                },
-                config
-            )
-        }
+            const bindModel = config.configurable?.bindModel?.[nodeData.id];
+            return await agentNode({
+                state,
+                llm,
+                agent: await createAgent(nodeData, options, llmNodeName, state, bindModel || llm, [...tools], systemPrompt, humanPrompt, multiModalMessageContent, llmNodeInputVariablesValues, llmStructuredOutput),
+                name: llmNodeName,
+                abortControllerSignal,
+                nodeData,
+                input,
+                options
+            }, config);
+        };
         const returnOutput = {
             id: nodeData.id,
             node: workerNode,
@@ -428,90 +407,80 @@ class LLMNode_SeqAgents {
             predecessorAgents: sequentialNodes,
             multiModalMessageContent,
             moderations: sequentialNodes[0]?.moderations
-        }
-        return returnOutput
+        };
+        return returnOutput;
     }
 }
-async function createAgent(
-    nodeData,
-    options,
-    llmNodeName,
-    state,
-    llm,
-    tools,
-    systemPrompt,
-    humanPrompt,
-    multiModalMessageContent,
-    llmNodeInputVariablesValues,
-    llmStructuredOutput
-) {
+async function createAgent(nodeData, options, llmNodeName, state, llm, tools, systemPrompt, humanPrompt, multiModalMessageContent, llmNodeInputVariablesValues, llmStructuredOutput) {
     if (tools.length) {
         if (llm.bindTools === undefined) {
-            throw new Error(`LLM Node only compatible with function calling models.`)
+            throw new Error(`LLM Node only compatible with function calling models.`);
         }
         // @ts-ignore
-        llm = llm.bindTools(tools)
+        llm = llm.bindTools(tools);
     }
     if (llmStructuredOutput && llmStructuredOutput !== '[]') {
         try {
-            const structuredOutput = v3_1.z.object((0, commonUtils_1.convertStructuredSchemaToZod)(llmStructuredOutput))
+            const structuredOutput = v3_1.z.object((0, commonUtils_1.convertStructuredSchemaToZod)(llmStructuredOutput));
             // @ts-ignore
             llm = llm.withStructuredOutput(structuredOutput, {
                 method: 'functionCalling'
-            })
-        } catch (exception) {
-            console.error(exception)
+            });
+        }
+        catch (exception) {
+            console.error(exception);
         }
     }
-    const promptArrays = [new prompts_1.MessagesPlaceholder('messages')]
-    if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
-    if (humanPrompt) promptArrays.push(['human', humanPrompt])
-    let prompt = prompts_1.ChatPromptTemplate.fromMessages(promptArrays)
-    prompt = await (0, commonUtils_1.checkMessageHistory)(nodeData, options, prompt, promptArrays, systemPrompt)
+    const promptArrays = [new prompts_1.MessagesPlaceholder('messages')];
+    if (systemPrompt)
+        promptArrays.unshift(['system', systemPrompt]);
+    if (humanPrompt)
+        promptArrays.push(['human', humanPrompt]);
+    let prompt = prompts_1.ChatPromptTemplate.fromMessages(promptArrays);
+    prompt = await (0, commonUtils_1.checkMessageHistory)(nodeData, options, prompt, promptArrays, systemPrompt);
     if (multiModalMessageContent.length) {
-        const msg = prompts_1.HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
-        prompt.promptMessages.splice(1, 0, msg)
+        const msg = prompts_1.HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent]);
+        prompt.promptMessages.splice(1, 0, msg);
     }
-    let chain
+    let chain;
     if (!llmNodeInputVariablesValues || !Object.keys(llmNodeInputVariablesValues).length) {
         chain = runnables_1.RunnableSequence.from([prompt, llm]).withConfig({
             metadata: { sequentialNodeName: llmNodeName }
-        })
-    } else {
+        });
+    }
+    else {
         chain = runnables_1.RunnableSequence.from([
-            runnables_1.RunnablePassthrough.assign(
-                (0, commonUtils_1.transformObjectPropertyToFunction)(llmNodeInputVariablesValues, state)
-            ),
+            runnables_1.RunnablePassthrough.assign((0, commonUtils_1.transformObjectPropertyToFunction)(llmNodeInputVariablesValues, state)),
             prompt,
             llm
         ]).withConfig({
             metadata: { sequentialNodeName: llmNodeName }
-        })
+        });
     }
     // @ts-ignore
-    return chain
+    return chain;
 }
 async function agentNode({ state, llm, agent, name, abortControllerSignal, nodeData, input, options }, config) {
     try {
         if (abortControllerSignal.signal.aborted) {
-            throw new Error('Aborted!')
+            throw new Error('Aborted!');
         }
-        const historySelection = nodeData.inputs?.conversationHistorySelection || 'all_messages'
+        const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages');
         // @ts-ignore
-        state.messages = (0, commonUtils_1.filterConversationHistory)(historySelection, input, state)
+        state.messages = (0, commonUtils_1.filterConversationHistory)(historySelection, input, state);
         // @ts-ignore
-        state.messages = (0, commonUtils_1.restructureMessages)(llm, state)
-        let result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
-        const llmStructuredOutput = nodeData.inputs?.llmStructuredOutput
+        state.messages = (0, commonUtils_1.restructureMessages)(llm, state);
+        let result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config);
+        const llmStructuredOutput = nodeData.inputs?.llmStructuredOutput;
         if (llmStructuredOutput && llmStructuredOutput !== '[]' && result.tool_calls && result.tool_calls.length) {
-            let jsonResult = {}
+            let jsonResult = {};
             for (const toolCall of result.tool_calls) {
-                jsonResult = { ...jsonResult, ...toolCall.args }
+                jsonResult = { ...jsonResult, ...toolCall.args };
             }
-            result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } }
+            result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } };
         }
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
-            const returnedOutput = await getReturnOutput(nodeData, input, options, result, state)
+            const returnedOutput = await getReturnOutput(nodeData, input, options, result, state);
             if (nodeData.inputs?.llmStructuredOutput && nodeData.inputs.llmStructuredOutput !== '[]') {
                 const messages = [
                     new messages_1.AIMessage({
@@ -519,56 +488,60 @@ async function agentNode({ state, llm, agent, name, abortControllerSignal, nodeD
                         name,
                         additional_kwargs: { nodeId: nodeData.id }
                     })
-                ]
+                ];
                 return {
                     ...returnedOutput,
                     messages
-                }
-            } else {
-                result.name = name
-                result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
-                let outputContent = typeof result === 'string' ? result : result.content
-                result.content = (0, utils_1.extractOutputFromArray)(outputContent)
-                return {
-                    ...returnedOutput,
-                    messages: [result]
-                }
+                };
             }
-        } else {
-            if (nodeData.inputs?.llmStructuredOutput && nodeData.inputs.llmStructuredOutput !== '[]') {
-                const messages = [
-                    new messages_1.AIMessage({
-                        content: typeof result === 'object' ? JSON.stringify(result) : result,
-                        name,
-                        additional_kwargs: { nodeId: nodeData.id }
-                    })
-                ]
+            else {
+                result.name = name;
+                result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id };
+                let outputContent = typeof result === 'string' ? result : result.content;
+                result.content = (0, utils_1.extractOutputFromArray)(outputContent);
                 return {
-                    messages
-                }
-            } else {
-                result.name = name
-                result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
-                let outputContent = typeof result === 'string' ? result : result.content
-                result.content = (0, utils_1.extractOutputFromArray)(outputContent)
-                return {
+                    ...returnedOutput,
                     messages: [result]
-                }
+                };
             }
         }
-    } catch (error) {
-        throw new Error(error)
+        else {
+            if (nodeData.inputs?.llmStructuredOutput && nodeData.inputs.llmStructuredOutput !== '[]') {
+                const messages = [
+                    new messages_1.AIMessage({
+                        content: typeof result === 'object' ? JSON.stringify(result) : result,
+                        name,
+                        additional_kwargs: { nodeId: nodeData.id }
+                    })
+                ];
+                return {
+                    messages
+                };
+            }
+            else {
+                result.name = name;
+                result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id };
+                let outputContent = typeof result === 'string' ? result : result.content;
+                result.content = (0, utils_1.extractOutputFromArray)(outputContent);
+                return {
+                    messages: [result]
+                };
+            }
+        }
+    }
+    catch (error) {
+        throw new Error(error);
     }
 }
 const getReturnOutput = async (nodeData, input, options, output, state) => {
-    const appDataSource = options.appDataSource
-    const databaseEntities = options.databaseEntities
-    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`]
-    const updateStateMemoryUI = nodeData.inputs?.updateStateMemoryUI
-    const updateStateMemoryCode = nodeData.inputs?.updateStateMemoryCode
-    const updateStateMemory = nodeData.inputs?.updateStateMemory
-    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'updateStateMemoryUI'
-    const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options)
+    const appDataSource = options.appDataSource;
+    const databaseEntities = options.databaseEntities;
+    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`];
+    const updateStateMemoryUI = nodeData.inputs?.updateStateMemoryUI;
+    const updateStateMemoryCode = nodeData.inputs?.updateStateMemoryCode;
+    const updateStateMemory = nodeData.inputs?.updateStateMemory;
+    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'updateStateMemoryUI';
+    const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options);
     const flow = {
         chatflowId: options.chatflowid,
         sessionId: options.sessionId,
@@ -577,56 +550,65 @@ const getReturnOutput = async (nodeData, input, options, output, state) => {
         output,
         state,
         vars: (0, utils_1.prepareSandboxVars)(variables)
-    }
+    };
     if (updateStateMemory && updateStateMemory !== 'updateStateMemoryUI' && updateStateMemory !== 'updateStateMemoryCode') {
         try {
-            const parsedSchema = typeof updateStateMemory === 'string' ? JSON.parse(updateStateMemory) : updateStateMemory
-            const obj = {}
+            const parsedSchema = typeof updateStateMemory === 'string' ? JSON.parse(updateStateMemory) : updateStateMemory;
+            const obj = {};
             for (const sch of parsedSchema) {
-                const key = sch.Key
-                if (!key) throw new Error(`Key is required`)
-                let value = sch.Value
+                const key = sch.Key;
+                if (!key)
+                    throw new Error(`Key is required`);
+                let value = sch.Value;
                 if (value.startsWith('$flow')) {
-                    value = (0, commonUtils_1.customGet)(flow, sch.Value.replace('$flow.', ''))
-                } else if (value.startsWith('$vars')) {
-                    value = (0, commonUtils_1.customGet)(flow, sch.Value.replace('$', ''))
+                    value = (0, commonUtils_1.customGet)(flow, sch.Value.replace('$flow.', ''));
                 }
-                obj[key] = value
+                else if (value.startsWith('$vars')) {
+                    value = (0, commonUtils_1.customGet)(flow, sch.Value.replace('$', ''));
+                }
+                obj[key] = value;
             }
-            return obj
-        } catch (e) {
-            throw new Error(e)
+            return obj;
+        }
+        catch (e) {
+            throw new Error(e);
         }
     }
     if (selectedTab === 'updateStateMemoryUI' && updateStateMemoryUI) {
         try {
-            const parsedSchema = typeof updateStateMemoryUI === 'string' ? JSON.parse(updateStateMemoryUI) : updateStateMemoryUI
-            const obj = {}
+            const parsedSchema = typeof updateStateMemoryUI === 'string' ? JSON.parse(updateStateMemoryUI) : updateStateMemoryUI;
+            const obj = {};
             for (const sch of parsedSchema) {
-                const key = sch.key
-                if (!key) throw new Error(`Key is required`)
-                let value = sch.value
+                const key = sch.key;
+                if (!key)
+                    throw new Error(`Key is required`);
+                let value = sch.value;
                 if (value.startsWith('$flow')) {
-                    value = (0, commonUtils_1.customGet)(flow, sch.value.replace('$flow.', ''))
-                } else if (value.startsWith('$vars')) {
-                    value = (0, commonUtils_1.customGet)(flow, sch.value.replace('$', ''))
+                    value = (0, commonUtils_1.customGet)(flow, sch.value.replace('$flow.', ''));
                 }
-                obj[key] = value
+                else if (value.startsWith('$vars')) {
+                    value = (0, commonUtils_1.customGet)(flow, sch.value.replace('$', ''));
+                }
+                obj[key] = value;
             }
-            return obj
-        } catch (e) {
-            throw new Error(e)
+            return obj;
         }
-    } else if (selectedTab === 'updateStateMemoryCode' && updateStateMemoryCode) {
-        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow)
-        try {
-            const response = await (0, utils_1.executeJavaScriptCode)(updateStateMemoryCode, sandbox)
-            if (typeof response !== 'object') throw new Error('Return output must be an object')
-            return response
-        } catch (e) {
-            throw new Error(e)
+        catch (e) {
+            throw new Error(e);
         }
     }
-}
-module.exports = { nodeClass: LLMNode_SeqAgents }
+    else if (selectedTab === 'updateStateMemoryCode' && updateStateMemoryCode) {
+        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow);
+        try {
+            const response = await (0, utils_1.executeJavaScriptCode)(updateStateMemoryCode, sandbox);
+            if (typeof response !== 'object')
+                throw new Error('Return output must be an object');
+            return response;
+        }
+        catch (e) {
+            throw new Error(e);
+        }
+    }
+};
+module.exports = { nodeClass: LLMNode_SeqAgents };
 //# sourceMappingURL=LLMNode.js.map

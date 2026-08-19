@@ -1,11 +1,9 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-const remove_markdown_1 = __importDefault(require('remove-markdown'))
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const remove_markdown_1 = __importDefault(require("remove-markdown"));
 /**
  * Unescapes a regex pattern that was escaped by Flowise input handling.
  * Flowise escapes these characters: \ → \\, [ → \[, ] → \], * → \*
@@ -15,18 +13,18 @@ const unescapeRegexPattern = (escaped) => {
     return escaped
         .replace(/\\\\/g, '\0') // Preserve intentional backslashes
         .replace(/\\([[\]*])/g, '$1') // Unescape only: [ ] *
-        .replace(/\0/g, '\\') // Restore preserved backslashes
-}
+        .replace(/\0/g, '\\'); // Restore preserved backslashes
+};
 class Condition_Agentflow {
     constructor() {
-        this.label = 'Condition'
-        this.name = 'conditionAgentflow'
-        this.version = 1.0
-        this.type = 'Condition'
-        this.category = 'Agent Flows'
-        this.description = `Split flows based on If Else conditions`
-        this.baseClasses = [this.type]
-        this.color = '#FFB938'
+        this.label = 'Condition';
+        this.name = 'conditionAgentflow';
+        this.version = 1.0;
+        this.type = 'Condition';
+        this.category = 'Agent Flows';
+        this.description = `Split flows based on If Else conditions`;
+        this.baseClasses = [this.type];
+        this.color = '#FFB938';
         this.inputs = [
             {
                 label: 'Conditions',
@@ -247,7 +245,7 @@ class Condition_Agentflow {
                     }
                 ]
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: '0',
@@ -259,10 +257,10 @@ class Condition_Agentflow {
                 name: '1',
                 description: 'Else'
             }
-        ]
+        ];
     }
     async run(nodeData, _, options) {
-        const state = options.agentflowRuntime?.state
+        const state = options.agentflowRuntime?.state;
         const compareOperationFunctions = {
             contains: (value1, value2) => (value1 || '').toString().includes((value2 || '').toString()),
             notContains: (value1, value2) => !(value1 || '').toString().includes((value2 || '').toString()),
@@ -276,46 +274,47 @@ class Condition_Agentflow {
             startsWith: (value1, value2) => value1.startsWith(value2),
             regex: (value1, value2) => {
                 try {
-                    const pattern = unescapeRegexPattern((value2 || '').toString())
-                    return new RegExp(pattern).test((value1 || '').toString())
-                } catch {
-                    return false
+                    const pattern = unescapeRegexPattern((value2 || '').toString());
+                    return new RegExp(pattern).test((value1 || '').toString());
+                }
+                catch {
+                    return false;
                 }
             },
             isEmpty: (value1) => [undefined, null, ''].includes(value1),
             notEmpty: (value1) => ![undefined, null, ''].includes(value1)
-        }
-        const _conditions = nodeData.inputs?.conditions
-        const conditions = typeof _conditions === 'string' ? JSON.parse(_conditions) : _conditions
-        const initialConditions = { ...conditions }
+        };
+        const _conditions = nodeData.inputs?.conditions;
+        const conditions = typeof _conditions === 'string' ? JSON.parse(_conditions) : _conditions;
+        const initialConditions = { ...conditions };
         for (const condition of conditions) {
-            const _value1 = condition.value1
-            const _value2 = condition.value2
-            const operation = condition.operation
-            let value1
-            let value2
+            const _value1 = condition.value1;
+            const _value2 = condition.value2;
+            const operation = condition.operation;
+            let value1;
+            let value2;
             switch (condition.type) {
                 case 'boolean':
-                    value1 = _value1
-                    value2 = _value2
-                    break
+                    value1 = _value1;
+                    value2 = _value2;
+                    break;
                 case 'number':
-                    value1 = parseFloat(_value1) || 0
-                    value2 = parseFloat(_value2) || 0
-                    break
+                    value1 = parseFloat(_value1) || 0;
+                    value2 = parseFloat(_value2) || 0;
+                    break;
                 default: // string
-                    value1 = (0, remove_markdown_1.default)(_value1 || '')
-                    value2 = (0, remove_markdown_1.default)(_value2 || '')
+                    value1 = (0, remove_markdown_1.default)(_value1 || '');
+                    value2 = (0, remove_markdown_1.default)(_value2 || '');
             }
-            const compareOperationResult = compareOperationFunctions[operation](value1, value2)
+            const compareOperationResult = compareOperationFunctions[operation](value1, value2);
             if (compareOperationResult) {
                 // find the matching condition
-                const conditionIndex = conditions.findIndex((c) => JSON.stringify(c) === JSON.stringify(condition))
+                const conditionIndex = conditions.findIndex((c) => JSON.stringify(c) === JSON.stringify(condition));
                 // add isFulfilled to the condition
                 if (conditionIndex > -1) {
-                    conditions[conditionIndex] = { ...condition, isFulfilled: true }
+                    conditions[conditionIndex] = { ...condition, isFulfilled: true };
                 }
-                break
+                break;
             }
         }
         // If no condition is fulfilled, add isFulfilled to the ELSE condition
@@ -324,17 +323,18 @@ class Condition_Agentflow {
             value1: '',
             operation: 'equal',
             value2: ''
-        }
+        };
         if (!conditions.some((c) => c.isFulfilled)) {
             conditions.push({
                 ...dummyElseConditionData,
                 isFulfilled: true
-            })
-        } else {
+            });
+        }
+        else {
             conditions.push({
                 ...dummyElseConditionData,
                 isFulfilled: false
-            })
+            });
         }
         const returnOutput = {
             id: nodeData.id,
@@ -342,9 +342,9 @@ class Condition_Agentflow {
             input: { conditions: initialConditions },
             output: { conditions },
             state
-        }
-        return returnOutput
+        };
+        return returnOutput;
     }
 }
-module.exports = { nodeClass: Condition_Agentflow }
+module.exports = { nodeClass: Condition_Agentflow };
 //# sourceMappingURL=Condition.js.map

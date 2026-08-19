@@ -1,5 +1,5 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // Comprehensive scopes for Microsoft Teams operations
 const scopes = [
     // Basic authentication
@@ -29,14 +29,14 @@ const scopes = [
     'ChannelMessage.Read.All',
     // Reactions and advanced features
     'TeamsActivity.Send'
-]
+];
 class MsoftTeamsOAuth2 {
     constructor() {
-        this.label = 'Microsoft Teams OAuth2'
-        this.name = 'microsoftTeamsOAuth2'
-        this.version = 1.0
+        this.label = 'Microsoft Teams OAuth2';
+        this.name = 'microsoftTeamsOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-teams">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-teams">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -67,8 +67,8 @@ class MsoftTeamsOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: MsoftTeamsOAuth2 }
+module.exports = { credClass: MsoftTeamsOAuth2 };
 //# sourceMappingURL=MicrosoftTeamsOAuth2.credential.js.map

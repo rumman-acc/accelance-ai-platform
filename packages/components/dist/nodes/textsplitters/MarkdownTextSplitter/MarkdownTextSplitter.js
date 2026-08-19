@@ -1,17 +1,17 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const textsplitters_1 = require('@langchain/textsplitters')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const textsplitters_1 = require("@langchain/textsplitters");
 class MarkdownTextSplitter_TextSplitters {
     constructor() {
-        this.label = 'Markdown Text Splitter'
-        this.name = 'markdownTextSplitter'
-        this.version = 1.1
-        this.type = 'MarkdownTextSplitter'
-        this.icon = 'markdownTextSplitter.svg'
-        this.category = 'Text Splitters'
-        this.description = `Split your content into documents based on the Markdown headers`
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(textsplitters_1.MarkdownTextSplitter)]
+        this.label = 'Markdown Text Splitter';
+        this.name = 'markdownTextSplitter';
+        this.version = 1.1;
+        this.type = 'MarkdownTextSplitter';
+        this.icon = 'markdownTextSplitter.svg';
+        this.category = 'Text Splitters';
+        this.description = `Split your content into documents based on the Markdown headers`;
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(textsplitters_1.MarkdownTextSplitter)];
         this.inputs = [
             {
                 label: 'Chunk Size',
@@ -67,83 +67,87 @@ class MarkdownTextSplitter_TextSplitters {
                 ],
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const chunkSize = nodeData.inputs?.chunkSize
-        const chunkOverlap = nodeData.inputs?.chunkOverlap
-        const splitByHeaders = nodeData.inputs?.splitByHeaders
-        const obj = {}
-        if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10)
-        if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
-        const splitter = new textsplitters_1.MarkdownTextSplitter(obj)
+        const chunkSize = nodeData.inputs?.chunkSize;
+        const chunkOverlap = nodeData.inputs?.chunkOverlap;
+        const splitByHeaders = nodeData.inputs?.splitByHeaders;
+        const obj = {};
+        if (chunkSize)
+            obj.chunkSize = parseInt(chunkSize, 10);
+        if (chunkOverlap)
+            obj.chunkOverlap = parseInt(chunkOverlap, 10);
+        const splitter = new textsplitters_1.MarkdownTextSplitter(obj);
         if (splitByHeaders && splitByHeaders !== 'disabled') {
             return {
                 splitDocuments: async (documents) => {
-                    const results = []
+                    const results = [];
                     for (const doc of documents) {
-                        const chunks = await this.splitByHeaders(doc.pageContent, splitByHeaders, splitter)
+                        const chunks = await this.splitByHeaders(doc.pageContent, splitByHeaders, splitter);
                         for (const chunk of chunks) {
                             results.push({
                                 pageContent: chunk,
                                 metadata: { ...doc.metadata }
-                            })
+                            });
                         }
                     }
-                    return results
+                    return results;
                 },
                 splitText: async (text) => {
-                    return await this.splitByHeaders(text, splitByHeaders, splitter)
+                    return await this.splitByHeaders(text, splitByHeaders, splitter);
                 }
-            }
+            };
         }
-        return splitter
+        return splitter;
     }
     async splitByHeaders(text, headerLevel, fallbackSplitter) {
-        const maxLevel = this.getHeaderLevel(headerLevel)
-        if (maxLevel === 0) return await fallbackSplitter.splitText(text)
-        const lines = text.split('\n')
-        const sections = []
-        let currentSection = []
+        const maxLevel = this.getHeaderLevel(headerLevel);
+        if (maxLevel === 0)
+            return await fallbackSplitter.splitText(text);
+        const lines = text.split('\n');
+        const sections = [];
+        let currentSection = [];
         for (const line of lines) {
-            const isHeader = line.startsWith('#') && line.match(/^#{1,6}\s/)
-            const headerDepth = isHeader ? line.match(/^(#+)/)?.[1]?.length || 0 : 0
+            const isHeader = line.startsWith('#') && line.match(/^#{1,6}\s/);
+            const headerDepth = isHeader ? line.match(/^(#+)/)?.[1]?.length || 0 : 0;
             if (isHeader && headerDepth <= maxLevel) {
                 // Save previous section
                 if (currentSection.length > 0) {
-                    sections.push(currentSection.join('\n').trim())
+                    sections.push(currentSection.join('\n').trim());
                 }
                 // Start new section
-                currentSection = [line]
-            } else {
+                currentSection = [line];
+            }
+            else {
                 // Add line to current section
-                currentSection.push(line)
+                currentSection.push(line);
             }
         }
         // Add final section
         if (currentSection.length > 0) {
-            sections.push(currentSection.join('\n').trim())
+            sections.push(currentSection.join('\n').trim());
         }
-        return sections
+        return sections;
     }
     getHeaderLevel(headerLevel) {
         switch (headerLevel) {
             case 'h1':
-                return 1
+                return 1;
             case 'h2':
-                return 2
+                return 2;
             case 'h3':
-                return 3
+                return 3;
             case 'h4':
-                return 4
+                return 4;
             case 'h5':
-                return 5
+                return 5;
             case 'h6':
-                return 6
+                return 6;
             default:
-                return 0
+                return 0;
         }
     }
 }
-module.exports = { nodeClass: MarkdownTextSplitter_TextSplitters }
+module.exports = { nodeClass: MarkdownTextSplitter_TextSplitters };
 //# sourceMappingURL=MarkdownTextSplitter.js.map

@@ -1,13 +1,13 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const scopes = ['openid', 'offline_access', 'Sites.Read.All', 'Sites.ReadWrite.All']
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const scopes = ['openid', 'offline_access', 'Sites.Read.All', 'Sites.ReadWrite.All'];
 class SharePointOAuth2 {
     constructor() {
-        this.label = 'SharePoint OAuth2'
-        this.name = 'sharePointOAuth2'
-        this.version = 1.0
+        this.label = 'SharePoint OAuth2';
+        this.name = 'sharePointOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -38,8 +38,8 @@ class SharePointOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: SharePointOAuth2 }
+module.exports = { credClass: SharePointOAuth2 };
 //# sourceMappingURL=SharePointOAuth2.credential.js.map

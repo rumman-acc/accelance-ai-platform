@@ -1,19 +1,19 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const llamaindex_1 = require('llamaindex')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const llamaindex_1 = require("llamaindex");
 class QueryEngine_Tools {
     constructor() {
-        this.label = 'QueryEngine Tool'
-        this.name = 'queryEngineToolLlamaIndex'
-        this.version = 2.0
-        this.type = 'QueryEngineTool'
-        this.icon = 'queryEngineTool.svg'
-        this.category = 'Tools'
-        this.tags = ['LlamaIndex']
-        this.description = 'Tool used to invoke query engine'
-        this.baseClasses = [this.type, 'Tool_LlamaIndex']
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
+        this.label = 'QueryEngine Tool';
+        this.name = 'queryEngineToolLlamaIndex';
+        this.version = 2.0;
+        this.type = 'QueryEngineTool';
+        this.icon = 'queryEngineTool.svg';
+        this.category = 'Tools';
+        this.tags = ['LlamaIndex'];
+        this.description = 'Tool used to invoke query engine';
+        this.baseClasses = [this.type, 'Tool_LlamaIndex'];
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.';
         this.inputs = [
             {
                 label: 'Base QueryEngine',
@@ -32,21 +32,21 @@ class QueryEngine_Tools {
                 type: 'string',
                 rows: 4
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const baseQueryEngine = nodeData.inputs?.baseQueryEngine
-        const toolName = nodeData.inputs?.toolName
-        const toolDesc = nodeData.inputs?.toolDesc
+        const baseQueryEngine = nodeData.inputs?.baseQueryEngine;
+        const toolName = nodeData.inputs?.toolName;
+        const toolDesc = nodeData.inputs?.toolDesc;
         const queryEngineTool = new llamaindex_1.QueryEngineTool({
             queryEngine: baseQueryEngine,
             metadata: {
                 name: toolName,
                 description: toolDesc
             }
-        })
-        return queryEngineTool
+        });
+        return queryEngineTool;
     }
 }
-module.exports = { nodeClass: QueryEngine_Tools }
+module.exports = { nodeClass: QueryEngine_Tools };
 //# sourceMappingURL=QueryEngineTool.js.map

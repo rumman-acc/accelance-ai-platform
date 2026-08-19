@@ -1,12 +1,13 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const TIMEZONE_OPTIONS = (() => {
     try {
-        const tzs = Intl.supportedValuesOf?.('timeZone') ?? []
+        const tzs = Intl.supportedValuesOf?.('timeZone') ?? [];
         if (Array.isArray(tzs) && tzs.length > 0) {
-            return [{ label: 'UTC', name: 'UTC' }, ...tzs.filter((t) => t !== 'UTC').map((t) => ({ label: t, name: t }))]
+            return [{ label: 'UTC', name: 'UTC' }, ...tzs.filter((t) => t !== 'UTC').map((t) => ({ label: t, name: t }))];
         }
-    } catch {
+    }
+    catch {
         /* fall through to curated fallback */
     }
     return [
@@ -27,19 +28,19 @@ const TIMEZONE_OPTIONS = (() => {
         { label: 'Asia/Tokyo', name: 'Asia/Tokyo' },
         { label: 'Australia/Sydney', name: 'Australia/Sydney' },
         { label: 'Pacific/Auckland', name: 'Pacific/Auckland' }
-    ]
-})()
+    ];
+})();
 class Start_Agentflow {
     constructor() {
-        this.label = 'Start'
-        this.name = 'startAgentflow'
-        this.version = 1.4
-        this.type = 'Start'
-        this.category = 'Agent Flows'
-        this.description = 'Starting point of the agentflow'
-        this.baseClasses = [this.type]
-        this.color = '#7EE787'
-        this.hideInput = true
+        this.label = 'Start';
+        this.name = 'startAgentflow';
+        this.version = 1.4;
+        this.type = 'Start';
+        this.category = 'Agent Flows';
+        this.description = 'Starting point of the agentflow';
+        this.baseClasses = [this.type];
+        this.color = '#7EE787';
+        this.hideInput = true;
         this.inputs = [
             {
                 label: 'Input Type',
@@ -173,8 +174,7 @@ class Start_Agentflow {
                 label: 'Content Type',
                 name: 'webhookContentType',
                 type: 'options',
-                description:
-                    'Expected Content-Type of incoming requests. For application/x-www-form-urlencoded, if the entire payload is a JSON string in a "payload" field (e.g. GitHub webhooks), it is automatically parsed — use $webhook.body.* as normal.',
+                description: 'Expected Content-Type of incoming requests. For application/x-www-form-urlencoded, if the entire payload is a JSON string in a "payload" field (e.g. GitHub webhooks), it is automatically parsed — use $webhook.body.* as normal.',
                 options: [
                     { label: 'application/json', name: 'application/json' },
                     { label: 'application/x-www-form-urlencoded', name: 'application/x-www-form-urlencoded' }
@@ -204,8 +204,7 @@ class Start_Agentflow {
                     {
                         label: 'Custom Text',
                         name: 'text',
-                        description:
-                            'Pass a fixed string. Reference webhook fields with $webhook.body.* / $webhook.headers.* / $webhook.query.*'
+                        description: 'Pass a fixed string. Reference webhook fields with $webhook.body.* / $webhook.headers.* / $webhook.query.*'
                     },
                     {
                         label: 'No Input',
@@ -215,8 +214,7 @@ class Start_Agentflow {
                     {
                         label: 'Full Webhook Payload',
                         name: 'payload',
-                        description:
-                            'Pass the full JSON-serialized webhook payload (body, headers, query). Useful for debugging; bloats LLM context.'
+                        description: 'Pass the full JSON-serialized webhook payload (body, headers, query). Useful for debugging; bloats LLM context.'
                     }
                 ],
                 default: 'text',
@@ -230,8 +228,7 @@ class Start_Agentflow {
                 type: 'string',
                 rows: 3,
                 placeholder: 'Answer user question: {{ $webhook.body.question }}',
-                description:
-                    'Text passed to downstream nodes as the user input. Use {{ $webhook.body.* }}, {{ $webhook.headers.* }}, or {{ $webhook.query.* }} to interpolate fields from the incoming request.',
+                description: 'Text passed to downstream nodes as the user input. Use {{ $webhook.body.* }}, {{ $webhook.headers.* }}, or {{ $webhook.query.* }} to interpolate fields from the incoming request.',
                 optional: true,
                 acceptVariable: true,
                 show: {
@@ -243,8 +240,7 @@ class Start_Agentflow {
                 label: 'Verify request signature',
                 name: 'webhookEnableAuth',
                 type: 'boolean',
-                description:
-                    'Reject incoming requests that do not include a valid signature. Turn this on if your sender (GitHub, Stripe, Slack, GitLab, etc.) signs each request with a shared secret, then generate a secret below and copy it to the sender. Leave off for testing or trusted networks.',
+                description: 'Reject incoming requests that do not include a valid signature. Turn this on if your sender (GitHub, Stripe, Slack, GitLab, etc.) signs each request with a shared secret, then generate a secret below and copy it to the sender. Leave off for testing or trusted networks.',
                 default: false,
                 optional: true,
                 show: {
@@ -255,8 +251,7 @@ class Start_Agentflow {
                 label: 'Webhook Secret',
                 name: 'webhookSecret',
                 type: 'string',
-                description:
-                    'Click Generate Secret to create a random shared secret, then copy it into your sender so it can sign each request. Use Signature Header and Signature Type below to match how your sender delivers the signature.',
+                description: 'Click Generate Secret to create a random shared secret, then copy it into your sender so it can sign each request. Use Signature Header and Signature Type below to match how your sender delivers the signature.',
                 optional: true,
                 show: {
                     startInputType: 'webhookTrigger',
@@ -267,8 +262,7 @@ class Start_Agentflow {
                 label: 'Signature Header',
                 name: 'webhookSignatureHeader',
                 type: 'string',
-                description:
-                    'The request header that carries the signature. e.g. x-hub-signature-256 for GitHub, stripe-signature for Stripe, x-gitlab-token for GitLab.',
+                description: 'The request header that carries the signature. e.g. x-hub-signature-256 for GitHub, stripe-signature for Stripe, x-gitlab-token for GitLab.',
                 placeholder: 'x-webhook-signature',
                 optional: true,
                 show: {
@@ -280,8 +274,7 @@ class Start_Agentflow {
                 label: 'Signature Type',
                 name: 'webhookSignatureType',
                 type: 'options',
-                description:
-                    'How to verify the signature. HMAC-SHA256 for GitHub, Stripe, Slack (supports sha256=<hex> prefix automatically). Plain Token for GitLab-style plain secret comparison.',
+                description: 'How to verify the signature. HMAC-SHA256 for GitHub, Stripe, Slack (supports sha256=<hex> prefix automatically). Plain Token for GitLab-style plain secret comparison.',
                 options: [
                     { label: 'HMAC-SHA256', name: 'hmac-sha256' },
                     { label: 'Plain Token', name: 'plain-token' }
@@ -302,20 +295,17 @@ class Start_Agentflow {
                     {
                         label: 'Synchronous',
                         name: 'sync',
-                        description:
-                            'Wait for the flow to finish and return the full result as JSON. Simple but blocks the caller; can time out for senders with short HTTP windows.'
+                        description: 'Wait for the flow to finish and return the full result as JSON. Simple but blocks the caller; can time out for senders with short HTTP windows.'
                     },
                     {
                         label: 'Asynchronous (callback)',
                         name: 'async',
-                        description:
-                            'Return 202 Accepted immediately and run the flow in the background. Set a Callback URL below to have the result POSTed there when the flow finishes; leave it blank for fire-and-forget. Best for senders with short HTTP timeouts.'
+                        description: 'Return 202 Accepted immediately and run the flow in the background. Set a Callback URL below to have the result POSTed there when the flow finishes; leave it blank for fire-and-forget. Best for senders with short HTTP timeouts.'
                     },
                     {
                         label: 'Streaming (SSE)',
                         name: 'stream',
-                        description:
-                            'Return a Server-Sent Events stream so the caller sees tokens and agent steps as they happen. Best for custom callers (browsers using fetch+ReadableStream, internal services). NOT compatible with senders that expect a single quick response.'
+                        description: 'Return a Server-Sent Events stream so the caller sees tokens and agent steps as they happen. Best for custom callers (browsers using fetch+ReadableStream, internal services). NOT compatible with senders that expect a single quick response.'
                     }
                 ],
                 default: 'sync',
@@ -327,8 +317,7 @@ class Start_Agentflow {
                 label: 'Callback URL',
                 name: 'callbackUrl',
                 type: 'string',
-                description:
-                    'Optional. Flowise will POST the flow result to this URL when the flow finishes. Leave blank for fire-and-forget — the flow still runs in the background, but no callback is delivered.',
+                description: 'Optional. Flowise will POST the flow result to this URL when the flow finishes. Leave blank for fire-and-forget — the flow still runs in the background, but no callback is delivered.',
                 placeholder: 'https://example.com/flowise-callback',
                 optional: true,
                 show: {
@@ -340,8 +329,7 @@ class Start_Agentflow {
                 label: 'Callback Secret',
                 name: 'callbackSecret',
                 type: 'string',
-                description:
-                    'Optional. If set, outgoing callback POSTs are signed with HMAC-SHA256 and delivered as X-Flowise-Signature: sha256=<hex> so your callback endpoint can verify the request came from Flowise.',
+                description: 'Optional. If set, outgoing callback POSTs are signed with HMAC-SHA256 and delivered as X-Flowise-Signature: sha256=<hex> so your callback endpoint can verify the request came from Flowise.',
                 optional: true,
                 show: {
                     startInputType: 'webhookTrigger',
@@ -352,8 +340,7 @@ class Start_Agentflow {
                 label: 'Validate request shape',
                 name: 'webhookEnableValidation',
                 type: 'boolean',
-                description:
-                    'Reject requests that are missing required headers, body fields, or query parameters declared below. Turn this on to enforce a request contract and catch bad requests early. Leave off to accept any payload and let the flow handle validation itself.',
+                description: 'Reject requests that are missing required headers, body fields, or query parameters declared below. Turn this on to enforce a request contract and catch bad requests early. Leave off to accept any payload and let the flow handle validation itself.',
                 default: false,
                 optional: true,
                 show: {
@@ -503,8 +490,7 @@ class Start_Agentflow {
                 name: 'scheduleCronExpression',
                 type: 'string',
                 placeholder: '0 9 * * 1-5',
-                description:
-                    'Standard 5-field cron expression (minute hour day month weekday). Example: "0 9 * * 1-5" runs at 09:00 every weekday.',
+                description: 'Standard 5-field cron expression (minute hour day month weekday). Example: "0 9 * * 1-5" runs at 09:00 every weekday.',
                 show: {
                     startInputType: 'scheduleInput',
                     scheduleType: 'cronExpression'
@@ -546,8 +532,7 @@ class Start_Agentflow {
                 name: 'scheduleOnMinute',
                 type: 'number',
                 placeholder: '30',
-                description:
-                    'Minute of the hour when the schedule should run (0-59). For example, "30" means the schedule will run at the 30th minute of the hour.',
+                description: 'Minute of the hour when the schedule should run (0-59). For example, "30" means the schedule will run at the 30th minute of the hour.',
                 show: {
                     startInputType: 'scheduleInput',
                     scheduleType: 'visualPicker',
@@ -701,8 +686,7 @@ class Start_Agentflow {
                 label: 'Default Form Values',
                 name: 'scheduleFormDefaults',
                 type: 'json',
-                description:
-                    'Default values for the form fields above, as a JSON object keyed by variable name. Example: { "team": "engineering", "metric": "p95" }',
+                description: 'Default values for the form fields above, as a JSON object keyed by variable name. Example: { "team": "engineering", "metric": "p95" }',
                 optional: true,
                 show: {
                     startInputType: 'scheduleInput',
@@ -745,108 +729,112 @@ class Start_Agentflow {
                 description: 'Persist the state in the same session',
                 optional: true
             }
-        ]
+        ];
     }
     async run(nodeData, input, options) {
-        const _flowState = nodeData.inputs?.startState
-        const startInputType = nodeData.inputs?.startInputType
-        const startEphemeralMemory = nodeData.inputs?.startEphemeralMemory
-        const startPersistState = nodeData.inputs?.startPersistState
-        let flowStateArray = []
+        const _flowState = nodeData.inputs?.startState;
+        const startInputType = nodeData.inputs?.startInputType;
+        const startEphemeralMemory = nodeData.inputs?.startEphemeralMemory;
+        const startPersistState = nodeData.inputs?.startPersistState;
+        let flowStateArray = [];
         if (_flowState) {
             try {
-                flowStateArray = typeof _flowState === 'string' ? JSON.parse(_flowState) : _flowState
-            } catch (error) {
-                throw new Error('Invalid Flow State')
+                flowStateArray = typeof _flowState === 'string' ? JSON.parse(_flowState) : _flowState;
+            }
+            catch (error) {
+                throw new Error('Invalid Flow State');
             }
         }
-        let flowState = {}
+        let flowState = {};
         for (const state of flowStateArray) {
-            flowState[state.key] = state.value
+            flowState[state.key] = state.value;
         }
-        const runtimeState = options.agentflowRuntime?.state
+        const runtimeState = options.agentflowRuntime?.state;
         if (startPersistState === true && runtimeState && Object.keys(runtimeState).length) {
             for (const state in runtimeState) {
-                flowState[state] = runtimeState[state]
+                flowState[state] = runtimeState[state];
             }
         }
-        const inputData = {}
-        const outputData = {}
+        const inputData = {};
+        const outputData = {};
         if (startInputType === 'chatInput') {
-            inputData.question = input
-            outputData.question = input
+            inputData.question = input;
+            outputData.question = input;
         }
         if (startInputType === 'formInput') {
             inputData.form = {
                 title: nodeData.inputs?.formTitle,
                 description: nodeData.inputs?.formDescription,
                 inputs: nodeData.inputs?.formInputTypes
-            }
-            let form = input
+            };
+            let form = input;
             if (options.agentflowRuntime?.form && Object.keys(options.agentflowRuntime.form).length) {
-                form = options.agentflowRuntime.form
+                form = options.agentflowRuntime.form;
             }
-            outputData.form = form
+            outputData.form = form;
         }
         if (startInputType === 'webhookTrigger') {
-            const webhookInputMode = nodeData.inputs?.webhookInputMode || 'text'
+            const webhookInputMode = nodeData.inputs?.webhookInputMode || 'text';
             // Always preserve the webhook payload in inputData/outputData so downstream nodes can
             // reference $webhook.* and human-input resume can restore the original trigger data.
             // The runtime fallback is the authoritative source when set (text/none modes don't pass
             // the payload through `input`); otherwise parse it back from the JSON string `input`.
-            let webhookPayload =
-                options.agentflowRuntime?.webhook && Object.keys(options.agentflowRuntime.webhook).length
-                    ? options.agentflowRuntime.webhook
-                    : input
+            let webhookPayload = options.agentflowRuntime?.webhook && Object.keys(options.agentflowRuntime.webhook).length
+                ? options.agentflowRuntime.webhook
+                : input;
             if (typeof webhookPayload === 'string') {
                 try {
-                    webhookPayload = JSON.parse(webhookPayload)
-                } catch (_) {
+                    webhookPayload = JSON.parse(webhookPayload);
+                }
+                catch (_) {
                     /* leave as string if not valid JSON */
                 }
             }
-            inputData.webhook = webhookPayload
-            outputData.webhook = webhookPayload
+            inputData.webhook = webhookPayload;
+            outputData.webhook = webhookPayload;
             if (webhookInputMode === 'none') {
                 // Single-space sentinel — same convention as scheduleInputMode='none'.
-                inputData.question = ' '
-                outputData.question = ' '
-            } else if (webhookInputMode === 'text') {
+                inputData.question = ' ';
+                outputData.question = ' ';
+            }
+            else if (webhookInputMode === 'text') {
                 // executeAgentFlow pre-resolves $webhook.* refs and passes the result as `input`.
-                const resolved = (typeof input === 'string' && input) || ' '
-                inputData.question = resolved
-                outputData.question = resolved
+                const resolved = (typeof input === 'string' && input) || ' ';
+                inputData.question = resolved;
+                outputData.question = resolved;
             }
             // mode='payload' — webhook is exposed via outputData.webhook; no `question` is set.
         }
         if (startInputType === 'scheduleInput') {
-            const scheduleInputMode = nodeData.inputs?.scheduleInputMode || 'text'
+            const scheduleInputMode = nodeData.inputs?.scheduleInputMode || 'text';
             if (scheduleInputMode === 'form') {
                 inputData.form = {
                     inputs: nodeData.inputs?.scheduleFormInputTypes
-                }
-                let form = input
+                };
+                let form = input;
                 if (options.agentflowRuntime?.form && Object.keys(options.agentflowRuntime.form).length) {
-                    form = options.agentflowRuntime.form
+                    form = options.agentflowRuntime.form;
                 }
-                outputData.form = form
-            } else if (scheduleInputMode === 'none') {
+                outputData.form = form;
+            }
+            else if (scheduleInputMode === 'none') {
                 // Single-space sentinel matches the engine's "no input" fallback at buildAgentflow.ts:2247
                 // and avoids downstream Agent nodes filtering the user message and producing an empty messages[].
-                inputData.question = ' '
-                outputData.question = ' '
-            } else {
-                const defaultInput = nodeData.inputs?.scheduleDefaultInput
-                const effectiveInput = (typeof input === 'string' && input) || defaultInput || ''
-                inputData.question = effectiveInput
-                outputData.question = effectiveInput
+                inputData.question = ' ';
+                outputData.question = ' ';
+            }
+            else {
+                const defaultInput = nodeData.inputs?.scheduleDefaultInput;
+                const effectiveInput = (typeof input === 'string' && input) || defaultInput || '';
+                inputData.question = effectiveInput;
+                outputData.question = effectiveInput;
             }
         }
         if (startEphemeralMemory) {
-            outputData.ephemeralMemory = true
+            outputData.ephemeralMemory = true;
         }
         if (startPersistState) {
-            outputData.persistState = true
+            outputData.persistState = true;
         }
         const returnOutput = {
             id: nodeData.id,
@@ -854,9 +842,9 @@ class Start_Agentflow {
             input: inputData,
             output: outputData,
             state: flowState
-        }
-        return returnOutput
+        };
+        return returnOutput;
     }
 }
-module.exports = { nodeClass: Start_Agentflow }
+module.exports = { nodeClass: Start_Agentflow };
 //# sourceMappingURL=Start.js.map

@@ -1,32 +1,32 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const cohere_1 = require('@langchain/cohere')
-const utils_1 = require('../../../src/utils')
-const modelLoader_1 = require('../../../src/modelLoader')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const cohere_1 = require("@langchain/cohere");
+const utils_1 = require("../../../src/utils");
+const modelLoader_1 = require("../../../src/modelLoader");
 class Cohere_LLMs {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.LLM, 'cohere')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.LLM, 'cohere');
             }
-        }
-        this.label = 'Cohere'
-        this.name = 'cohere'
-        this.version = 3.0
-        this.type = 'Cohere'
-        this.icon = 'Cohere.svg'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around Cohere large language models'
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'Use Cohere Chat Models instead'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(cohere_1.Cohere)]
+        };
+        this.label = 'Cohere';
+        this.name = 'cohere';
+        this.version = 3.0;
+        this.type = 'Cohere';
+        this.icon = 'Cohere.svg';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around Cohere large language models';
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'Use Cohere Chat Models instead';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(cohere_1.Cohere)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['cohereApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -56,25 +56,29 @@ class Cohere_LLMs {
                 step: 1,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const temperature = nodeData.inputs?.temperature
-        const modelName = nodeData.inputs?.modelName
-        const maxTokens = nodeData.inputs?.maxTokens
-        const cache = nodeData.inputs?.cache
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const cohereApiKey = (0, utils_1.getCredentialParam)('cohereApiKey', credentialData, nodeData)
+        const temperature = nodeData.inputs?.temperature;
+        const modelName = nodeData.inputs?.modelName;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const cache = nodeData.inputs?.cache;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const cohereApiKey = (0, utils_1.getCredentialParam)('cohereApiKey', credentialData, nodeData);
         const obj = {
             apiKey: cohereApiKey
-        }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (modelName) obj.model = modelName
-        if (temperature) obj.temperature = parseFloat(temperature)
-        if (cache) obj.cache = cache
-        const model = new cohere_1.Cohere(obj)
-        return model
+        };
+        if (maxTokens)
+            obj.maxTokens = parseInt(maxTokens, 10);
+        if (modelName)
+            obj.model = modelName;
+        if (temperature)
+            obj.temperature = parseFloat(temperature);
+        if (cache)
+            obj.cache = cache;
+        const model = new cohere_1.Cohere(obj);
+        return model;
     }
 }
-module.exports = { nodeClass: Cohere_LLMs }
+module.exports = { nodeClass: Cohere_LLMs };
 //# sourceMappingURL=Cohere.js.map

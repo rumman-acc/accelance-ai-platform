@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class JiraApi {
     constructor() {
-        this.label = 'Jira API'
-        this.name = 'jiraApi'
-        this.version = 1.0
+        this.label = 'Jira API';
+        this.name = 'jiraApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/">official guide</a> on how to get an access token on Jira'
+            'Refer to <a target="_blank" href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/">official guide</a> on how to get an access token on Jira';
         this.inputs = [
             {
                 label: 'User Name',
@@ -20,8 +20,8 @@ class JiraApi {
                 type: 'password',
                 placeholder: '<JIRA_ACCESS_TOKEN>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: JiraApi }
+module.exports = { credClass: JiraApi };
 //# sourceMappingURL=JiraApi.credential.js.map

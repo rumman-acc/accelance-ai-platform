@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class ElasticSearchUserPassword {
     constructor() {
-        this.label = 'ElasticSearch User Password'
-        this.name = 'elasticSearchUserPassword'
-        this.version = 1.0
+        this.label = 'ElasticSearch User Password';
+        this.name = 'elasticSearchUserPassword';
+        this.version = 1.0;
         this.description = `Use Cloud ID field to enter your Elastic Cloud ID or the URL of the Elastic server instance.
-        Refer to <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html">official guide</a> on how to get User Password from ElasticSearch.`
+        Refer to <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html">official guide</a> on how to get User Password from ElasticSearch.`;
         this.inputs = [
             {
                 label: 'Cloud ID',
@@ -23,8 +23,8 @@ class ElasticSearchUserPassword {
                 name: 'password',
                 type: 'password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: ElasticSearchUserPassword }
+module.exports = { credClass: ElasticSearchUserPassword };
 //# sourceMappingURL=ElectricsearchUserPassword.credential.js.map

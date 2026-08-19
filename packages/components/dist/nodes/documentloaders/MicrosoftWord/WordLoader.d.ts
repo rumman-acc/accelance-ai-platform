@@ -1,5 +1,5 @@
-import { Document } from '@langchain/core/documents'
-import { BufferLoader } from '@langchain/classic/document_loaders/fs/buffer'
+import { Document } from '@langchain/core/documents';
+import { BufferLoader } from '@langchain/classic/document_loaders/fs/buffer';
 /**
  * Document loader that uses officeparser to load Word documents.
  *
@@ -8,11 +8,11 @@ import { BufferLoader } from '@langchain/classic/document_loaders/fs/buffer'
  */
 export declare class WordLoader extends BufferLoader {
     attributes: {
-        name: string
-        description: string
-        type: string
-    }[]
-    constructor(filePathOrBlob: string | Blob)
+        name: string;
+        description: string;
+        type: string;
+    }[];
+    constructor(filePathOrBlob: string | Blob);
     /**
      * Parse Word document
      *
@@ -20,10 +20,10 @@ export declare class WordLoader extends BufferLoader {
      * @param metadata Document metadata
      * @returns Array of Documents
      */
-    parse(raw: Buffer, metadata: Document['metadata']): Promise<Document[]>
+    parse(raw: Buffer, metadata: Document['metadata']): Promise<Document[]>;
     /**
      * Split content into sections based on common patterns
      * This is a heuristic approach since officeparser returns plain text
      */
-    private splitIntoSections
+    private splitIntoSections;
 }

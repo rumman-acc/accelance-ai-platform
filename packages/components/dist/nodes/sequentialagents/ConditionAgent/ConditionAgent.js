@@ -1,20 +1,20 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const v3_1 = require('zod/v3')
-const prompts_1 = require('@langchain/core/prompts')
-const runnables_1 = require('@langchain/core/runnables')
-const utils_1 = require('../../../src/utils')
-const commonUtils_1 = require('../commonUtils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const v3_1 = require("zod/v3");
+const prompts_1 = require("@langchain/core/prompts");
+const runnables_1 = require("@langchain/core/runnables");
+const utils_1 = require("../../../src/utils");
+const commonUtils_1 = require("../commonUtils");
 const examplePrompt = `You are an expert customer support routing system.
-Your job is to detect whether a customer support representative is routing a user to the technical support team, or just responding conversationally.`
+Your job is to detect whether a customer support representative is routing a user to the technical support team, or just responding conversationally.`;
 const exampleHumanPrompt = `The previous conversation is an interaction between a customer support representative and a user.
 Extract whether the representative is routing the user to the technical support team, or just responding conversationally.
 
 If representative want to route the user to the technical support team, respond only with the word "TECHNICAL".
 Otherwise, respond only with the word "CONVERSATION".
 
-Remember, only respond with one of the above words.`
+Remember, only respond with one of the above words.`;
 const howToUseCode = `
 1. Must return a string value at the end of function. For example:
     \`\`\`js
@@ -89,7 +89,7 @@ const howToUseCode = `
 
 5. You can get custom variables: \`$vars.<variable-name>\`
 
-`
+`;
 const defaultFunc = `const result = $flow.output.content;
 
 if (result.includes("some-keyword")) {
@@ -97,19 +97,19 @@ if (result.includes("some-keyword")) {
 }
 
 return "End";
-`
-const TAB_IDENTIFIER = 'selectedConditionFunctionTab'
+`;
+const TAB_IDENTIFIER = 'selectedConditionFunctionTab';
 class ConditionAgent_SeqAgents {
     constructor() {
-        this.label = 'Condition Agent'
-        this.name = 'seqConditionAgent'
-        this.version = 3.1
-        this.type = 'ConditionAgent'
-        this.icon = 'condition.svg'
-        this.category = 'Sequential Agents'
-        this.description = 'Uses an agent to determine which route to take next'
-        this.baseClasses = [this.type]
-        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-8.-conditional-agent-node'
+        this.label = 'Condition Agent';
+        this.name = 'seqConditionAgent';
+        this.version = 3.1;
+        this.type = 'ConditionAgent';
+        this.icon = 'condition.svg';
+        this.category = 'Sequential Agents';
+        this.description = 'Uses an agent to determine which route to take next';
+        this.baseClasses = [this.type];
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-8.-conditional-agent-node';
         this.inputs = [
             {
                 label: 'Name',
@@ -121,8 +121,7 @@ class ConditionAgent_SeqAgents {
                 label: 'Sequential Node',
                 name: 'sequentialNode',
                 type: 'Start | Agent | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
-                description:
-                    'Can be connected to one of the following nodes: Start, Agent, LLM Node, Tool Node, Custom Function, Execute Flow',
+                description: 'Can be connected to one of the following nodes: Start, Agent, LLM Node, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -164,15 +163,13 @@ class ConditionAgent_SeqAgents {
                     {
                         label: 'Empty',
                         name: 'empty',
-                        description:
-                            'Do not use any messages from the conversation history. ' +
+                        description: 'Do not use any messages from the conversation history. ' +
                             'Ensure to use either System Prompt, Human Prompt, or Messages History.'
                     }
                 ],
                 default: 'all_messages',
                 optional: true,
-                description:
-                    'Select which messages from the conversation history to include in the prompt. ' +
+                description: 'Select which messages from the conversation history to include in the prompt. ' +
                     'The selected messages will be inserted between the System Prompt (if defined) and ' +
                     'Human Prompt.',
                 additionalParams: true
@@ -319,7 +316,7 @@ class ConditionAgent_SeqAgents {
                     }
                 ]
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Next',
@@ -333,56 +330,42 @@ class ConditionAgent_SeqAgents {
                 baseClasses: ['Condition'],
                 isAnchor: true
             }
-        ]
+        ];
     }
     async init(nodeData, input, options) {
-        const conditionLabel = nodeData.inputs?.conditionAgentName
-        const conditionName = conditionLabel.toLowerCase().replace(/\s/g, '_').trim()
-        const output = nodeData.outputs?.output
-        const sequentialNodes = nodeData.inputs?.sequentialNode
-        let agentPrompt = nodeData.inputs?.systemMessagePrompt
-        agentPrompt = (0, utils_1.transformBracesWithColon)(agentPrompt)
-        let humanPrompt = nodeData.inputs?.humanMessagePrompt
-        humanPrompt = (0, utils_1.transformBracesWithColon)(humanPrompt)
-        const promptValuesStr = nodeData.inputs?.promptValues
-        const conditionAgentStructuredOutput = nodeData.inputs?.conditionAgentStructuredOutput
-        const model = nodeData.inputs?.model
-        if (!sequentialNodes || !sequentialNodes.length) throw new Error('Condition Agent must have a predecessor!')
-        const startLLM = sequentialNodes[0].startLLM
-        const llm = model || startLLM
-        if (nodeData.inputs) nodeData.inputs.model = llm
-        let conditionAgentInputVariablesValues = {}
+        const conditionLabel = nodeData.inputs?.conditionAgentName;
+        const conditionName = conditionLabel.toLowerCase().replace(/\s/g, '_').trim();
+        const output = nodeData.outputs?.output;
+        const sequentialNodes = nodeData.inputs?.sequentialNode;
+        let agentPrompt = nodeData.inputs?.systemMessagePrompt;
+        agentPrompt = (0, utils_1.transformBracesWithColon)(agentPrompt);
+        let humanPrompt = nodeData.inputs?.humanMessagePrompt;
+        humanPrompt = (0, utils_1.transformBracesWithColon)(humanPrompt);
+        const promptValuesStr = nodeData.inputs?.promptValues;
+        const conditionAgentStructuredOutput = nodeData.inputs?.conditionAgentStructuredOutput;
+        const model = nodeData.inputs?.model;
+        if (!sequentialNodes || !sequentialNodes.length)
+            throw new Error('Condition Agent must have a predecessor!');
+        const startLLM = sequentialNodes[0].startLLM;
+        const llm = model || startLLM;
+        if (nodeData.inputs)
+            nodeData.inputs.model = llm;
+        let conditionAgentInputVariablesValues = {};
         if (promptValuesStr) {
             try {
-                conditionAgentInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the Condition Agent's Prompt Input Values: " + exception)
+                conditionAgentInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr);
+            }
+            catch (exception) {
+                throw new Error("Invalid JSON in the Condition Agent's Prompt Input Values: " + exception);
             }
         }
-        conditionAgentInputVariablesValues = (0, utils_1.handleEscapeCharacters)(conditionAgentInputVariablesValues, true)
-        const conditionAgentInputVariables = (0, lodash_1.uniq)([
-            ...(0, utils_1.getInputVariables)(agentPrompt),
-            ...(0, utils_1.getInputVariables)(humanPrompt)
-        ])
+        conditionAgentInputVariablesValues = (0, utils_1.handleEscapeCharacters)(conditionAgentInputVariablesValues, true);
+        const conditionAgentInputVariables = (0, lodash_1.uniq)([...(0, utils_1.getInputVariables)(agentPrompt), ...(0, utils_1.getInputVariables)(humanPrompt)]);
         if (!conditionAgentInputVariables.every((element) => Object.keys(conditionAgentInputVariablesValues).includes(element))) {
-            throw new Error('Condition Agent input variables values are not provided!')
+            throw new Error('Condition Agent input variables values are not provided!');
         }
-        const abortControllerSignal = options.signal
-        const conditionalEdge = async (state, config) =>
-            await runCondition(
-                conditionName,
-                nodeData,
-                input,
-                options,
-                state,
-                config,
-                llm,
-                agentPrompt,
-                humanPrompt,
-                conditionAgentInputVariablesValues,
-                conditionAgentStructuredOutput,
-                abortControllerSignal
-            )
+        const abortControllerSignal = options.signal;
+        const conditionalEdge = async (state, config) => await runCondition(conditionName, nodeData, input, options, state, config, llm, agentPrompt, humanPrompt, conditionAgentInputVariablesValues, conditionAgentStructuredOutput, abortControllerSignal);
         const returnOutput = {
             id: nodeData.id,
             node: conditionalEdge,
@@ -394,80 +377,70 @@ class ConditionAgent_SeqAgents {
             startLLM,
             multiModalMessageContent: sequentialNodes[0]?.multiModalMessageContent,
             predecessorAgents: sequentialNodes
-        }
-        return returnOutput
+        };
+        return returnOutput;
     }
 }
-const runCondition = async (
-    conditionName,
-    nodeData,
-    input,
-    options,
-    state,
-    config,
-    llm,
-    agentPrompt,
-    humanPrompt,
-    conditionAgentInputVariablesValues,
-    conditionAgentStructuredOutput,
-    abortControllerSignal
-) => {
-    const appDataSource = options.appDataSource
-    const databaseEntities = options.databaseEntities
-    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`]
-    const conditionUI = nodeData.inputs?.conditionUI
-    const conditionFunction = nodeData.inputs?.conditionFunction
-    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'conditionUI'
-    const promptArrays = [new prompts_1.MessagesPlaceholder('messages')]
-    if (agentPrompt) promptArrays.unshift(['system', agentPrompt])
-    if (humanPrompt) promptArrays.push(['human', humanPrompt])
-    const prompt = prompts_1.ChatPromptTemplate.fromMessages(promptArrays)
-    let model
+const runCondition = async (conditionName, nodeData, input, options, state, config, llm, agentPrompt, humanPrompt, conditionAgentInputVariablesValues, conditionAgentStructuredOutput, abortControllerSignal) => {
+    const appDataSource = options.appDataSource;
+    const databaseEntities = options.databaseEntities;
+    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`];
+    const conditionUI = nodeData.inputs?.conditionUI;
+    const conditionFunction = nodeData.inputs?.conditionFunction;
+    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'conditionUI';
+    const promptArrays = [new prompts_1.MessagesPlaceholder('messages')];
+    if (agentPrompt)
+        promptArrays.unshift(['system', agentPrompt]);
+    if (humanPrompt)
+        promptArrays.push(['human', humanPrompt]);
+    const prompt = prompts_1.ChatPromptTemplate.fromMessages(promptArrays);
+    let model;
     if (conditionAgentStructuredOutput && conditionAgentStructuredOutput !== '[]') {
         try {
-            const structuredOutput = v3_1.z.object((0, commonUtils_1.convertStructuredSchemaToZod)(conditionAgentStructuredOutput))
+            const structuredOutput = v3_1.z.object((0, commonUtils_1.convertStructuredSchemaToZod)(conditionAgentStructuredOutput));
             // @ts-ignore
             model = llm.withStructuredOutput(structuredOutput, {
                 method: 'functionCalling'
-            })
-        } catch (exception) {
-            console.error('Invalid JSON in Condition Agent Structured Output: ' + exception)
-            model = llm
+            });
         }
-    } else {
-        model = llm
+        catch (exception) {
+            console.error('Invalid JSON in Condition Agent Structured Output: ' + exception);
+            model = llm;
+        }
     }
-    let chain
+    else {
+        model = llm;
+    }
+    let chain;
     if (!conditionAgentInputVariablesValues || !Object.keys(conditionAgentInputVariablesValues).length) {
         chain = runnables_1.RunnableSequence.from([prompt, model]).withConfig({
             metadata: { sequentialNodeName: conditionName }
-        })
-    } else {
+        });
+    }
+    else {
         chain = runnables_1.RunnableSequence.from([
-            runnables_1.RunnablePassthrough.assign(
-                (0, commonUtils_1.transformObjectPropertyToFunction)(conditionAgentInputVariablesValues, state)
-            ),
+            runnables_1.RunnablePassthrough.assign((0, commonUtils_1.transformObjectPropertyToFunction)(conditionAgentInputVariablesValues, state)),
             prompt,
             model
         ]).withConfig({
             metadata: { sequentialNodeName: conditionName }
-        })
+        });
     }
-    const historySelection = nodeData.inputs?.conversationHistorySelection || 'all_messages'
+    const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages');
     // @ts-ignore
-    state.messages = (0, commonUtils_1.filterConversationHistory)(historySelection, input, state)
+    state.messages = (0, commonUtils_1.filterConversationHistory)(historySelection, input, state);
     // @ts-ignore
-    state.messages = (0, commonUtils_1.restructureMessages)(model, state)
-    let result = await chain.invoke({ ...state, signal: abortControllerSignal?.signal }, config)
-    result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+    state.messages = (0, commonUtils_1.restructureMessages)(model, state);
+    let result = await chain.invoke({ ...state, signal: abortControllerSignal?.signal }, config);
+    result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id };
     if (conditionAgentStructuredOutput && conditionAgentStructuredOutput !== '[]' && result.tool_calls && result.tool_calls.length) {
-        let jsonResult = {}
+        let jsonResult = {};
         for (const toolCall of result.tool_calls) {
-            jsonResult = { ...jsonResult, ...toolCall.args }
+            jsonResult = { ...jsonResult, ...toolCall.args };
         }
-        result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } }
+        result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } };
     }
-    const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options)
+    const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options);
     const flow = {
         chatflowId: options.chatflowid,
         sessionId: options.sessionId,
@@ -476,49 +449,54 @@ const runCondition = async (
         state,
         output: result,
         vars: (0, utils_1.prepareSandboxVars)(variables)
-    }
+    };
     if (selectedTab === 'conditionFunction' && conditionFunction) {
-        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow)
+        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow);
         try {
-            const response = await (0, utils_1.executeJavaScriptCode)(conditionFunction, sandbox)
-            if (typeof response !== 'string') throw new Error('Condition function must return a string')
-            return response
-        } catch (e) {
-            throw new Error(e)
+            const response = await (0, utils_1.executeJavaScriptCode)(conditionFunction, sandbox);
+            if (typeof response !== 'string')
+                throw new Error('Condition function must return a string');
+            return response;
         }
-    } else if (selectedTab === 'conditionUI' && conditionUI) {
+        catch (e) {
+            throw new Error(e);
+        }
+    }
+    else if (selectedTab === 'conditionUI' && conditionUI) {
         try {
-            const conditionItems = typeof conditionUI === 'string' ? JSON.parse(conditionUI) : conditionUI
+            const conditionItems = typeof conditionUI === 'string' ? JSON.parse(conditionUI) : conditionUI;
             for (const item of conditionItems) {
-                if (!item.variable) throw new Error('Condition variable is required!')
+                if (!item.variable)
+                    throw new Error('Condition variable is required!');
                 if (item.variable.startsWith('$flow')) {
-                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$flow.', ''))
+                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$flow.', ''));
                     if ((0, commonUtils_1.checkCondition)(variableValue, item.operation, item.value)) {
-                        return item.output
+                        return item.output;
                     }
-                } else if (item.variable.startsWith('$vars')) {
-                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$', ''))
+                }
+                else if (item.variable.startsWith('$vars')) {
+                    const variableValue = (0, commonUtils_1.customGet)(flow, item.variable.replace('$', ''));
                     if ((0, commonUtils_1.checkCondition)(variableValue, item.operation, item.value)) {
-                        return item.output
+                        return item.output;
                     }
-                } else if (item.variable.startsWith('$')) {
-                    const nodeId = item.variable.replace('$', '')
-                    const messageOutputs = (state.messages ?? []).filter(
-                        (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === nodeId
-                    )
-                    const messageOutput = messageOutputs[messageOutputs.length - 1]
+                }
+                else if (item.variable.startsWith('$')) {
+                    const nodeId = item.variable.replace('$', '');
+                    const messageOutputs = (state.messages ?? []).filter((message) => message.additional_kwargs && message.additional_kwargs?.nodeId === nodeId);
+                    const messageOutput = messageOutputs[messageOutputs.length - 1];
                     if (messageOutput) {
                         if ((0, commonUtils_1.checkCondition)(messageOutput.content, item.operation, item.value)) {
-                            return item.output
+                            return item.output;
                         }
                     }
                 }
             }
-            return 'End'
-        } catch (exception) {
-            throw new Error('Invalid Condition: ' + exception)
+            return 'End';
+        }
+        catch (exception) {
+            throw new Error('Invalid Condition: ' + exception);
         }
     }
-}
-module.exports = { nodeClass: ConditionAgent_SeqAgents }
+};
+module.exports = { nodeClass: ConditionAgent_SeqAgents };
 //# sourceMappingURL=ConditionAgent.js.map

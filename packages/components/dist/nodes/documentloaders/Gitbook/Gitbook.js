@@ -1,18 +1,18 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const gitbook_1 = require('@langchain/community/document_loaders/web/gitbook')
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const gitbook_1 = require("@langchain/community/document_loaders/web/gitbook");
+const utils_1 = require("../../../src/utils");
 class Gitbook_DocumentLoaders {
     constructor() {
-        this.label = 'GitBook'
-        this.name = 'gitbook'
-        this.version = 2.0
-        this.type = 'Document'
-        this.icon = 'gitbook.svg'
-        this.category = 'Document Loaders'
-        this.description = `Load data from GitBook`
-        this.baseClasses = [this.type]
+        this.label = 'GitBook';
+        this.name = 'gitbook';
+        this.version = 2.0;
+        this.type = 'Document';
+        this.icon = 'gitbook.svg';
+        this.category = 'Document Loaders';
+        this.description = `Load data from GitBook`;
+        this.baseClasses = [this.type];
         this.inputs = [
             {
                 label: 'Web Path',
@@ -47,13 +47,12 @@ class Gitbook_DocumentLoaders {
                 name: 'omitMetadataKeys',
                 type: 'string',
                 rows: 4,
-                description:
-                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
+                description: 'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
                 placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Document',
@@ -67,72 +66,65 @@ class Gitbook_DocumentLoaders {
                 description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const webPath = nodeData.inputs?.webPath
-        const shouldLoadAllPaths = nodeData.inputs?.shouldLoadAllPaths
-        const textSplitter = nodeData.inputs?.textSplitter
-        const metadata = nodeData.inputs?.metadata
-        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys
-        const output = nodeData.outputs?.output
-        let omitMetadataKeys = []
+        const webPath = nodeData.inputs?.webPath;
+        const shouldLoadAllPaths = nodeData.inputs?.shouldLoadAllPaths;
+        const textSplitter = nodeData.inputs?.textSplitter;
+        const metadata = nodeData.inputs?.metadata;
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys;
+        const output = nodeData.outputs?.output;
+        let omitMetadataKeys = [];
         if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim());
         }
-        const loader = shouldLoadAllPaths
-            ? new gitbook_1.GitbookLoader(webPath, { shouldLoadAllPaths })
-            : new gitbook_1.GitbookLoader(webPath)
-        let docs = []
+        const loader = shouldLoadAllPaths ? new gitbook_1.GitbookLoader(webPath, { shouldLoadAllPaths }) : new gitbook_1.GitbookLoader(webPath);
+        let docs = [];
         if (textSplitter) {
-            docs = await loader.load()
-            docs = await textSplitter.splitDocuments(docs)
-        } else {
-            docs = await loader.load()
+            docs = await loader.load();
+            docs = await textSplitter.splitDocuments(docs);
+        }
+        else {
+            docs = await loader.load();
         }
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata);
             docs = docs.map((doc) => ({
                 ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {
-                              ...parsedMetadata
-                          }
-                        : (0, lodash_1.omit)(
-                              {
-                                  ...doc.metadata,
-                                  ...parsedMetadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
-        } else {
+                metadata: _omitMetadataKeys === '*'
+                    ? {
+                        ...parsedMetadata
+                    }
+                    : (0, lodash_1.omit)({
+                        ...doc.metadata,
+                        ...parsedMetadata
+                    }, omitMetadataKeys)
+            }));
+        }
+        else {
             docs = docs.map((doc) => ({
                 ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {}
-                        : (0, lodash_1.omit)(
-                              {
-                                  ...doc.metadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
+                metadata: _omitMetadataKeys === '*'
+                    ? {}
+                    : (0, lodash_1.omit)({
+                        ...doc.metadata
+                    }, omitMetadataKeys)
+            }));
         }
         if (output === 'document') {
-            return docs
-        } else {
-            let finaltext = ''
+            return docs;
+        }
+        else {
+            let finaltext = '';
             for (const doc of docs) {
-                finaltext += `${doc.pageContent}\n`
+                finaltext += `${doc.pageContent}\n`;
             }
-            return (0, utils_1.handleEscapeCharacters)(finaltext, false)
+            return (0, utils_1.handleEscapeCharacters)(finaltext, false);
         }
     }
 }
 module.exports = {
     nodeClass: Gitbook_DocumentLoaders
-}
+};
 //# sourceMappingURL=Gitbook.js.map

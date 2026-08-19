@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class LangWatchApi {
     constructor() {
-        this.label = 'LangWatch API'
-        this.name = 'langwatchApi'
-        this.version = 1.0
+        this.label = 'LangWatch API';
+        this.name = 'langwatchApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://docs.langwatch.ai/integration/python/guide">integration guide</a> on how to get API keys on LangWatch'
+            'Refer to <a target="_blank" href="https://docs.langwatch.ai/integration/python/guide">integration guide</a> on how to get API keys on LangWatch';
         this.inputs = [
             {
                 label: 'API Key',
@@ -20,8 +20,8 @@ class LangWatchApi {
                 type: 'string',
                 default: 'https://app.langwatch.ai'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: LangWatchApi }
+module.exports = { credClass: LangWatchApi };
 //# sourceMappingURL=LangWatchApi.credential.js.map

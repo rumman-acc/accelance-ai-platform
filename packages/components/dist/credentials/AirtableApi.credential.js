@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class AirtableApi {
     constructor() {
-        this.label = 'Airtable API'
-        this.name = 'airtableApi'
-        this.version = 1.0
+        this.label = 'Airtable API';
+        this.name = 'airtableApi';
+        this.version = 1.0;
         this.description =
-            'Personal Access Token created at <a target="_blank" href="https://airtable.com/create/tokens">airtable.com/create/tokens</a>, scoped with data.records:read / data.records:write access on the target base'
+            'Personal Access Token created at <a target="_blank" href="https://airtable.com/create/tokens">airtable.com/create/tokens</a>, scoped with data.records:read / data.records:write access on the target base';
         this.inputs = [
             {
                 label: 'Personal Access Token',
@@ -14,8 +14,8 @@ class AirtableApi {
                 type: 'password',
                 placeholder: '<AIRTABLE_PAT>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: AirtableApi }
+module.exports = { credClass: AirtableApi };
 //# sourceMappingURL=AirtableApi.credential.js.map

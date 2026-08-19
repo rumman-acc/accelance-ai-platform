@@ -1,16 +1,16 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const tavily_1 = require('@langchain/tavily')
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const tavily_1 = require("@langchain/tavily");
+const utils_1 = require("../../../src/utils");
 class TavilyAPI_Tools {
     constructor() {
-        this.label = 'Tavily API'
-        this.name = 'tavilyAPI'
-        this.version = 1.2
-        this.type = 'TavilyAPI'
-        this.icon = 'tavily.svg'
-        this.category = 'Tools'
-        this.description = 'Wrapper around TavilyAPI - A specialized search engine designed for LLMs and AI agents'
+        this.label = 'Tavily API';
+        this.name = 'tavilyAPI';
+        this.version = 1.2;
+        this.type = 'TavilyAPI';
+        this.icon = 'tavily.svg';
+        this.category = 'Tools';
+        this.description = 'Wrapper around TavilyAPI - A specialized search engine designed for LLMs and AI agents';
         this.inputs = [
             {
                 label: 'Topic',
@@ -131,30 +131,30 @@ class TavilyAPI_Tools {
                 description: 'Comma-separated list of domains to exclude from results',
                 additionalParams: true
             }
-        ]
+        ];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['tavilyApi']
-        }
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(tavily_1.TavilySearch)]
+        };
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(tavily_1.TavilySearch)];
     }
     async init(nodeData, _, options) {
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const tavilyApiKey = (0, utils_1.getCredentialParam)('tavilyApiKey', credentialData, nodeData)
-        const topic = nodeData.inputs?.topic
-        const searchDepth = nodeData.inputs?.searchDepth
-        const chunksPerSource = nodeData.inputs?.chunksPerSource
-        const maxResults = nodeData.inputs?.maxResults
-        const timeRange = nodeData.inputs?.timeRange
-        const days = nodeData.inputs?.days
-        const includeAnswer = nodeData.inputs?.includeAnswer
-        const includeRawContent = nodeData.inputs?.includeRawContent
-        const includeImages = nodeData.inputs?.includeImages
-        const includeImageDescriptions = nodeData.inputs?.includeImageDescriptions
-        const includeDomains = nodeData.inputs?.includeDomains
-        const excludeDomains = nodeData.inputs?.excludeDomains
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const tavilyApiKey = (0, utils_1.getCredentialParam)('tavilyApiKey', credentialData, nodeData);
+        const topic = nodeData.inputs?.topic;
+        const searchDepth = nodeData.inputs?.searchDepth;
+        const chunksPerSource = nodeData.inputs?.chunksPerSource;
+        const maxResults = nodeData.inputs?.maxResults;
+        const timeRange = nodeData.inputs?.timeRange;
+        const days = nodeData.inputs?.days;
+        const includeAnswer = nodeData.inputs?.includeAnswer;
+        const includeRawContent = nodeData.inputs?.includeRawContent;
+        const includeImages = nodeData.inputs?.includeImages;
+        const includeImageDescriptions = nodeData.inputs?.includeImageDescriptions;
+        const includeDomains = nodeData.inputs?.includeDomains;
+        const excludeDomains = nodeData.inputs?.excludeDomains;
         const config = {
             tavilyApiKey: tavilyApiKey,
             topic,
@@ -164,14 +164,19 @@ class TavilyAPI_Tools {
             includeRawContent: includeRawContent || undefined,
             includeImages: includeImages || undefined,
             includeImageDescriptions: includeImageDescriptions || undefined
-        }
-        if (chunksPerSource) config.chunksPerSource = chunksPerSource
-        if (timeRange) config.timeRange = timeRange
-        if (days) config.days = days
-        if (includeDomains) config.includeDomains = includeDomains.split(',').map((d) => d.trim())
-        if (excludeDomains) config.excludeDomains = excludeDomains.split(',').map((d) => d.trim())
-        return new tavily_1.TavilySearch(config)
+        };
+        if (chunksPerSource)
+            config.chunksPerSource = chunksPerSource;
+        if (timeRange)
+            config.timeRange = timeRange;
+        if (days)
+            config.days = days;
+        if (includeDomains)
+            config.includeDomains = includeDomains.split(',').map((d) => d.trim());
+        if (excludeDomains)
+            config.excludeDomains = excludeDomains.split(',').map((d) => d.trim());
+        return new tavily_1.TavilySearch(config);
     }
 }
-module.exports = { nodeClass: TavilyAPI_Tools }
+module.exports = { nodeClass: TavilyAPI_Tools };
 //# sourceMappingURL=TavilyAPI.js.map

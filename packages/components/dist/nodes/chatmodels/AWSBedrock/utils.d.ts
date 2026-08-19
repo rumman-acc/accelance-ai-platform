@@ -27,9 +27,9 @@
  */
 export interface EndpointHostResult {
     /** The sanitized hostname to use, or undefined if the value was an ARN/URL that should be ignored. */
-    hostname?: string
+    hostname?: string;
     /** If the value looked like an ARN, it is returned here so init() can treat it as a model target. */
-    migratedArn?: string
+    migratedArn?: string;
 }
 /**
  * Inspects the endpointHost value and decides what to do with it.
@@ -42,7 +42,7 @@ export interface EndpointHostResult {
  * - URL with scheme → hostname extracted and returned with a console
  *   warning.
  */
-export declare function validateEndpointHost(value: string): EndpointHostResult
+export declare function validateEndpointHost(value: string): EndpointHostResult;
 /**
  * Discovers which system-defined inference profiles are available in a
  * given region by calling the Bedrock control-plane API.  Results are
@@ -63,21 +63,18 @@ export declare function validateEndpointHost(value: string): EndpointHostResult
  *
  * @see https://docs.aws.amazon.com/bedrock/latest/APIReference/API_ListInferenceProfiles.html
  */
-export declare function discoverInferenceProfiles(
-    region: string,
-    credentials?: {
-        accessKeyId: string
-        secretAccessKey: string
-        sessionToken?: string
-    }
-): Promise<Set<string>>
+export declare function discoverInferenceProfiles(region: string, credentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken?: string;
+}): Promise<Set<string>>;
 /** Exported for testing — resets the region profile cache. */
-export declare function _resetRegionProfileCache(): void
-export declare function getStopSeqUnsupportedModels(): Promise<Set<string>>
+export declare function _resetRegionProfileCache(): void;
+export declare function getStopSeqUnsupportedModels(): Promise<Set<string>>;
 /** Exported for testing — resets the stop-sequence cache. */
-export declare function _resetStopSeqCache(): void
+export declare function _resetStopSeqCache(): void;
 /** Exported for testing -- resets the cached map so tests can control it. */
-export declare function _resetInferenceProfileCache(): void
+export declare function _resetInferenceProfileCache(): void;
 /**
  * Returns an ordered list of geo-prefix candidates for a given AWS region.
  * The first match against a model's `inference_profile_geos` wins.
@@ -90,12 +87,12 @@ export declare function _resetInferenceProfileCache(): void
  * across us-east-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-1,
  * ap-northeast-1, ca-central-1, sa-east-1 (2026-04-16).
  */
-export declare function regionToGeoCandidates(region: string): string[]
+export declare function regionToGeoCandidates(region: string): string[];
 export interface ResolvedBedrockModel {
     /** The base model ID (used for metadata, pricing lookup, etc.). */
-    modelId: string
+    modelId: string;
     /** Set when the target requires profile-routed inference. */
-    applicationInferenceProfile?: string
+    applicationInferenceProfile?: string;
 }
 /**
  * Accepts whatever the user typed into `customModel` (or the dropdown
@@ -124,13 +121,7 @@ export interface ResolvedBedrockModel {
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles.html
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html
  */
-export declare function resolveBedrockModel(
-    customModel: string | undefined,
-    dropdownModel: string,
-    region?: string,
-    availableProfiles?: Set<string>,
-    useGlobalEndpoint?: boolean
-): Promise<ResolvedBedrockModel>
+export declare function resolveBedrockModel(customModel: string | undefined, dropdownModel: string, region?: string, availableProfiles?: Set<string>, useGlobalEndpoint?: boolean): Promise<ResolvedBedrockModel>;
 /**
  * Rewrites common Bedrock Converse runtime errors into actionable messages.
  *
@@ -143,4 +134,4 @@ export declare function resolveBedrockModel(
  *
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html
  */
-export declare function normalizeBedrockError(err: unknown): Error
+export declare function normalizeBedrockError(err: unknown): Error;

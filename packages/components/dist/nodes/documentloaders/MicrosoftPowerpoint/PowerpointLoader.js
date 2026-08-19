@@ -1,8 +1,8 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.PowerpointLoader = void 0
-const buffer_1 = require('@langchain/classic/document_loaders/fs/buffer')
-const officeparser_1 = require('officeparser')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PowerpointLoader = void 0;
+const buffer_1 = require("@langchain/classic/document_loaders/fs/buffer");
+const officeparser_1 = require("officeparser");
 /**
  * Document loader that uses officeparser to load PowerPoint documents.
  *
@@ -11,9 +11,9 @@ const officeparser_1 = require('officeparser')
  */
 class PowerpointLoader extends buffer_1.BufferLoader {
     constructor(filePathOrBlob) {
-        super(filePathOrBlob)
-        this.attributes = []
-        this.attributes = []
+        super(filePathOrBlob);
+        this.attributes = [];
+        this.attributes = [];
     }
     /**
      * Parse PowerPoint document
@@ -23,17 +23,17 @@ class PowerpointLoader extends buffer_1.BufferLoader {
      * @returns Array of Documents
      */
     async parse(raw, metadata) {
-        const result = []
+        const result = [];
         this.attributes = [
             { name: 'slideNumber', description: 'Slide number', type: 'number' },
             { name: 'documentType', description: 'Type of document', type: 'string' }
-        ]
+        ];
         try {
             // Use officeparser to extract text from PowerPoint
-            const data = await (0, officeparser_1.parseOfficeAsync)(raw)
+            const data = await (0, officeparser_1.parseOfficeAsync)(raw);
             if (typeof data === 'string' && data.trim()) {
                 // Split content by common slide separators or use the entire content as one document
-                const slides = this.splitIntoSlides(data)
+                const slides = this.splitIntoSlides(data);
                 slides.forEach((slideContent, index) => {
                     if (slideContent.trim()) {
                         result.push({
@@ -43,15 +43,16 @@ class PowerpointLoader extends buffer_1.BufferLoader {
                                 documentType: 'powerpoint',
                                 ...metadata
                             }
-                        })
+                        });
                     }
-                })
+                });
             }
-        } catch (error) {
-            console.error('Error parsing PowerPoint file:', error)
-            throw new Error(`Failed to parse PowerPoint file: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
-        return result
+        catch (error) {
+            console.error('Error parsing PowerPoint file:', error);
+            throw new Error(`Failed to parse PowerPoint file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        return result;
     }
     /**
      * Split content into slides based on common patterns
@@ -65,27 +66,27 @@ class PowerpointLoader extends buffer_1.BufferLoader {
             /\n\s*\d+\s*\/\s*\d+/gi,
             /\n\s*_{3,}/g, // Underscores as separators
             /\n\s*-{3,}/g // Dashes as separators
-        ]
-        let slides = []
+        ];
+        let slides = [];
         // Try each pattern and use the one that creates the most reasonable splits
         for (const pattern of slidePatterns) {
-            const potentialSlides = content.split(pattern)
+            const potentialSlides = content.split(pattern);
             if (potentialSlides.length > 1 && potentialSlides.length < 100) {
                 // Reasonable number of slides
-                slides = potentialSlides
-                break
+                slides = potentialSlides;
+                break;
             }
         }
         // If no good pattern found, split by double newlines as a fallback
         if (slides.length === 0) {
-            slides = content.split(/\n\s*\n\s*\n/)
+            slides = content.split(/\n\s*\n\s*\n/);
         }
         // If still no good split, treat entire content as one slide
         if (slides.length === 0 || slides.every((slide) => slide.trim().length < 10)) {
-            slides = [content]
+            slides = [content];
         }
-        return slides.filter((slide) => slide.trim().length > 0)
+        return slides.filter((slide) => slide.trim().length > 0);
     }
 }
-exports.PowerpointLoader = PowerpointLoader
+exports.PowerpointLoader = PowerpointLoader;
 //# sourceMappingURL=PowerpointLoader.js.map

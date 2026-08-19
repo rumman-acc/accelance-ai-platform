@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class LangsmithApi {
     constructor() {
-        this.label = 'Langsmith API'
-        this.name = 'langsmithApi'
-        this.version = 1.0
+        this.label = 'Langsmith API';
+        this.name = 'langsmithApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://docs.smith.langchain.com/">official guide</a> on how to get API key on Langsmith'
+            'Refer to <a target="_blank" href="https://docs.smith.langchain.com/">official guide</a> on how to get API key on Langsmith';
         this.inputs = [
             {
                 label: 'API Key',
@@ -20,8 +20,8 @@ class LangsmithApi {
                 type: 'string',
                 default: 'https://api.smith.langchain.com'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: LangsmithApi }
+module.exports = { credClass: LangsmithApi };
 //# sourceMappingURL=LangsmithApi.credential.js.map

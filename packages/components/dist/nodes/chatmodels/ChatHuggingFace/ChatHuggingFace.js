@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const core_1 = require('./core')
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const core_1 = require("./core");
+const utils_1 = require("../../../src/utils");
 class ChatHuggingFace_ChatModels {
     constructor() {
-        this.label = 'HuggingFace'
-        this.name = 'chatHuggingFace'
-        this.version = 3.0
-        this.type = 'ChatHuggingFace'
-        this.icon = 'HuggingFace.svg'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around HuggingFace large language models'
-        this.baseClasses = [this.type, 'BaseChatModel', ...(0, utils_1.getBaseClasses)(core_1.HuggingFaceInference)]
+        this.label = 'HuggingFace';
+        this.name = 'chatHuggingFace';
+        this.version = 3.0;
+        this.type = 'ChatHuggingFace';
+        this.icon = 'HuggingFace.svg';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around HuggingFace large language models';
+        this.baseClasses = [this.type, 'BaseChatModel', ...(0, utils_1.getBaseClasses)(core_1.HuggingFaceInference)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['huggingFaceApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -29,8 +29,7 @@ class ChatHuggingFace_ChatModels {
                 label: 'Model',
                 name: 'model',
                 type: 'string',
-                description:
-                    'Model name (e.g., deepseek-ai/DeepSeek-V3.2-Exp:novita). If model includes provider (:) or using router endpoint, leave Endpoint blank.',
+                description: 'Model name (e.g., deepseek-ai/DeepSeek-V3.2-Exp:novita). If model includes provider (:) or using router endpoint, leave Endpoint blank.',
                 placeholder: 'deepseek-ai/DeepSeek-V3.2-Exp:novita'
             },
             {
@@ -38,8 +37,7 @@ class ChatHuggingFace_ChatModels {
                 name: 'endpoint',
                 type: 'string',
                 placeholder: 'https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2',
-                description:
-                    'Custom inference endpoint (optional). Not needed for models with providers (:) or router endpoints. Leave blank to use Inference Providers.',
+                description: 'Custom inference endpoint (optional). Not needed for models with providers (:) or router endpoints. Leave blank to use Inference Providers.',
                 optional: true
             },
             {
@@ -97,45 +95,52 @@ class ChatHuggingFace_ChatModels {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const model = nodeData.inputs?.model
-        const temperature = nodeData.inputs?.temperature
-        const maxTokens = nodeData.inputs?.maxTokens
-        const topP = nodeData.inputs?.topP
-        const hfTopK = nodeData.inputs?.hfTopK
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty
-        const endpoint = nodeData.inputs?.endpoint
-        const cache = nodeData.inputs?.cache
-        const stop = nodeData.inputs?.stop
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const huggingFaceApiKey = (0, utils_1.getCredentialParam)('huggingFaceApiKey', credentialData, nodeData)
+        const model = nodeData.inputs?.model;
+        const temperature = nodeData.inputs?.temperature;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const topP = nodeData.inputs?.topP;
+        const hfTopK = nodeData.inputs?.hfTopK;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty;
+        const endpoint = nodeData.inputs?.endpoint;
+        const cache = nodeData.inputs?.cache;
+        const stop = nodeData.inputs?.stop;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const huggingFaceApiKey = (0, utils_1.getCredentialParam)('huggingFaceApiKey', credentialData, nodeData);
         if (!huggingFaceApiKey) {
-            console.error('[ChatHuggingFace] API key validation failed: No API key found')
-            throw new Error('HuggingFace API key is required. Please configure it in the credential settings.')
+            console.error('[ChatHuggingFace] API key validation failed: No API key found');
+            throw new Error('HuggingFace API key is required. Please configure it in the credential settings.');
         }
         if (!huggingFaceApiKey.startsWith('hf_')) {
-            console.warn('[ChatHuggingFace] API key format warning: Key does not start with "hf_"')
+            console.warn('[ChatHuggingFace] API key format warning: Key does not start with "hf_"');
         }
         const obj = {
             model,
             apiKey: huggingFaceApiKey
-        }
-        if (temperature) obj.temperature = parseFloat(temperature)
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (hfTopK) obj.topK = parseFloat(hfTopK)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (endpoint) obj.endpointUrl = endpoint
+        };
+        if (temperature)
+            obj.temperature = parseFloat(temperature);
+        if (maxTokens)
+            obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (hfTopK)
+            obj.topK = parseFloat(hfTopK);
+        if (frequencyPenalty)
+            obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (endpoint)
+            obj.endpointUrl = endpoint;
         if (stop) {
-            const stopSequences = stop.split(',')
-            obj.stopSequences = stopSequences
+            const stopSequences = stop.split(',');
+            obj.stopSequences = stopSequences;
         }
-        const huggingFace = new core_1.HuggingFaceInference(obj)
-        if (cache) huggingFace.cache = cache
-        return huggingFace
+        const huggingFace = new core_1.HuggingFaceInference(obj);
+        if (cache)
+            huggingFace.cache = cache;
+        return huggingFace;
     }
 }
-module.exports = { nodeClass: ChatHuggingFace_ChatModels }
+module.exports = { nodeClass: ChatHuggingFace_ChatModels };
 //# sourceMappingURL=ChatHuggingFace.js.map

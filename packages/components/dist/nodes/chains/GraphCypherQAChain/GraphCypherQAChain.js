@@ -1,15 +1,15 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.validateCypherQuery = validateCypherQuery
-exports.sanitizeUserInput = sanitizeUserInput
-exports.detectPromptInjection = detectPromptInjection
-const cypher_1 = require('@langchain/community/chains/graph_qa/cypher')
-const utils_1 = require('../../../src/utils')
-const prompts_1 = require('@langchain/core/prompts')
-const handler_1 = require('../../../src/handler')
-const console_1 = require('@langchain/core/tracers/console')
-const Moderation_1 = require('../../moderation/Moderation')
-const OutputParserHelpers_1 = require('../../outputparsers/OutputParserHelpers')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.validateCypherQuery = validateCypherQuery;
+exports.sanitizeUserInput = sanitizeUserInput;
+exports.detectPromptInjection = detectPromptInjection;
+const cypher_1 = require("@langchain/community/chains/graph_qa/cypher");
+const utils_1 = require("../../../src/utils");
+const prompts_1 = require("@langchain/core/prompts");
+const handler_1 = require("../../../src/handler");
+const console_1 = require("@langchain/core/tracers/console");
+const Moderation_1 = require("../../moderation/Moderation");
+const OutputParserHelpers_1 = require("../../outputparsers/OutputParserHelpers");
 /**
  * Patterns that identify write operations in Cypher queries
  * These operations can modify the database and should be blocked
@@ -25,7 +25,7 @@ const CYPHER_WRITE_PATTERNS = [
     /\bCALL\b/i,
     /\bLOAD\s+CSV\b/i,
     /\bFOREACH\b/i
-]
+];
 /**
  * Validates generated Cypher queries to prevent write operations
  * This is applied to LLM-generated queries before execution
@@ -36,13 +36,11 @@ const CYPHER_WRITE_PATTERNS = [
  */
 function validateCypherQuery(query) {
     // Strip string literals to avoid false positives on data values
-    const stripped = query.replace(/'[^']*'/g, '""').replace(/"[^"]*"/g, '""')
+    const stripped = query.replace(/'[^']*'/g, '""').replace(/"[^"]*"/g, '""');
     for (const pattern of CYPHER_WRITE_PATTERNS) {
         if (pattern.test(stripped)) {
-            throw new Error(
-                'Generated Cypher query contains a write operation which is not allowed. ' +
-                    'This node only supports read-only queries for security.'
-            )
+            throw new Error('Generated Cypher query contains a write operation which is not allowed. ' +
+                'This node only supports read-only queries for security.');
         }
     }
 }
@@ -55,26 +53,26 @@ function validateCypherQuery(query) {
  */
 function sanitizeUserInput(input, maxLength = 2000) {
     if (!input || typeof input !== 'string') {
-        return ''
+        return '';
     }
-    let sanitized = input
+    let sanitized = input;
     // Normalize Unicode (prevents homoglyph & encoding tricks)
-    sanitized = sanitized.normalize('NFKC')
+    sanitized = sanitized.normalize('NFKC');
     // Remove NULL bytes and control characters (except tab/space)
-    sanitized = sanitized.replace(/[\x00-\x08\x0B-\x1F\x7F]/g, '')
+    sanitized = sanitized.replace(/[\x00-\x08\x0B-\x1F\x7F]/g, '');
     // Remove line comments //
-    sanitized = sanitized.replace(/\/\/.*$/gm, '')
+    sanitized = sanitized.replace(/\/\/.*$/gm, '');
     // Remove block comments /* ... */
-    sanitized = sanitized.replace(/\/\*[\s\S]*?\*\//g, '')
+    sanitized = sanitized.replace(/\/\*[\s\S]*?\*\//g, '');
     // Remove semicolons (prevent multi-statement injection attempts)
-    sanitized = sanitized.replace(/;/g, '')
+    sanitized = sanitized.replace(/;/g, '');
     // Collapse excessive whitespace
-    sanitized = sanitized.replace(/\s+/g, ' ').trim()
+    sanitized = sanitized.replace(/\s+/g, ' ').trim();
     // Enforce maximum length (defense-in-depth)
     if (sanitized.length > maxLength) {
-        sanitized = sanitized.substring(0, maxLength)
+        sanitized = sanitized.substring(0, maxLength);
     }
-    return sanitized
+    return sanitized;
 }
 /**
  * Enhanced prompt injection detection using multiple techniques
@@ -98,7 +96,7 @@ function sanitizeUserInput(input, maxLength = 2000) {
  * @returns true if potential injection detected, false otherwise
  */
 function detectPromptInjection(input) {
-    const lowerInput = input.toLowerCase()
+    const lowerInput = input.toLowerCase();
     // Comprehensive injection patterns
     const injectionPatterns = [
         // Prompt manipulation attempts
@@ -130,36 +128,36 @@ function detectPromptInjection(input) {
         // Encoded/obfuscated attempts
         /\\u[0-9a-f]{4}/i,
         /\\x[0-9a-f]{2}/i
-    ]
+    ];
     for (const pattern of injectionPatterns) {
         if (pattern.test(input)) {
-            return true
+            return true;
         }
     }
     // Check for excessive special characters (potential obfuscation)
-    const specialCharCount = (input.match(/[{}()[\];|&$`\\]/g) || []).length
+    const specialCharCount = (input.match(/[{}()[\];|&$`\\]/g) || []).length;
     if (specialCharCount > 5) {
-        return true
+        return true;
     }
     // Check for suspicious Cypher keywords in close proximity
-    const cypherKeywords = ['MATCH', 'CREATE', 'MERGE', 'DELETE', 'DETACH', 'SET', 'REMOVE', 'RETURN', 'WHERE', 'WITH']
-    const foundKeywords = cypherKeywords.filter((keyword) => lowerInput.includes(keyword.toLowerCase()))
+    const cypherKeywords = ['MATCH', 'CREATE', 'MERGE', 'DELETE', 'DETACH', 'SET', 'REMOVE', 'RETURN', 'WHERE', 'WITH'];
+    const foundKeywords = cypherKeywords.filter((keyword) => lowerInput.includes(keyword.toLowerCase()));
     if (foundKeywords.length >= 3) {
-        return true
+        return true;
     }
-    return false
+    return false;
 }
 class GraphCypherQA_Chain {
     constructor(fields) {
-        this.label = 'Graph Cypher QA Chain'
-        this.name = 'graphCypherQAChain'
-        this.version = 1.1
-        this.type = 'GraphCypherQAChain'
-        this.icon = 'graphqa.svg'
-        this.category = 'Chains'
-        this.description = 'Advanced chain for question-answering against a Neo4j graph by generating Cypher statements'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(cypher_1.GraphCypherQAChain)]
-        this.sessionId = fields?.sessionId
+        this.label = 'Graph Cypher QA Chain';
+        this.name = 'graphCypherQAChain';
+        this.version = 1.1;
+        this.type = 'GraphCypherQAChain';
+        this.icon = 'graphqa.svg';
+        this.category = 'Chains';
+        this.description = 'Advanced chain for question-answering against a Neo4j graph by generating Cypher statements';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(cypher_1.GraphCypherQAChain)];
+        this.sessionId = fields?.sessionId;
         this.inputs = [
             {
                 label: 'Language Model',
@@ -177,8 +175,7 @@ class GraphCypherQA_Chain {
                 name: 'cypherPrompt',
                 optional: true,
                 type: 'BasePromptTemplate',
-                description:
-                    'Prompt template for generating Cypher queries. Must include {schema} and {question} variables. If not provided, default prompt will be used.'
+                description: 'Prompt template for generating Cypher queries. Must include {schema} and {question} variables. If not provided, default prompt will be used.'
             },
             {
                 label: 'Cypher Generation Model',
@@ -192,8 +189,7 @@ class GraphCypherQA_Chain {
                 name: 'qaPrompt',
                 optional: true,
                 type: 'BasePromptTemplate',
-                description:
-                    'Prompt template for generating answers. Must include {context} and {question} variables. If not provided, default prompt will be used.'
+                description: 'Prompt template for generating answers. Must include {context} and {question} variables. If not provided, default prompt will be used.'
             },
             {
                 label: 'QA Model',
@@ -218,7 +214,7 @@ class GraphCypherQA_Chain {
                 optional: true,
                 description: 'If true, return the raw query results instead of using the QA chain'
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Graph Cypher QA Chain',
@@ -230,46 +226,47 @@ class GraphCypherQA_Chain {
                 name: 'outputPrediction',
                 baseClasses: ['string', 'json']
             }
-        ]
+        ];
     }
     async init(nodeData, input, options) {
-        const model = nodeData.inputs?.model
-        const cypherModel = nodeData.inputs?.cypherModel
-        const qaModel = nodeData.inputs?.qaModel
-        const graph = nodeData.inputs?.graph
-        const maxResults = 100 // Hardcoded limit to prevent data exfiltration
+        const model = nodeData.inputs?.model;
+        const cypherModel = nodeData.inputs?.cypherModel;
+        const qaModel = nodeData.inputs?.qaModel;
+        const graph = nodeData.inputs?.graph;
+        const maxResults = 100; // Hardcoded limit to prevent data exfiltration
         // Wrap graph.query to validate generated Cypher and limit results
-        const originalQuery = graph.query.bind(graph)
+        const originalQuery = graph.query.bind(graph);
         graph.query = async (cypher, params) => {
-            validateCypherQuery(cypher)
-            const results = await originalQuery(cypher, params)
+            validateCypherQuery(cypher);
+            const results = await originalQuery(cypher, params);
             // Limit results to prevent data exfiltration
             if (Array.isArray(results) && results.length > maxResults) {
-                return results.slice(0, maxResults)
+                return results.slice(0, maxResults);
             }
-            return results
-        }
-        const cypherPrompt = nodeData.inputs?.cypherPrompt
-        const qaPrompt = nodeData.inputs?.qaPrompt
-        const returnDirect = nodeData.inputs?.returnDirect
-        const output = nodeData.outputs?.output
+            return results;
+        };
+        const cypherPrompt = nodeData.inputs?.cypherPrompt;
+        const qaPrompt = nodeData.inputs?.qaPrompt;
+        const returnDirect = nodeData.inputs?.returnDirect;
+        const output = nodeData.outputs?.output;
         if (!model) {
-            throw new Error('Language Model is required')
+            throw new Error('Language Model is required');
         }
         // Handle prompt values if they exist
-        let cypherPromptTemplate
-        let qaPromptTemplate
+        let cypherPromptTemplate;
+        let qaPromptTemplate;
         if (cypherPrompt) {
             if (cypherPrompt instanceof prompts_1.PromptTemplate) {
                 cypherPromptTemplate = new prompts_1.PromptTemplate({
                     template: cypherPrompt.template,
                     inputVariables: cypherPrompt.inputVariables
-                })
+                });
                 if (!qaPrompt) {
-                    throw new Error('QA Prompt is required when Cypher Prompt is a Prompt Template')
+                    throw new Error('QA Prompt is required when Cypher Prompt is a Prompt Template');
                 }
-            } else if (cypherPrompt instanceof prompts_1.FewShotPromptTemplate) {
-                const examplePrompt = cypherPrompt.examplePrompt
+            }
+            else if (cypherPrompt instanceof prompts_1.FewShotPromptTemplate) {
+                const examplePrompt = cypherPrompt.examplePrompt;
                 cypherPromptTemplate = new prompts_1.FewShotPromptTemplate({
                     examples: cypherPrompt.examples,
                     examplePrompt: examplePrompt,
@@ -278,120 +275,124 @@ class GraphCypherQA_Chain {
                     suffix: cypherPrompt.suffix,
                     exampleSeparator: cypherPrompt.exampleSeparator,
                     templateFormat: cypherPrompt.templateFormat
-                })
-            } else {
-                cypherPromptTemplate = cypherPrompt
+                });
+            }
+            else {
+                cypherPromptTemplate = cypherPrompt;
             }
         }
         if (qaPrompt instanceof prompts_1.PromptTemplate) {
             qaPromptTemplate = new prompts_1.PromptTemplate({
                 template: qaPrompt.template,
                 inputVariables: qaPrompt.inputVariables
-            })
+            });
         }
         // Validate required variables in prompts
-        if (
-            cypherPromptTemplate &&
-            (!cypherPromptTemplate?.inputVariables.includes('schema') || !cypherPromptTemplate?.inputVariables.includes('question'))
-        ) {
-            throw new Error('Cypher Generation Prompt must include {schema} and {question} variables')
+        if (cypherPromptTemplate &&
+            (!cypherPromptTemplate?.inputVariables.includes('schema') || !cypherPromptTemplate?.inputVariables.includes('question'))) {
+            throw new Error('Cypher Generation Prompt must include {schema} and {question} variables');
         }
         const fromLLMInput = {
             llm: model,
             graph,
             returnDirect
-        }
+        };
         if (cypherPromptTemplate) {
-            fromLLMInput['cypherLLM'] = cypherModel ?? model
-            fromLLMInput['cypherPrompt'] = cypherPromptTemplate
+            fromLLMInput['cypherLLM'] = cypherModel ?? model;
+            fromLLMInput['cypherPrompt'] = cypherPromptTemplate;
         }
         if (qaPromptTemplate) {
-            fromLLMInput['qaLLM'] = qaModel ?? model
-            fromLLMInput['qaPrompt'] = qaPromptTemplate
+            fromLLMInput['qaLLM'] = qaModel ?? model;
+            fromLLMInput['qaPrompt'] = qaPromptTemplate;
         }
-        const chain = cypher_1.GraphCypherQAChain.fromLLM(fromLLMInput)
+        const chain = cypher_1.GraphCypherQAChain.fromLLM(fromLLMInput);
         if (output === this.name) {
-            return chain
-        } else if (output === 'outputPrediction') {
-            nodeData.instance = chain
-            return await this.run(nodeData, input, options)
+            return chain;
         }
-        return chain
+        else if (output === 'outputPrediction') {
+            nodeData.instance = chain;
+            return await this.run(nodeData, input, options);
+        }
+        return chain;
     }
     async run(nodeData, input, options) {
-        const chain = nodeData.instance
-        const moderations = nodeData.inputs?.inputModeration
-        const returnDirect = nodeData.inputs?.returnDirect
-        const maxInputLength = 2000 // Hardcoded limit to prevent abuse
-        const shouldStreamResponse = options.shouldStreamResponse
-        const sseStreamer = options.sseStreamer
-        const chatId = options.chatId
+        const chain = nodeData.instance;
+        const moderations = nodeData.inputs?.inputModeration;
+        const returnDirect = nodeData.inputs?.returnDirect;
+        const maxInputLength = 2000; // Hardcoded limit to prevent abuse
+        const shouldStreamResponse = options.shouldStreamResponse;
+        const sseStreamer = options.sseStreamer;
+        const chatId = options.chatId;
         // Input length validation
         if (input && input.length > maxInputLength) {
-            const errorMessage = `Input rejected: exceeds maximum allowed length of ${maxInputLength} characters.`
+            const errorMessage = `Input rejected: exceeds maximum allowed length of ${maxInputLength} characters.`;
             if (shouldStreamResponse) {
-                ;(0, Moderation_1.streamResponse)(sseStreamer, chatId, errorMessage)
+                (0, Moderation_1.streamResponse)(sseStreamer, chatId, errorMessage);
             }
-            return (0, OutputParserHelpers_1.formatResponse)(errorMessage)
+            return (0, OutputParserHelpers_1.formatResponse)(errorMessage);
         }
         // Built-in prompt injection detection (always active)
         if (detectPromptInjection(input)) {
-            const errorMessage = 'Input rejected: potential Cypher injection or prompt manipulation detected.'
-            await new Promise((resolve) => setTimeout(resolve, 500))
+            const errorMessage = 'Input rejected: potential Cypher injection or prompt manipulation detected.';
+            await new Promise((resolve) => setTimeout(resolve, 500));
             if (shouldStreamResponse) {
-                ;(0, Moderation_1.streamResponse)(sseStreamer, chatId, errorMessage)
+                (0, Moderation_1.streamResponse)(sseStreamer, chatId, errorMessage);
             }
-            return (0, OutputParserHelpers_1.formatResponse)(errorMessage)
+            return (0, OutputParserHelpers_1.formatResponse)(errorMessage);
         }
-        input = sanitizeUserInput(input)
+        input = sanitizeUserInput(input);
         // Handle input moderation if configured
         if (moderations && moderations.length > 0) {
             try {
-                input = await (0, Moderation_1.checkInputs)(moderations, input)
-            } catch (e) {
-                await new Promise((resolve) => setTimeout(resolve, 500))
+                input = await (0, Moderation_1.checkInputs)(moderations, input);
+            }
+            catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 if (shouldStreamResponse) {
-                    ;(0, Moderation_1.streamResponse)(sseStreamer, chatId, e.message)
+                    (0, Moderation_1.streamResponse)(sseStreamer, chatId, e.message);
                 }
-                return (0, OutputParserHelpers_1.formatResponse)(e.message)
+                return (0, OutputParserHelpers_1.formatResponse)(e.message);
             }
         }
         const obj = {
             query: input
-        }
-        const loggerHandler = new handler_1.ConsoleCallbackHandler(options.logger, options?.orgId)
-        const callbackHandlers = await (0, handler_1.additionalCallbacks)(nodeData, options)
-        let callbacks = [loggerHandler, ...callbackHandlers]
+        };
+        const loggerHandler = new handler_1.ConsoleCallbackHandler(options.logger, options?.orgId);
+        const callbackHandlers = await (0, handler_1.additionalCallbacks)(nodeData, options);
+        let callbacks = [loggerHandler, ...callbackHandlers];
         if (process.env.DEBUG === 'true') {
-            callbacks.push(new console_1.ConsoleCallbackHandler())
+            callbacks.push(new console_1.ConsoleCallbackHandler());
         }
         try {
-            let response
+            let response;
             if (shouldStreamResponse) {
                 if (returnDirect) {
-                    response = await chain.invoke(obj, { callbacks })
-                    let result = response?.result
+                    response = await chain.invoke(obj, { callbacks });
+                    let result = response?.result;
                     if (typeof result === 'object') {
-                        result = '```json\n' + JSON.stringify(result, null, 2)
+                        result = '```json\n' + JSON.stringify(result, null, 2);
                     }
                     if (result && typeof result === 'string') {
-                        ;(0, Moderation_1.streamResponse)(sseStreamer, chatId, result)
+                        (0, Moderation_1.streamResponse)(sseStreamer, chatId, result);
                     }
-                } else {
-                    const handler = new handler_1.CustomChainHandler(sseStreamer, chatId, 2)
-                    callbacks.push(handler)
-                    response = await chain.invoke(obj, { callbacks })
                 }
-            } else {
-                response = await chain.invoke(obj, { callbacks })
+                else {
+                    const handler = new handler_1.CustomChainHandler(sseStreamer, chatId, 2);
+                    callbacks.push(handler);
+                    response = await chain.invoke(obj, { callbacks });
+                }
             }
-            return (0, OutputParserHelpers_1.formatResponse)(response?.result)
-        } catch (error) {
-            console.error('Error in GraphCypherQAChain:', error)
+            else {
+                response = await chain.invoke(obj, { callbacks });
+            }
+            return (0, OutputParserHelpers_1.formatResponse)(response?.result);
+        }
+        catch (error) {
+            console.error('Error in GraphCypherQAChain:', error);
             if (shouldStreamResponse) {
-                ;(0, Moderation_1.streamResponse)(sseStreamer, chatId, error.message)
+                (0, Moderation_1.streamResponse)(sseStreamer, chatId, error.message);
             }
-            return (0, OutputParserHelpers_1.formatResponse)(`Error: ${error.message}`)
+            return (0, OutputParserHelpers_1.formatResponse)(`Error: ${error.message}`);
         }
     }
 }
@@ -401,5 +402,5 @@ module.exports = {
     sanitizeUserInput,
     detectPromptInjection,
     validateCypherQuery
-}
+};
 //# sourceMappingURL=GraphCypherQAChain.js.map

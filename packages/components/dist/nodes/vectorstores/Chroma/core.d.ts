@@ -1,46 +1,37 @@
-import type {
-    ChromaClient as ChromaClientT,
-    ChromaClientArgs,
-    Collection,
-    CollectionConfiguration,
-    CollectionMetadata,
-    Where
-} from 'chromadb'
-import type { EmbeddingsInterface } from '@langchain/core/embeddings'
-import { VectorStore } from '@langchain/core/vectorstores'
-import { Document } from '@langchain/core/documents'
+import type { ChromaClient as ChromaClientT, ChromaClientArgs, Collection, CollectionConfiguration, CollectionMetadata, Where } from 'chromadb';
+import type { EmbeddingsInterface } from '@langchain/core/embeddings';
+import { VectorStore } from '@langchain/core/vectorstores';
+import { Document } from '@langchain/core/documents';
 type SharedChromaLibArgs = {
-    numDimensions?: number
-    collectionName?: string
-    filter?: object
-    collectionMetadata?: CollectionMetadata
-    collectionConfiguration?: CollectionConfiguration
-    chromaCloudAPIKey?: string
-    clientParams?: Omit<ChromaClientArgs, 'path'>
-}
-export type ChromaLibArgs =
-    | ({
-          url?: string
-      } & SharedChromaLibArgs)
-    | ({
-          index?: ChromaClientT
-      } & SharedChromaLibArgs)
+    numDimensions?: number;
+    collectionName?: string;
+    filter?: object;
+    collectionMetadata?: CollectionMetadata;
+    collectionConfiguration?: CollectionConfiguration;
+    chromaCloudAPIKey?: string;
+    clientParams?: Omit<ChromaClientArgs, 'path'>;
+};
+export type ChromaLibArgs = ({
+    url?: string;
+} & SharedChromaLibArgs) | ({
+    index?: ChromaClientT;
+} & SharedChromaLibArgs);
 export interface ChromaDeleteParams<T> {
-    ids?: string[]
-    filter?: T
+    ids?: string[];
+    filter?: T;
 }
 export declare class Chroma extends VectorStore {
-    FilterType: Where
-    index?: ChromaClientT
-    collection?: Collection
-    collectionName: string
-    collectionMetadata?: CollectionMetadata
-    numDimensions?: number
-    clientParams?: Omit<ChromaClientArgs, 'path'>
-    url: string
-    filter?: object
-    _vectorstoreType(): string
-    constructor(embeddings: EmbeddingsInterface, args: ChromaLibArgs)
+    FilterType: Where;
+    index?: ChromaClientT;
+    collection?: Collection;
+    collectionName: string;
+    collectionMetadata?: CollectionMetadata;
+    numDimensions?: number;
+    clientParams?: Omit<ChromaClientArgs, 'path'>;
+    url: string;
+    filter?: object;
+    _vectorstoreType(): string;
+    constructor(embeddings: EmbeddingsInterface, args: ChromaLibArgs);
     /**
      * Adds documents to the Chroma database. The documents are first
      * converted to vectors using the `embeddings` instance, and then added to
@@ -49,18 +40,15 @@ export declare class Chroma extends VectorStore {
      * @param options Optional. An object containing an array of `ids` for the documents.
      * @returns A promise that resolves when the documents have been added to the database.
      */
-    addDocuments(
-        documents: Document[],
-        options?: {
-            ids?: string[]
-        }
-    ): Promise<string[]>
+    addDocuments(documents: Document[], options?: {
+        ids?: string[];
+    }): Promise<string[]>;
     /**
      * Ensures that a collection exists in the Chroma database. If the
      * collection does not exist, it is created.
      * @returns A promise that resolves with the `Collection` instance.
      */
-    ensureCollection(): Promise<Collection>
+    ensureCollection(): Promise<Collection>;
     /**
      * Adds vectors to the Chroma database. The vectors are associated with
      * the provided documents.
@@ -69,20 +57,16 @@ export declare class Chroma extends VectorStore {
      * @param options Optional. An object containing an array of `ids` for the vectors.
      * @returns A promise that resolves with an array of document IDs when the vectors have been added to the database.
      */
-    addVectors(
-        vectors: number[][],
-        documents: Document[],
-        options?: {
-            ids?: string[]
-        }
-    ): Promise<string[]>
+    addVectors(vectors: number[][], documents: Document[], options?: {
+        ids?: string[];
+    }): Promise<string[]>;
     /**
      * Deletes documents from the Chroma database. The documents to be deleted
      * can be specified by providing an array of `ids` or a `filter` object.
      * @param params An object containing either an array of `ids` of the documents to be deleted or a `filter` object to specify the documents to be deleted.
      * @returns A promise that resolves when the specified documents have been deleted from the database.
      */
-    delete(params: ChromaDeleteParams<this['FilterType']>): Promise<void>
+    delete(params: ChromaDeleteParams<this['FilterType']>): Promise<void>;
     /**
      * Searches for vectors in the Chroma database that are similar to the
      * provided query vector. The search can be filtered using the provided
@@ -92,11 +76,7 @@ export declare class Chroma extends VectorStore {
      * @param filter Optional. A `filter` object to filter the search results.
      * @returns A promise that resolves with an array of tuples, each containing a `Document` instance and a similarity score.
      */
-    similaritySearchVectorWithScore(
-        query: number[],
-        k: number,
-        filter?: this['FilterType']
-    ): Promise<[Document<Record<string, any>>, number][]>
+    similaritySearchVectorWithScore(query: number[], k: number, filter?: this['FilterType']): Promise<[Document<Record<string, any>>, number][]>;
     /**
      * Creates a new `Chroma` instance from an array of text strings. The text
      * strings are converted to `Document` instances and added to the Chroma
@@ -107,12 +87,7 @@ export declare class Chroma extends VectorStore {
      * @param dbConfig A `ChromaLibArgs` object containing the configuration for the Chroma database.
      * @returns A promise that resolves with a new `Chroma` instance.
      */
-    static fromTexts(
-        texts: string[],
-        metadatas: object[] | object,
-        embeddings: EmbeddingsInterface,
-        dbConfig: ChromaLibArgs
-    ): Promise<Chroma>
+    static fromTexts(texts: string[], metadatas: object[] | object, embeddings: EmbeddingsInterface, dbConfig: ChromaLibArgs): Promise<Chroma>;
     /**
      * Creates a new `Chroma` instance from an array of `Document` instances.
      * The documents are added to the Chroma database.
@@ -121,7 +96,7 @@ export declare class Chroma extends VectorStore {
      * @param dbConfig A `ChromaLibArgs` object containing the configuration for the Chroma database.
      * @returns A promise that resolves with a new `Chroma` instance.
      */
-    static fromDocuments(docs: Document[], embeddings: EmbeddingsInterface, dbConfig: ChromaLibArgs): Promise<Chroma>
+    static fromDocuments(docs: Document[], embeddings: EmbeddingsInterface, dbConfig: ChromaLibArgs): Promise<Chroma>;
     /**
      * Creates a new `Chroma` instance from an existing collection in the
      * Chroma database.
@@ -129,10 +104,10 @@ export declare class Chroma extends VectorStore {
      * @param dbConfig A `ChromaLibArgs` object containing the configuration for the Chroma database.
      * @returns A promise that resolves with a new `Chroma` instance.
      */
-    static fromExistingCollection(embeddings: EmbeddingsInterface, dbConfig: ChromaLibArgs): Promise<Chroma>
+    static fromExistingCollection(embeddings: EmbeddingsInterface, dbConfig: ChromaLibArgs): Promise<Chroma>;
     /** @ignore */
     static imports(): Promise<{
-        ChromaClient: typeof ChromaClientT
-    }>
+        ChromaClient: typeof ChromaClientT;
+    }>;
 }
-export {}
+export {};

@@ -1,21 +1,21 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const src_1 = require('../../../src')
-const output_parsers_1 = require('@langchain/core/output_parsers')
-const output_parsers_2 = require('@langchain/core/output_parsers')
-const OutputParserHelpers_1 = require('../OutputParserHelpers')
-const jsonrepair_1 = require('jsonrepair')
-const secureZodParser_1 = require('../../../src/secureZodParser')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const src_1 = require("../../../src");
+const output_parsers_1 = require("@langchain/core/output_parsers");
+const output_parsers_2 = require("@langchain/core/output_parsers");
+const OutputParserHelpers_1 = require("../OutputParserHelpers");
+const jsonrepair_1 = require("jsonrepair");
+const secureZodParser_1 = require("../../../src/secureZodParser");
 class AdvancedStructuredOutputParser {
     constructor() {
-        this.label = 'Advanced Structured Output Parser'
-        this.name = 'advancedStructuredOutputParser'
-        this.version = 1.0
-        this.type = 'AdvancedStructuredOutputParser'
-        this.description = 'Parse the output of an LLM call into a given structure by providing a Zod schema.'
-        this.icon = 'structure.svg'
-        this.category = OutputParserHelpers_1.CATEGORY
-        this.baseClasses = [this.type, ...(0, src_1.getBaseClasses)(output_parsers_1.BaseOutputParser)]
+        this.label = 'Advanced Structured Output Parser';
+        this.name = 'advancedStructuredOutputParser';
+        this.version = 1.0;
+        this.type = 'AdvancedStructuredOutputParser';
+        this.description = 'Parse the output of an LLM call into a given structure by providing a Zod schema.';
+        this.icon = 'structure.svg';
+        this.category = OutputParserHelpers_1.CATEGORY;
+        this.baseClasses = [this.type, ...(0, src_1.getBaseClasses)(output_parsers_1.BaseOutputParser)];
         this.inputs = [
             {
                 label: 'Autofix',
@@ -40,32 +40,33 @@ class AdvancedStructuredOutputParser {
     shortDescription: z.string().max(500) // Short description, max 500 characters
 })`
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const schemaString = nodeData.inputs?.exampleJson
-        const autoFix = nodeData.inputs?.autofixParser
+        const schemaString = nodeData.inputs?.exampleJson;
+        const autoFix = nodeData.inputs?.autofixParser;
         try {
-            const zodSchema = secureZodParser_1.SecureZodSchemaParser.parseZodSchema(schemaString)
-            const structuredOutputParser = output_parsers_2.StructuredOutputParser.fromZodSchema(zodSchema)
-            const baseParse = structuredOutputParser.parse
+            const zodSchema = secureZodParser_1.SecureZodSchemaParser.parseZodSchema(schemaString);
+            const structuredOutputParser = output_parsers_2.StructuredOutputParser.fromZodSchema(zodSchema);
+            const baseParse = structuredOutputParser.parse;
             // Fix broken JSON from LLM
             structuredOutputParser.parse = (text) => {
-                const jsonString = text.includes('```') ? text.trim().split(/```(?:json)?/)[1] : text.trim()
-                return baseParse.call(structuredOutputParser, (0, jsonrepair_1.jsonrepair)(jsonString))
-            }
+                const jsonString = text.includes('```') ? text.trim().split(/```(?:json)?/)[1] : text.trim();
+                return baseParse.call(structuredOutputParser, (0, jsonrepair_1.jsonrepair)(jsonString));
+            };
             // NOTE: When we change Flowise to return a json response, the following has to be changed to: JsonStructuredOutputParser
             Object.defineProperty(structuredOutputParser, 'autoFix', {
                 enumerable: true,
                 configurable: true,
                 writable: true,
                 value: autoFix
-            })
-            return structuredOutputParser
-        } catch (exception) {
-            throw new Error('Error parsing Zod Schema: ' + exception)
+            });
+            return structuredOutputParser;
+        }
+        catch (exception) {
+            throw new Error('Error parsing Zod Schema: ' + exception);
         }
     }
 }
-module.exports = { nodeClass: AdvancedStructuredOutputParser }
+module.exports = { nodeClass: AdvancedStructuredOutputParser };
 //# sourceMappingURL=StructuredOutputParserAdvanced.js.map

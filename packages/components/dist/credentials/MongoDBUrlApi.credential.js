@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class MongoDBUrlApi {
     constructor() {
-        this.label = 'MongoDB ATLAS'
-        this.name = 'mongoDBUrlApi'
-        this.version = 1.0
+        this.label = 'MongoDB ATLAS';
+        this.name = 'mongoDBUrlApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'ATLAS Connection URL',
@@ -12,8 +12,8 @@ class MongoDBUrlApi {
                 type: 'url',
                 placeholder: 'mongodb+srv://<user>:<pwd>@cluster0.example.mongodb.net/?retryWrites=true&w=majority'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: MongoDBUrlApi }
+module.exports = { credClass: MongoDBUrlApi };
 //# sourceMappingURL=MongoDBUrlApi.credential.js.map

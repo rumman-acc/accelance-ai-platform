@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class GoogleDrive_Tools {
     constructor() {
-        this.label = 'Google Drive'
-        this.name = 'googleDriveTool'
-        this.version = 1.0
-        this.type = 'GoogleDrive'
-        this.icon = 'google-drive.svg'
-        this.category = 'Tools'
-        this.description = 'Perform Google Drive operations such as managing files, folders, sharing, and searching'
-        this.baseClasses = ['Tool']
+        this.label = 'Google Drive';
+        this.name = 'googleDriveTool';
+        this.version = 1.0;
+        this.type = 'GoogleDrive';
+        this.icon = 'google-drive.svg';
+        this.category = 'Tools';
+        this.description = 'Perform Google Drive operations such as managing files, folders, sharing, and searching';
+        this.baseClasses = ['Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['googleDriveOAuth2']
-        }
+        };
         this.inputs = [
             {
                 label: 'Type',
@@ -575,68 +575,90 @@ class GoogleDrive_Tools {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options)
-        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData)
+        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options);
+        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData);
         if (!accessToken) {
-            throw new Error('No access token found in credential')
+            throw new Error('No access token found in credential');
         }
-        const driveType = nodeData.inputs?.driveType
-        const fileActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.fileActions)
-        const folderActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.folderActions)
-        const searchActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.searchActions)
-        const shareActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.shareActions)
+        const driveType = nodeData.inputs?.driveType;
+        const fileActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.fileActions);
+        const folderActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.folderActions);
+        const searchActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.searchActions);
+        const shareActions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.shareActions);
         // Combine all actions based on type
-        let actions = []
+        let actions = [];
         if (driveType === 'file') {
-            actions = fileActions
-        } else if (driveType === 'folder') {
-            actions = folderActions
-        } else if (driveType === 'search') {
-            actions = searchActions
-        } else if (driveType === 'share') {
-            actions = shareActions
+            actions = fileActions;
         }
-        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
+        else if (driveType === 'folder') {
+            actions = folderActions;
+        }
+        else if (driveType === 'search') {
+            actions = searchActions;
+        }
+        else if (driveType === 'share') {
+            actions = shareActions;
+        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData);
         const tools = (0, core_1.createGoogleDriveTools)({
             accessToken,
             actions,
             defaultParams
-        })
-        return tools
+        });
+        return tools;
     }
     transformNodeInputsToToolArgs(nodeData) {
         // Collect default parameters from inputs
-        const defaultParams = {}
+        const defaultParams = {};
         // Add parameters based on the inputs provided
-        if (nodeData.inputs?.fileId) defaultParams.fileId = nodeData.inputs.fileId
-        if (nodeData.inputs?.folderId) defaultParams.folderId = nodeData.inputs.folderId
-        if (nodeData.inputs?.permissionId) defaultParams.permissionId = nodeData.inputs.permissionId
-        if (nodeData.inputs?.fileName) defaultParams.name = nodeData.inputs.fileName
-        if (nodeData.inputs?.fileContent) defaultParams.content = nodeData.inputs.fileContent
-        if (nodeData.inputs?.mimeType) defaultParams.mimeType = nodeData.inputs.mimeType
-        if (nodeData.inputs?.parentFolderId) defaultParams.parents = nodeData.inputs.parentFolderId
-        if (nodeData.inputs?.description) defaultParams.description = nodeData.inputs.description
-        if (nodeData.inputs?.searchQuery) defaultParams.query = nodeData.inputs.searchQuery
-        if (nodeData.inputs?.maxResults) defaultParams.pageSize = nodeData.inputs.maxResults
-        if (nodeData.inputs?.orderBy) defaultParams.orderBy = nodeData.inputs.orderBy
-        if (nodeData.inputs?.shareRole) defaultParams.role = nodeData.inputs.shareRole
-        if (nodeData.inputs?.shareType) defaultParams.type = nodeData.inputs.shareType
-        if (nodeData.inputs?.emailAddress) defaultParams.emailAddress = nodeData.inputs.emailAddress
-        if (nodeData.inputs?.domainName) defaultParams.domain = nodeData.inputs.domainName
+        if (nodeData.inputs?.fileId)
+            defaultParams.fileId = nodeData.inputs.fileId;
+        if (nodeData.inputs?.folderId)
+            defaultParams.folderId = nodeData.inputs.folderId;
+        if (nodeData.inputs?.permissionId)
+            defaultParams.permissionId = nodeData.inputs.permissionId;
+        if (nodeData.inputs?.fileName)
+            defaultParams.name = nodeData.inputs.fileName;
+        if (nodeData.inputs?.fileContent)
+            defaultParams.content = nodeData.inputs.fileContent;
+        if (nodeData.inputs?.mimeType)
+            defaultParams.mimeType = nodeData.inputs.mimeType;
+        if (nodeData.inputs?.parentFolderId)
+            defaultParams.parents = nodeData.inputs.parentFolderId;
+        if (nodeData.inputs?.description)
+            defaultParams.description = nodeData.inputs.description;
+        if (nodeData.inputs?.searchQuery)
+            defaultParams.query = nodeData.inputs.searchQuery;
+        if (nodeData.inputs?.maxResults)
+            defaultParams.pageSize = nodeData.inputs.maxResults;
+        if (nodeData.inputs?.orderBy)
+            defaultParams.orderBy = nodeData.inputs.orderBy;
+        if (nodeData.inputs?.shareRole)
+            defaultParams.role = nodeData.inputs.shareRole;
+        if (nodeData.inputs?.shareType)
+            defaultParams.type = nodeData.inputs.shareType;
+        if (nodeData.inputs?.emailAddress)
+            defaultParams.emailAddress = nodeData.inputs.emailAddress;
+        if (nodeData.inputs?.domainName)
+            defaultParams.domain = nodeData.inputs.domainName;
         if (nodeData.inputs?.sendNotificationEmail !== undefined)
-            defaultParams.sendNotificationEmail = nodeData.inputs.sendNotificationEmail
-        if (nodeData.inputs?.emailMessage) defaultParams.emailMessage = nodeData.inputs.emailMessage
+            defaultParams.sendNotificationEmail = nodeData.inputs.sendNotificationEmail;
+        if (nodeData.inputs?.emailMessage)
+            defaultParams.emailMessage = nodeData.inputs.emailMessage;
         if (nodeData.inputs?.includeItemsFromAllDrives !== undefined)
-            defaultParams.includeItemsFromAllDrives = nodeData.inputs.includeItemsFromAllDrives
-        if (nodeData.inputs?.supportsAllDrives !== undefined) defaultParams.supportsAllDrives = nodeData.inputs.supportsAllDrives
-        if (nodeData.inputs?.fields) defaultParams.fields = nodeData.inputs.fields
-        if (nodeData.inputs?.acknowledgeAbuse !== undefined) defaultParams.acknowledgeAbuse = nodeData.inputs.acknowledgeAbuse
-        return defaultParams
+            defaultParams.includeItemsFromAllDrives = nodeData.inputs.includeItemsFromAllDrives;
+        if (nodeData.inputs?.supportsAllDrives !== undefined)
+            defaultParams.supportsAllDrives = nodeData.inputs.supportsAllDrives;
+        if (nodeData.inputs?.fields)
+            defaultParams.fields = nodeData.inputs.fields;
+        if (nodeData.inputs?.acknowledgeAbuse !== undefined)
+            defaultParams.acknowledgeAbuse = nodeData.inputs.acknowledgeAbuse;
+        return defaultParams;
     }
 }
-module.exports = { nodeClass: GoogleDrive_Tools }
+module.exports = { nodeClass: GoogleDrive_Tools };
 //# sourceMappingURL=GoogleDrive.js.map

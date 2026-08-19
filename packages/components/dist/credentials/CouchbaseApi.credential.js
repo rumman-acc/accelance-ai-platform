@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class CouchbaseApi {
     constructor() {
-        this.label = 'Couchbase API'
-        this.name = 'couchbaseApi'
-        this.version = 1.0
+        this.label = 'Couchbase API';
+        this.name = 'couchbaseApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Couchbase Connection String',
@@ -21,8 +21,8 @@ class CouchbaseApi {
                 name: 'password',
                 type: 'password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: CouchbaseApi }
+module.exports = { credClass: CouchbaseApi };
 //# sourceMappingURL=CouchbaseApi.credential.js.map

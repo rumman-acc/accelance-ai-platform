@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class OpikApi {
     constructor() {
-        this.label = 'Opik API'
-        this.name = 'opikApi'
-        this.version = 1.0
+        this.label = 'Opik API';
+        this.name = 'opikApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://www.comet.com/docs/opik/tracing/sdk_configuration">Opik documentation</a> on how to configure Opik credentials'
+            'Refer to <a target="_blank" href="https://www.comet.com/docs/opik/tracing/sdk_configuration">Opik documentation</a> on how to configure Opik credentials';
         this.inputs = [
             {
                 label: 'API Key',
@@ -26,8 +26,8 @@ class OpikApi {
                 type: 'string',
                 placeholder: 'default'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: OpikApi }
+module.exports = { credClass: OpikApi };
 //# sourceMappingURL=OpikApi.credential.js.map

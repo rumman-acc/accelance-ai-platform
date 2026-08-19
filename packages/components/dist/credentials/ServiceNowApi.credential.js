@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class ServiceNowApi {
     constructor() {
-        this.label = 'ServiceNow API'
-        this.name = 'serviceNowApi'
-        this.version = 1.0
+        this.label = 'ServiceNow API';
+        this.name = 'serviceNowApi';
+        this.version = 1.0;
         this.description =
-            'Create an OAuth API endpoint for external clients in ServiceNow (System OAuth &gt; Application Registry) to obtain the Client ID and Client Secret'
+            'Create an OAuth API endpoint for external clients in ServiceNow (System OAuth &gt; Application Registry) to obtain the Client ID and Client Secret';
         this.inputs = [
             {
                 label: 'Instance',
@@ -25,8 +25,8 @@ class ServiceNowApi {
                 name: 'clientSecret',
                 type: 'password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: ServiceNowApi }
+module.exports = { credClass: ServiceNowApi };
 //# sourceMappingURL=ServiceNowApi.credential.js.map

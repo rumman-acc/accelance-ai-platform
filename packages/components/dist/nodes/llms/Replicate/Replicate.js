@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class Replicate_LLMs {
     constructor() {
-        this.label = 'Replicate'
-        this.name = 'replicate'
-        this.version = 2.0
-        this.type = 'Replicate'
-        this.icon = 'replicate.svg'
-        this.category = 'LLMs'
-        this.description = 'Use Replicate to run open source models on cloud'
-        this.baseClasses = [this.type, 'BaseChatModel', ...(0, utils_1.getBaseClasses)(core_1.Replicate)]
+        this.label = 'Replicate';
+        this.name = 'replicate';
+        this.version = 2.0;
+        this.type = 'Replicate';
+        this.icon = 'replicate.svg';
+        this.category = 'LLMs';
+        this.description = 'Use Replicate to run open source models on cloud';
+        this.baseClasses = [this.type, 'BaseChatModel', ...(0, utils_1.getBaseClasses)(core_1.Replicate)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['replicateApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -37,8 +37,7 @@ class Replicate_LLMs {
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description:
-                    'Adjusts randomness of outputs, greater than 1 is random and 0 is deterministic, 0.75 is a good starting value.',
+                description: 'Adjusts randomness of outputs, greater than 1 is random and 0 is deterministic, 0.75 is a good starting value.',
                 default: 0.7,
                 optional: true
             },
@@ -56,8 +55,7 @@ class Replicate_LLMs {
                 name: 'topP',
                 type: 'number',
                 step: 0.1,
-                description:
-                    'When decoding text, samples from the top p percentage of most likely tokens; lower to ignore less likely tokens',
+                description: 'When decoding text, samples from the top p percentage of most likely tokens; lower to ignore less likely tokens',
                 optional: true,
                 additionalParams: true
             },
@@ -66,8 +64,7 @@ class Replicate_LLMs {
                 name: 'repetitionPenalty',
                 type: 'number',
                 step: 0.1,
-                description:
-                    'Penalty for repeated words in generated text; 1 is no penalty, values greater than 1 discourage repetition, less than 1 encourage it. (minimum: 0.01; maximum: 5)',
+                description: 'Penalty for repeated words in generated text; 1 is no penalty, values greater than 1 discourage repetition, less than 1 encourage it. (minimum: 0.01; maximum: 5)',
                 optional: true,
                 additionalParams: true
             },
@@ -75,42 +72,46 @@ class Replicate_LLMs {
                 label: 'Additional Inputs',
                 name: 'additionalInputs',
                 type: 'json',
-                description:
-                    'Each model has different parameters, refer to the specific model accepted inputs. For example: <a target="_blank" href="https://replicate.com/a16z-infra/llama13b-v2-chat/api#inputs">llama13b-v2</a>',
+                description: 'Each model has different parameters, refer to the specific model accepted inputs. For example: <a target="_blank" href="https://replicate.com/a16z-infra/llama13b-v2-chat/api#inputs">llama13b-v2</a>',
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const modelName = nodeData.inputs?.model
-        const temperature = nodeData.inputs?.temperature
-        const maxTokens = nodeData.inputs?.maxTokens
-        const topP = nodeData.inputs?.topP
-        const repetitionPenalty = nodeData.inputs?.repetitionPenalty
-        const additionalInputs = nodeData.inputs?.additionalInputs
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const apiKey = (0, utils_1.getCredentialParam)('replicateApiKey', credentialData, nodeData)
-        const cache = nodeData.inputs?.cache
+        const modelName = nodeData.inputs?.model;
+        const temperature = nodeData.inputs?.temperature;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const topP = nodeData.inputs?.topP;
+        const repetitionPenalty = nodeData.inputs?.repetitionPenalty;
+        const additionalInputs = nodeData.inputs?.additionalInputs;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const apiKey = (0, utils_1.getCredentialParam)('replicateApiKey', credentialData, nodeData);
+        const cache = nodeData.inputs?.cache;
         const obj = {
             model: modelName,
             apiKey
-        }
-        let inputs = {}
-        if (maxTokens) inputs.max_length = parseInt(maxTokens, 10)
-        if (temperature) inputs.temperature = parseFloat(temperature)
-        if (topP) inputs.top_p = parseFloat(topP)
-        if (repetitionPenalty) inputs.repetition_penalty = parseFloat(repetitionPenalty)
+        };
+        let inputs = {};
+        if (maxTokens)
+            inputs.max_length = parseInt(maxTokens, 10);
+        if (temperature)
+            inputs.temperature = parseFloat(temperature);
+        if (topP)
+            inputs.top_p = parseFloat(topP);
+        if (repetitionPenalty)
+            inputs.repetition_penalty = parseFloat(repetitionPenalty);
         if (additionalInputs) {
-            const parsedInputs =
-                typeof additionalInputs === 'object' ? additionalInputs : additionalInputs ? JSON.parse(additionalInputs) : {}
-            inputs = { ...inputs, ...parsedInputs }
+            const parsedInputs = typeof additionalInputs === 'object' ? additionalInputs : additionalInputs ? JSON.parse(additionalInputs) : {};
+            inputs = { ...inputs, ...parsedInputs };
         }
-        if (Object.keys(inputs).length) obj.input = inputs
-        if (cache) obj.cache = cache
-        const model = new core_1.Replicate(obj)
-        return model
+        if (Object.keys(inputs).length)
+            obj.input = inputs;
+        if (cache)
+            obj.cache = cache;
+        const model = new core_1.Replicate(obj);
+        return model;
     }
 }
-module.exports = { nodeClass: Replicate_LLMs }
+module.exports = { nodeClass: Replicate_LLMs };
 //# sourceMappingURL=Replicate.js.map

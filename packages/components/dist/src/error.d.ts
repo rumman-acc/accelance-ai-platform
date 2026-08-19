@@ -1,1 +1,1 @@
-export declare const getErrorMessage: (error: unknown) => string
+export declare const getErrorMessage: (error: unknown) => string;

@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class GoogleSheets_Tools {
     constructor() {
-        this.label = 'Google Sheets'
-        this.name = 'googleSheetsTool'
-        this.version = 1.0
-        this.type = 'GoogleSheets'
-        this.icon = 'google-sheets.svg'
-        this.category = 'Tools'
-        this.description = 'Perform Google Sheets operations such as managing spreadsheets, reading and writing values'
-        this.baseClasses = ['Tool']
+        this.label = 'Google Sheets';
+        this.name = 'googleSheetsTool';
+        this.version = 1.0;
+        this.type = 'GoogleSheets';
+        this.icon = 'google-sheets.svg';
+        this.category = 'Tools';
+        this.description = 'Perform Google Sheets operations such as managing spreadsheets, reading and writing values';
+        this.baseClasses = ['Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['googleSheetsOAuth2']
-        }
+        };
         this.inputs = [
             {
                 label: 'Type',
@@ -294,51 +294,64 @@ class GoogleSheets_Tools {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const sheetsType = nodeData.inputs?.sheetsType
-        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options)
-        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData)
+        const sheetsType = nodeData.inputs?.sheetsType;
+        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options);
+        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData);
         if (!accessToken) {
-            throw new Error('No access token found in credential')
+            throw new Error('No access token found in credential');
         }
         // Get all actions based on type
-        let actions = []
+        let actions = [];
         if (sheetsType === 'spreadsheet') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.spreadsheetActions)
-        } else if (sheetsType === 'values') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.valuesActions)
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.spreadsheetActions);
         }
-        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
+        else if (sheetsType === 'values') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.valuesActions);
+        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData);
         const tools = (0, core_1.createGoogleSheetsTools)({
             accessToken,
             actions,
             defaultParams
-        })
-        return tools
+        });
+        return tools;
     }
     transformNodeInputsToToolArgs(nodeData) {
         // Collect default parameters from inputs
-        const defaultParams = {}
+        const defaultParams = {};
         // Common parameters
-        if (nodeData.inputs?.spreadsheetId) defaultParams.spreadsheetId = nodeData.inputs.spreadsheetId
+        if (nodeData.inputs?.spreadsheetId)
+            defaultParams.spreadsheetId = nodeData.inputs.spreadsheetId;
         // Spreadsheet parameters
-        if (nodeData.inputs?.title) defaultParams.title = nodeData.inputs.title
-        if (nodeData.inputs?.sheetCount) defaultParams.sheetCount = nodeData.inputs.sheetCount
-        if (nodeData.inputs?.includeGridData !== undefined) defaultParams.includeGridData = nodeData.inputs.includeGridData
+        if (nodeData.inputs?.title)
+            defaultParams.title = nodeData.inputs.title;
+        if (nodeData.inputs?.sheetCount)
+            defaultParams.sheetCount = nodeData.inputs.sheetCount;
+        if (nodeData.inputs?.includeGridData !== undefined)
+            defaultParams.includeGridData = nodeData.inputs.includeGridData;
         // Values parameters
-        if (nodeData.inputs?.range) defaultParams.range = nodeData.inputs.range
-        if (nodeData.inputs?.ranges) defaultParams.ranges = nodeData.inputs.ranges
-        if (nodeData.inputs?.values) defaultParams.values = nodeData.inputs.values
-        if (nodeData.inputs?.valueInputOption) defaultParams.valueInputOption = nodeData.inputs.valueInputOption
-        if (nodeData.inputs?.valueRenderOption) defaultParams.valueRenderOption = nodeData.inputs.valueRenderOption
-        if (nodeData.inputs?.dateTimeRenderOption) defaultParams.dateTimeRenderOption = nodeData.inputs.dateTimeRenderOption
-        if (nodeData.inputs?.insertDataOption) defaultParams.insertDataOption = nodeData.inputs.insertDataOption
-        if (nodeData.inputs?.majorDimension) defaultParams.majorDimension = nodeData.inputs.majorDimension
-        return defaultParams
+        if (nodeData.inputs?.range)
+            defaultParams.range = nodeData.inputs.range;
+        if (nodeData.inputs?.ranges)
+            defaultParams.ranges = nodeData.inputs.ranges;
+        if (nodeData.inputs?.values)
+            defaultParams.values = nodeData.inputs.values;
+        if (nodeData.inputs?.valueInputOption)
+            defaultParams.valueInputOption = nodeData.inputs.valueInputOption;
+        if (nodeData.inputs?.valueRenderOption)
+            defaultParams.valueRenderOption = nodeData.inputs.valueRenderOption;
+        if (nodeData.inputs?.dateTimeRenderOption)
+            defaultParams.dateTimeRenderOption = nodeData.inputs.dateTimeRenderOption;
+        if (nodeData.inputs?.insertDataOption)
+            defaultParams.insertDataOption = nodeData.inputs.insertDataOption;
+        if (nodeData.inputs?.majorDimension)
+            defaultParams.majorDimension = nodeData.inputs.majorDimension;
+        return defaultParams;
     }
 }
-module.exports = { nodeClass: GoogleSheets_Tools }
+module.exports = { nodeClass: GoogleSheets_Tools };
 //# sourceMappingURL=GoogleSheets.js.map

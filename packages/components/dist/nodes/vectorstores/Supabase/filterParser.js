@@ -1,6 +1,6 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.FilterParser = void 0
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FilterParser = void 0;
 /**
  * This parser safely handles Supabase filter strings without allowing arbitrary code execution
  */
@@ -14,140 +14,152 @@ class FilterParser {
     static parseFilterString(filterString) {
         try {
             // Clean and validate the filter string
-            const cleanedFilter = this.cleanFilterString(filterString)
+            const cleanedFilter = this.cleanFilterString(filterString);
             // Parse the filter chain
-            const filterChain = this.parseFilterChain(cleanedFilter)
+            const filterChain = this.parseFilterChain(cleanedFilter);
             // Build the safe filter function
-            return this.buildFilterFunction(filterChain)
-        } catch (error) {
-            throw new Error(`Failed to parse Supabase filter: ${error.message}`)
+            return this.buildFilterFunction(filterChain);
+        }
+        catch (error) {
+            throw new Error(`Failed to parse Supabase filter: ${error.message}`);
         }
     }
     static cleanFilterString(filter) {
         // Remove comments and normalize whitespace
-        filter = filter.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')
-        filter = filter.replace(/\s+/g, ' ').trim()
+        filter = filter.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+        filter = filter.replace(/\s+/g, ' ').trim();
         // Remove trailing semicolon if present
         if (filter.endsWith(';')) {
-            filter = filter.slice(0, -1).trim()
+            filter = filter.slice(0, -1).trim();
         }
-        return filter
+        return filter;
     }
     static parseFilterChain(filter) {
-        const chain = []
+        const chain = [];
         // Split on method calls (e.g., .filter, .order, etc.)
-        const methodPattern = /\.?(\w+)\s*\((.*?)\)(?=\s*(?:\.|$))/g
-        let match
+        const methodPattern = /\.?(\w+)\s*\((.*?)\)(?=\s*(?:\.|$))/g;
+        let match;
         while ((match = methodPattern.exec(filter)) !== null) {
-            const method = match[1]
-            const argsString = match[2]
+            const method = match[1];
+            const argsString = match[2];
             // Validate method name
             if (!this.ALLOWED_METHODS.includes(method)) {
-                throw new Error(`Disallowed method: ${method}`)
+                throw new Error(`Disallowed method: ${method}`);
             }
             // Parse arguments safely
-            const args = this.parseArguments(argsString)
+            const args = this.parseArguments(argsString);
             // Additional validation for filter method
             if (method === 'filter' && args.length >= 2) {
-                const operator = args[1]
+                const operator = args[1];
                 if (typeof operator === 'string' && !this.ALLOWED_OPERATORS.includes(operator)) {
-                    throw new Error(`Disallowed filter operator: ${operator}`)
+                    throw new Error(`Disallowed filter operator: ${operator}`);
                 }
             }
-            chain.push({ method, args })
+            chain.push({ method, args });
         }
         if (chain.length === 0) {
-            throw new Error('No valid filter methods found')
+            throw new Error('No valid filter methods found');
         }
-        return chain
+        return chain;
     }
     static parseArguments(argsString) {
         if (!argsString.trim()) {
-            return []
+            return [];
         }
-        const args = []
-        let current = ''
-        let inString = false
-        let stringChar = ''
-        let depth = 0
+        const args = [];
+        let current = '';
+        let inString = false;
+        let stringChar = '';
+        let depth = 0;
         for (let i = 0; i < argsString.length; i++) {
-            const char = argsString[i]
+            const char = argsString[i];
             if (!inString && (char === '"' || char === "'")) {
-                inString = true
-                stringChar = char
-                current += char
-            } else if (inString && char === stringChar && argsString[i - 1] !== '\\') {
-                inString = false
-                current += char
-            } else if (!inString) {
+                inString = true;
+                stringChar = char;
+                current += char;
+            }
+            else if (inString && char === stringChar && argsString[i - 1] !== '\\') {
+                inString = false;
+                current += char;
+            }
+            else if (!inString) {
                 if (char === '(' || char === '[' || char === '{') {
-                    depth++
-                    current += char
-                } else if (char === ')' || char === ']' || char === '}') {
-                    depth--
-                    current += char
-                } else if (char === ',' && depth === 0) {
-                    args.push(this.parseArgument(current.trim()))
-                    current = ''
-                    continue
-                } else {
-                    current += char
+                    depth++;
+                    current += char;
                 }
-            } else {
-                current += char
+                else if (char === ')' || char === ']' || char === '}') {
+                    depth--;
+                    current += char;
+                }
+                else if (char === ',' && depth === 0) {
+                    args.push(this.parseArgument(current.trim()));
+                    current = '';
+                    continue;
+                }
+                else {
+                    current += char;
+                }
+            }
+            else {
+                current += char;
             }
         }
         if (current.trim()) {
-            args.push(this.parseArgument(current.trim()))
+            args.push(this.parseArgument(current.trim()));
         }
-        return args
+        return args;
     }
     static parseArgument(arg) {
-        arg = arg.trim()
+        arg = arg.trim();
         // Handle strings
         if ((arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'"))) {
-            return arg.slice(1, -1)
+            return arg.slice(1, -1);
         }
         // Handle numbers
         if (arg.match(/^-?\d+(\.\d+)?$/)) {
-            return parseFloat(arg)
+            return parseFloat(arg);
         }
         // Handle booleans
-        if (arg === 'true') return true
-        if (arg === 'false') return false
-        if (arg === 'null') return null
+        if (arg === 'true')
+            return true;
+        if (arg === 'false')
+            return false;
+        if (arg === 'null')
+            return null;
         // Handle arrays (basic support)
         if (arg.startsWith('[') && arg.endsWith(']')) {
-            const arrayContent = arg.slice(1, -1).trim()
-            if (!arrayContent) return []
+            const arrayContent = arg.slice(1, -1).trim();
+            if (!arrayContent)
+                return [];
             // Simple array parsing - just split by comma and parse each element
-            return arrayContent.split(',').map((item) => this.parseArgument(item.trim()))
+            return arrayContent.split(',').map((item) => this.parseArgument(item.trim()));
         }
         // For everything else, treat as string (but validate it doesn't contain dangerous characters)
         if (arg.includes('require') || arg.includes('process') || arg.includes('eval') || arg.includes('Function')) {
-            throw new Error(`Potentially dangerous argument: ${arg}`)
+            throw new Error(`Potentially dangerous argument: ${arg}`);
         }
-        return arg
+        return arg;
     }
     static buildFilterFunction(chain) {
         return (rpc) => {
-            let result = rpc
+            let result = rpc;
             for (const { method, args } of chain) {
                 if (typeof result[method] !== 'function') {
-                    throw new Error(`Method ${method} is not available on the RPC object`)
+                    throw new Error(`Method ${method} is not available on the RPC object`);
                 }
                 try {
-                    result = result[method](...args)
-                } catch (error) {
-                    throw new Error(`Failed to call ${method}: ${error.message}`)
+                    result = result[method](...args);
+                }
+                catch (error) {
+                    throw new Error(`Failed to call ${method}: ${error.message}`);
                 }
             }
-            return result
-        }
+            return result;
+        };
     }
 }
-exports.FilterParser = FilterParser
-FilterParser.ALLOWED_METHODS = ['filter', 'order', 'limit', 'range', 'single', 'maybeSingle']
+exports.FilterParser = FilterParser;
+FilterParser.ALLOWED_METHODS = ['filter', 'order', 'limit', 'range', 'single', 'maybeSingle'];
 FilterParser.ALLOWED_OPERATORS = [
     'eq',
     'neq',
@@ -171,5 +183,5 @@ FilterParser.ALLOWED_OPERATORS = [
     'plfts',
     'phfts',
     'wfts'
-]
+];
 //# sourceMappingURL=filterParser.js.map

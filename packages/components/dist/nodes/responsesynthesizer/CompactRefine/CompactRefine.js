@@ -1,20 +1,20 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const base_1 = require('../base')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const base_1 = require("../base");
 class CompactRefine_LlamaIndex {
     constructor() {
-        this.label = 'Compact and Refine'
-        this.name = 'compactrefineLlamaIndex'
-        this.version = 1.0
-        this.type = 'CompactRefine'
-        this.icon = 'compactrefine.svg'
-        this.category = 'Response Synthesizer'
+        this.label = 'Compact and Refine';
+        this.name = 'compactrefineLlamaIndex';
+        this.version = 1.0;
+        this.type = 'CompactRefine';
+        this.icon = 'compactrefine.svg';
+        this.category = 'Response Synthesizer';
         this.description =
-            'CompactRefine is a slight variation of Refine that first compacts the text chunks into the smallest possible number of chunks.'
-        this.baseClasses = [this.type, 'ResponseSynthesizer']
-        this.tags = ['LlamaIndex']
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
+            'CompactRefine is a slight variation of Refine that first compacts the text chunks into the smallest possible number of chunks.';
+        this.baseClasses = [this.type, 'ResponseSynthesizer'];
+        this.tags = ['LlamaIndex'];
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.';
         this.inputs = [
             {
                 label: 'Refine Prompt',
@@ -47,16 +47,15 @@ Answer:`,
                 warning: `Prompt can contains no variables, or up to 2 variables. Variables must be {context} and {query}`,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const refinePrompt = nodeData.inputs?.refinePrompt
-        const textQAPrompt = nodeData.inputs?.textQAPrompt
-        const refinePromptTemplate = ({ context = '', existingAnswer = '', query = '' }) =>
-            refinePrompt.replace('{existingAnswer}', existingAnswer).replace('{context}', context).replace('{query}', query)
-        const textQAPromptTemplate = ({ context = '', query = '' }) => textQAPrompt.replace('{context}', context).replace('{query}', query)
-        return new base_1.ResponseSynthesizerClass({ textQAPromptTemplate, refinePromptTemplate, type: 'CompactAndRefine' })
+        const refinePrompt = nodeData.inputs?.refinePrompt;
+        const textQAPrompt = nodeData.inputs?.textQAPrompt;
+        const refinePromptTemplate = ({ context = '', existingAnswer = '', query = '' }) => refinePrompt.replace('{existingAnswer}', existingAnswer).replace('{context}', context).replace('{query}', query);
+        const textQAPromptTemplate = ({ context = '', query = '' }) => textQAPrompt.replace('{context}', context).replace('{query}', query);
+        return new base_1.ResponseSynthesizerClass({ textQAPromptTemplate, refinePromptTemplate, type: 'CompactAndRefine' });
     }
 }
-module.exports = { nodeClass: CompactRefine_LlamaIndex }
+module.exports = { nodeClass: CompactRefine_LlamaIndex };
 //# sourceMappingURL=CompactRefine.js.map

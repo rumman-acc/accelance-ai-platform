@@ -1,40 +1,41 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.SimplePromptModerationRunner = void 0
-const utils_1 = require('../../../src/utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SimplePromptModerationRunner = void 0;
+const utils_1 = require("../../../src/utils");
 class SimplePromptModerationRunner {
     constructor(denyList, moderationErrorMessage, model) {
-        this.denyList = ''
-        this.moderationErrorMessage = ''
-        this.denyList = denyList
+        this.denyList = '';
+        this.moderationErrorMessage = '';
+        this.denyList = denyList;
         if (denyList.indexOf('\n') === -1) {
-            this.denyList += '\n'
+            this.denyList += '\n';
         }
-        this.moderationErrorMessage = moderationErrorMessage
-        if (model) this.model = model
+        this.moderationErrorMessage = moderationErrorMessage;
+        if (model)
+            this.model = model;
     }
     async checkForViolations(input) {
         if (this.model) {
-            const denyArray = this.denyList.split('\n')
+            const denyArray = this.denyList.split('\n');
             for (const denyStr of denyArray) {
-                if (!denyStr || denyStr === '') continue
-                const res = await this.model.invoke(
-                    `Are these two sentences similar to each other? Only return Yes or No.\nFirst sentence: ${input}\nSecond sentence: ${denyStr}`
-                )
-                const responseContent = (0, utils_1.extractResponseContent)(res)
+                if (!denyStr || denyStr === '')
+                    continue;
+                const res = await this.model.invoke(`Are these two sentences similar to each other? Only return Yes or No.\nFirst sentence: ${input}\nSecond sentence: ${denyStr}`);
+                const responseContent = (0, utils_1.extractResponseContent)(res);
                 if (responseContent.toLowerCase().includes('yes')) {
-                    throw Error(this.moderationErrorMessage)
+                    throw Error(this.moderationErrorMessage);
                 }
             }
-        } else {
+        }
+        else {
             this.denyList.split('\n').forEach((denyListItem) => {
                 if (denyListItem && denyListItem !== '' && input.toLowerCase().includes(denyListItem.toLowerCase())) {
-                    throw Error(this.moderationErrorMessage)
+                    throw Error(this.moderationErrorMessage);
                 }
-            })
+            });
         }
-        return Promise.resolve(input)
+        return Promise.resolve(input);
     }
 }
-exports.SimplePromptModerationRunner = SimplePromptModerationRunner
+exports.SimplePromptModerationRunner = SimplePromptModerationRunner;
 //# sourceMappingURL=SimplePromptModerationRunner.js.map

@@ -1,29 +1,29 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const documents_1 = require('@langchain/core/documents')
-const astradb_1 = require('@langchain/community/vectorstores/astradb')
-const utils_1 = require('../../../src/utils')
-const VectorStoreUtils_1 = require('../VectorStoreUtils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const documents_1 = require("@langchain/core/documents");
+const astradb_1 = require("@langchain/community/vectorstores/astradb");
+const utils_1 = require("../../../src/utils");
+const VectorStoreUtils_1 = require("../VectorStoreUtils");
 class Astra_VectorStores {
     constructor() {
         //@ts-ignore
         this.vectorStoreMethods = {
             async upsert(nodeData, options) {
-                const docs = nodeData.inputs?.document
-                const embeddings = nodeData.inputs?.embeddings
-                const vectorDimension = nodeData.inputs?.vectorDimension
-                const astraCollection = nodeData.inputs?.astraCollection
-                const similarityMetric = nodeData.inputs?.similarityMetric
-                const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-                const expectedSimilarityMetric = ['cosine', 'euclidean', 'dot_product']
+                const docs = nodeData.inputs?.document;
+                const embeddings = nodeData.inputs?.embeddings;
+                const vectorDimension = nodeData.inputs?.vectorDimension;
+                const astraCollection = nodeData.inputs?.astraCollection;
+                const similarityMetric = nodeData.inputs?.similarityMetric;
+                const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+                const expectedSimilarityMetric = ['cosine', 'euclidean', 'dot_product'];
                 if (similarityMetric && !expectedSimilarityMetric.includes(similarityMetric)) {
-                    throw new Error(`Invalid Similarity Metric should be one of 'cosine' | 'euclidean' | 'dot_product'`)
+                    throw new Error(`Invalid Similarity Metric should be one of 'cosine' | 'euclidean' | 'dot_product'`);
                 }
                 const clientConfig = {
                     token: credentialData?.applicationToken,
                     endpoint: credentialData?.dbEndPoint
-                }
+                };
                 const astraConfig = {
                     ...clientConfig,
                     collection: astraCollection ?? credentialData.collectionName ?? 'flowise_test',
@@ -33,36 +33,37 @@ class Astra_VectorStores {
                             metric: similarityMetric ?? 'cosine'
                         }
                     }
-                }
-                const flattenDocs = docs && docs.length ? (0, lodash_1.flatten)(docs) : []
-                const finalDocs = []
+                };
+                const flattenDocs = docs && docs.length ? (0, lodash_1.flatten)(docs) : [];
+                const finalDocs = [];
                 for (let i = 0; i < flattenDocs.length; i += 1) {
                     if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                        finalDocs.push(new documents_1.Document(flattenDocs[i]))
+                        finalDocs.push(new documents_1.Document(flattenDocs[i]));
                     }
                 }
                 try {
-                    await astradb_1.AstraDBVectorStore.fromDocuments(finalDocs, embeddings, astraConfig)
-                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
-                } catch (e) {
-                    throw new Error(e)
+                    await astradb_1.AstraDBVectorStore.fromDocuments(finalDocs, embeddings, astraConfig);
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs };
+                }
+                catch (e) {
+                    throw new Error(e);
                 }
             }
-        }
-        this.label = 'Astra'
-        this.name = 'Astra'
-        this.version = 2.1
-        this.type = 'Astra'
-        this.icon = 'astra.svg'
-        this.category = 'Vector Stores'
-        this.description = `Upsert embedded data and perform similarity or mmr search upon query using DataStax Astra DB, a serverless vector database that’s perfect for managing mission-critical AI workloads`
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        };
+        this.label = 'Astra';
+        this.name = 'Astra';
+        this.version = 2.1;
+        this.type = 'Astra';
+        this.icon = 'astra.svg';
+        this.category = 'Vector Stores';
+        this.description = `Upsert embedded data and perform similarity or mmr search upon query using DataStax Astra DB, a serverless vector database that’s perfect for managing mission-critical AI workloads`;
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['AstraDBApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Document',
@@ -106,8 +107,8 @@ class Astra_VectorStores {
                 additionalParams: true,
                 optional: true
             }
-        ]
-        ;(0, VectorStoreUtils_1.addMMRInputParams)(this.inputs)
+        ];
+        (0, VectorStoreUtils_1.addMMRInputParams)(this.inputs);
         this.outputs = [
             {
                 label: 'Astra Retriever',
@@ -119,22 +120,22 @@ class Astra_VectorStores {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...(0, utils_1.getBaseClasses)(astradb_1.AstraDBVectorStore)]
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const embeddings = nodeData.inputs?.embeddings
-        const vectorDimension = nodeData.inputs?.vectorDimension
-        const similarityMetric = nodeData.inputs?.similarityMetric
-        const astraCollection = nodeData.inputs?.astraCollection
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const expectedSimilarityMetric = ['cosine', 'euclidean', 'dot_product']
+        const embeddings = nodeData.inputs?.embeddings;
+        const vectorDimension = nodeData.inputs?.vectorDimension;
+        const similarityMetric = nodeData.inputs?.similarityMetric;
+        const astraCollection = nodeData.inputs?.astraCollection;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const expectedSimilarityMetric = ['cosine', 'euclidean', 'dot_product'];
         if (similarityMetric && !expectedSimilarityMetric.includes(similarityMetric)) {
-            throw new Error(`Invalid Similarity Metric should be one of 'cosine' | 'euclidean' | 'dot_product'`)
+            throw new Error(`Invalid Similarity Metric should be one of 'cosine' | 'euclidean' | 'dot_product'`);
         }
         const clientConfig = {
             token: credentialData?.applicationToken,
             endpoint: credentialData?.dbEndPoint
-        }
+        };
         const astraConfig = {
             ...clientConfig,
             collection: astraCollection ?? credentialData.collectionName ?? 'flowise_test',
@@ -144,10 +145,10 @@ class Astra_VectorStores {
                     metric: similarityMetric ?? 'cosine'
                 }
             }
-        }
-        const vectorStore = await astradb_1.AstraDBVectorStore.fromExistingIndex(embeddings, astraConfig)
-        return (0, VectorStoreUtils_1.resolveVectorStoreOrRetriever)(nodeData, vectorStore)
+        };
+        const vectorStore = await astradb_1.AstraDBVectorStore.fromExistingIndex(embeddings, astraConfig);
+        return (0, VectorStoreUtils_1.resolveVectorStoreOrRetriever)(nodeData, vectorStore);
     }
 }
-module.exports = { nodeClass: Astra_VectorStores }
+module.exports = { nodeClass: Astra_VectorStores };
 //# sourceMappingURL=Astra.js.map

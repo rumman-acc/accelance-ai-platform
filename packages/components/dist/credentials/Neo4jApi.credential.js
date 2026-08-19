@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class Neo4jApi {
     constructor() {
-        this.label = 'Neo4j API'
-        this.name = 'neo4jApi'
-        this.version = 1.0
+        this.label = 'Neo4j API';
+        this.name = 'neo4jApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://neo4j.com/docs/operations-manual/current/authentication-authorization/">official guide</a> on Neo4j authentication'
+            'Refer to <a target="_blank" href="https://neo4j.com/docs/operations-manual/current/authentication-authorization/">official guide</a> on Neo4j authentication';
         this.inputs = [
             {
                 label: 'Neo4j URL',
@@ -26,8 +26,8 @@ class Neo4jApi {
                 type: 'password',
                 description: 'Neo4j database password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: Neo4jApi }
+module.exports = { credClass: Neo4jApi };
 //# sourceMappingURL=Neo4jApi.credential.js.map

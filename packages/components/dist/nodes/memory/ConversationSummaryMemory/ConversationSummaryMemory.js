@@ -1,20 +1,20 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const Interface_1 = require('../../../src/Interface')
-const utils_1 = require('../../../src/utils')
-const messages_1 = require('@langchain/core/messages')
-const memory_1 = require('@langchain/classic/memory')
-const FlowiseChatAnthropic_1 = require('../../chatmodels/ChatAnthropic/FlowiseChatAnthropic')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const Interface_1 = require("../../../src/Interface");
+const utils_1 = require("../../../src/utils");
+const messages_1 = require("@langchain/core/messages");
+const memory_1 = require("@langchain/classic/memory");
+const FlowiseChatAnthropic_1 = require("../../chatmodels/ChatAnthropic/FlowiseChatAnthropic");
 class ConversationSummaryMemory_Memory {
     constructor() {
-        this.label = 'Conversation Summary Memory'
-        this.name = 'conversationSummaryMemory'
-        this.version = 2.0
-        this.type = 'ConversationSummaryMemory'
-        this.icon = 'memory.svg'
-        this.category = 'Memory'
-        this.description = 'Summarizes the conversation and stores the current summary in memory'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(memory_1.ConversationSummaryMemory)]
+        this.label = 'Conversation Summary Memory';
+        this.name = 'conversationSummaryMemory';
+        this.version = 2.0;
+        this.type = 'ConversationSummaryMemory';
+        this.icon = 'memory.svg';
+        this.category = 'Memory';
+        this.description = 'Summarizes the conversation and stores the current summary in memory';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(memory_1.ConversationSummaryMemory)];
         this.inputs = [
             {
                 label: 'Chat Model',
@@ -25,8 +25,7 @@ class ConversationSummaryMemory_Memory {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
-                description:
-                    'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory#ui-and-embedded-chat">more</a>',
+                description: 'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory#ui-and-embedded-chat">more</a>',
                 default: '',
                 optional: true,
                 additionalParams: true
@@ -38,16 +37,16 @@ class ConversationSummaryMemory_Memory {
                 default: 'chat_history',
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const model = nodeData.inputs?.model
-        const sessionId = nodeData.inputs?.sessionId
-        const memoryKey = nodeData.inputs?.memoryKey ?? 'chat_history'
-        const appDataSource = options.appDataSource
-        const databaseEntities = options.databaseEntities
-        const chatflowid = options.chatflowid
-        const orgId = options.orgId
+        const model = nodeData.inputs?.model;
+        const sessionId = nodeData.inputs?.sessionId;
+        const memoryKey = nodeData.inputs?.memoryKey ?? 'chat_history';
+        const appDataSource = options.appDataSource;
+        const databaseEntities = options.databaseEntities;
+        const chatflowid = options.chatflowid;
+        const orgId = options.orgId;
         const obj = {
             llm: model,
             memoryKey,
@@ -57,24 +56,25 @@ class ConversationSummaryMemory_Memory {
             databaseEntities,
             chatflowid,
             orgId
-        }
-        return new ConversationSummaryMemoryExtended(obj)
+        };
+        return new ConversationSummaryMemoryExtended(obj);
     }
 }
 class ConversationSummaryMemoryExtended extends Interface_1.FlowiseSummaryMemory {
     constructor(fields) {
-        super(fields)
-        this.sessionId = ''
-        this.sessionId = fields.sessionId
-        this.appDataSource = fields.appDataSource
-        this.databaseEntities = fields.databaseEntities
-        this.chatflowid = fields.chatflowid
-        this.orgId = fields.orgId
+        super(fields);
+        this.sessionId = '';
+        this.sessionId = fields.sessionId;
+        this.appDataSource = fields.appDataSource;
+        this.databaseEntities = fields.databaseEntities;
+        this.chatflowid = fields.chatflowid;
+        this.orgId = fields.orgId;
     }
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false, prependMessages) {
-        const id = overrideSessionId ? overrideSessionId : this.sessionId
-        if (!id) return []
-        this.buffer = ''
+        const id = overrideSessionId ? overrideSessionId : this.sessionId;
+        if (!id)
+            return [];
+        this.buffer = '';
         let chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
             where: {
                 sessionId: id,
@@ -83,21 +83,22 @@ class ConversationSummaryMemoryExtended extends Interface_1.FlowiseSummaryMemory
             order: {
                 createdDate: 'ASC'
             }
-        })
+        });
         if (prependMessages?.length) {
-            chatMessage.unshift(...prependMessages)
+            chatMessage.unshift(...prependMessages);
         }
-        const baseMessages = await (0, utils_1.mapChatMessageToBaseMessage)(chatMessage, this.orgId)
+        const baseMessages = await (0, utils_1.mapChatMessageToBaseMessage)(chatMessage, this.orgId);
         // Get summary
         if (this.llm && typeof this.llm !== 'string') {
-            this.buffer = baseMessages.length ? await this.predictNewSummary(baseMessages.slice(-2), this.buffer) : ''
+            this.buffer = baseMessages.length ? await this.predictNewSummary(baseMessages.slice(-2), this.buffer) : '';
         }
         if (returnBaseMessages) {
             // Anthropic doesn't support multiple system messages
             if (this.llm instanceof FlowiseChatAnthropic_1.ChatAnthropic) {
-                return [new messages_1.HumanMessage(`Below is the summarized conversation:\n\n${this.buffer}`)]
-            } else {
-                return [new messages_1.SystemMessage(this.buffer)]
+                return [new messages_1.HumanMessage(`Below is the summarized conversation:\n\n${this.buffer}`)];
+            }
+            else {
+                return [new messages_1.SystemMessage(this.buffer)];
             }
         }
         if (this.buffer) {
@@ -106,25 +107,25 @@ class ConversationSummaryMemoryExtended extends Interface_1.FlowiseSummaryMemory
                     message: this.buffer,
                     type: 'apiMessage'
                 }
-            ]
+            ];
         }
-        let returnIMessages = []
+        let returnIMessages = [];
         for (const m of chatMessage) {
             returnIMessages.push({
                 message: m.content,
                 type: m.role
-            })
+            });
         }
-        return returnIMessages
+        return returnIMessages;
     }
     async addChatMessages() {
         // adding chat messages is done on server level
-        return
+        return;
     }
     async clearChatMessages() {
         // clearing chat messages is done on server level
-        return
+        return;
     }
 }
-module.exports = { nodeClass: ConversationSummaryMemory_Memory }
+module.exports = { nodeClass: ConversationSummaryMemory_Memory };
 //# sourceMappingURL=ConversationSummaryMemory.js.map

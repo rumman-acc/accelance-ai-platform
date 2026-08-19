@@ -1,90 +1,91 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.createGmailTools = exports.desc = void 0
-const v3_1 = require('zod/v3')
-const node_fetch_1 = __importDefault(require('node-fetch'))
-const core_1 = require('../OpenAPIToolkit/core')
-const agents_1 = require('../../../src/agents')
-exports.desc = `Use this when you want to access Gmail API for managing drafts, messages, labels, and threads`
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createGmailTools = exports.desc = void 0;
+const v3_1 = require("zod/v3");
+const node_fetch_1 = __importDefault(require("node-fetch"));
+const core_1 = require("../OpenAPIToolkit/core");
+const agents_1 = require("../../../src/agents");
+exports.desc = `Use this when you want to access Gmail API for managing drafts, messages, labels, and threads`;
 // Define schemas for different Gmail operations
 const ListSchema = v3_1.z.object({
     maxResults: v3_1.z.number().optional().default(100).describe('Maximum number of results to return'),
     query: v3_1.z.string().optional().describe('Query string for filtering results (Gmail search syntax)')
-})
+});
 const CreateDraftSchema = v3_1.z.object({
     to: v3_1.z.string().describe('Recipient email address(es), comma-separated'),
     subject: v3_1.z.string().optional().describe('Email subject'),
     body: v3_1.z.string().optional().describe('Email body content'),
     cc: v3_1.z.string().optional().describe('CC email address(es), comma-separated'),
     bcc: v3_1.z.string().optional().describe('BCC email address(es), comma-separated')
-})
+});
 const UpdateDraftSchema = CreateDraftSchema.extend({
     id: v3_1.z
         .string()
         .regex(/^[A-Za-z0-9_-]+$/, 'Draft ID must contain only URL-safe characters')
         .describe('ID of the draft to update')
-})
+});
 const SendMessageSchema = v3_1.z.object({
     to: v3_1.z.string().describe('Recipient email address(es), comma-separated'),
     subject: v3_1.z.string().optional().describe('Email subject'),
     body: v3_1.z.string().optional().describe('Email body content'),
     cc: v3_1.z.string().optional().describe('CC email address(es), comma-separated'),
     bcc: v3_1.z.string().optional().describe('BCC email address(es), comma-separated')
-})
+});
 const GetByIdSchema = v3_1.z.object({
     id: v3_1.z.string().describe('ID of the resource')
-})
+});
 const ModifySchema = v3_1.z.object({
     id: v3_1.z.string().describe('ID of the resource'),
     addLabelIds: v3_1.z.array(v3_1.z.string()).optional().describe('Label IDs to add'),
     removeLabelIds: v3_1.z.array(v3_1.z.string()).optional().describe('Label IDs to remove')
-})
+});
 const CreateLabelSchema = v3_1.z.object({
     labelName: v3_1.z.string().describe('Name of the label'),
     labelColor: v3_1.z.string().optional().describe('Color of the label (hex color code)')
-})
+});
 class BaseGmailTool extends core_1.DynamicStructuredTool {
     constructor(args) {
-        super(args)
-        this.accessToken = ''
-        this.accessToken = args.accessToken ?? ''
+        super(args);
+        this.accessToken = '';
+        this.accessToken = args.accessToken ?? '';
     }
     async makeGmailRequest(url, method = 'GET', body, params) {
         const headers = {
             Authorization: `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
             ...this.headers
-        }
+        };
         const response = await (0, node_fetch_1.default)(url, {
             method,
             headers,
             body: body ? JSON.stringify(body) : undefined
-        })
+        });
         if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Gmail API Error ${response.status}: ${response.statusText} - ${errorText}`)
+            const errorText = await response.text();
+            throw new Error(`Gmail API Error ${response.status}: ${response.statusText} - ${errorText}`);
         }
-        const data = await response.text()
-        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
+        const data = await response.text();
+        return data + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
     }
     createMimeMessage(to, subject, body, cc, bcc) {
-        let message = ''
-        message += `To: ${to}\r\n`
-        if (cc) message += `Cc: ${cc}\r\n`
-        if (bcc) message += `Bcc: ${bcc}\r\n`
-        if (subject) message += `Subject: ${subject}\r\n`
-        message += `MIME-Version: 1.0\r\n`
-        message += `Content-Type: text/html; charset=utf-8\r\n`
-        message += `Content-Transfer-Encoding: base64\r\n\r\n`
+        let message = '';
+        message += `To: ${to}\r\n`;
+        if (cc)
+            message += `Cc: ${cc}\r\n`;
+        if (bcc)
+            message += `Bcc: ${bcc}\r\n`;
+        if (subject)
+            message += `Subject: ${subject}\r\n`;
+        message += `MIME-Version: 1.0\r\n`;
+        message += `Content-Type: text/html; charset=utf-8\r\n`;
+        message += `Content-Transfer-Encoding: base64\r\n\r\n`;
         if (body) {
-            message += Buffer.from(body, 'utf-8').toString('base64')
+            message += Buffer.from(body, 'utf-8').toString('base64');
         }
-        return Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+        return Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 }
 // Draft Tools
@@ -97,21 +98,24 @@ class ListDraftsTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const queryParams = new URLSearchParams()
-        if (params.maxResults) queryParams.append('maxResults', params.maxResults.toString())
-        if (params.query) queryParams.append('q', params.query)
-        const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts?${queryParams.toString()}`
+        const params = { ...arg, ...this.defaultParams };
+        const queryParams = new URLSearchParams();
+        if (params.maxResults)
+            queryParams.append('maxResults', params.maxResults.toString());
+        if (params.query)
+            queryParams.append('q', params.query);
+        const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts?${queryParams.toString()}`;
         try {
-            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error listing drafts: ${error}`, params)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error listing drafts: ${error}`, params);
         }
     }
 }
@@ -124,24 +128,25 @@ class CreateDraftTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const raw = this.createMimeMessage(params.to, params.subject, params.body, params.cc, params.bcc)
+            const raw = this.createMimeMessage(params.to, params.subject, params.body, params.cc, params.bcc);
             const draftData = {
                 message: {
                     raw: raw
                 }
-            }
-            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/drafts'
-            const response = await this.makeGmailRequest(url, 'POST', draftData, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error creating draft: ${error}`, params)
+            };
+            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/drafts';
+            const response = await this.makeGmailRequest(url, 'POST', draftData, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error creating draft: ${error}`, params);
         }
     }
 }
@@ -154,22 +159,23 @@ class GetDraftTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const draftId = params.draftId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const draftId = params.draftId || params.id;
         if (!draftId) {
-            return 'Error: Draft ID is required'
+            return 'Error: Draft ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`
-            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting draft: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`;
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting draft: ${error}`, params);
         }
     }
 }
@@ -182,28 +188,29 @@ class UpdateDraftTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'PUT',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const draftId = params.draftId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const draftId = params.draftId || params.id;
         if (!draftId) {
-            return 'Error: Draft ID is required'
+            return 'Error: Draft ID is required';
         }
         try {
-            const raw = this.createMimeMessage(params.to, params.subject, params.body, params.cc, params.bcc)
+            const raw = this.createMimeMessage(params.to, params.subject, params.body, params.cc, params.bcc);
             const draftData = {
                 message: {
                     raw: raw
                 }
-            }
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`
-            const response = await this.makeGmailRequest(url, 'PUT', draftData, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error updating draft: ${error}`, params)
+            };
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`;
+            const response = await this.makeGmailRequest(url, 'PUT', draftData, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error updating draft: ${error}`, params);
         }
     }
 }
@@ -216,22 +223,23 @@ class SendDraftTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts/send',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const draftId = params.draftId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const draftId = params.draftId || params.id;
         if (!draftId) {
-            return 'Error: Draft ID is required'
+            return 'Error: Draft ID is required';
         }
         try {
-            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/drafts/send'
-            const response = await this.makeGmailRequest(url, 'POST', { id: draftId }, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error sending draft: ${error}`, params)
+            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/drafts/send';
+            const response = await this.makeGmailRequest(url, 'POST', { id: draftId }, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error sending draft: ${error}`, params);
         }
     }
 }
@@ -244,22 +252,23 @@ class DeleteDraftTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const draftId = params.draftId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const draftId = params.draftId || params.id;
         if (!draftId) {
-            return 'Error: Draft ID is required'
+            return 'Error: Draft ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`
-            await this.makeGmailRequest(url, 'DELETE', undefined, params)
-            return `Draft ${draftId} deleted successfully`
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error deleting draft: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`;
+            await this.makeGmailRequest(url, 'DELETE', undefined, params);
+            return `Draft ${draftId} deleted successfully`;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error deleting draft: ${error}`, params);
         }
     }
 }
@@ -273,21 +282,24 @@ class ListMessagesTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/messages',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const queryParams = new URLSearchParams()
-        if (params.maxResults) queryParams.append('maxResults', params.maxResults.toString())
-        if (params.query) queryParams.append('q', params.query)
-        const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?${queryParams.toString()}`
+        const params = { ...arg, ...this.defaultParams };
+        const queryParams = new URLSearchParams();
+        if (params.maxResults)
+            queryParams.append('maxResults', params.maxResults.toString());
+        if (params.query)
+            queryParams.append('q', params.query);
+        const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?${queryParams.toString()}`;
         try {
-            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error listing messages: ${error}`, params)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error listing messages: ${error}`, params);
         }
     }
 }
@@ -300,22 +312,23 @@ class GetMessageTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/messages',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const messageId = params.messageId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const messageId = params.messageId || params.id;
         if (!messageId) {
-            return 'Error: Message ID is required'
+            return 'Error: Message ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`
-            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting message: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`;
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting message: ${error}`, params);
         }
     }
 }
@@ -328,22 +341,23 @@ class SendMessageTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         try {
-            const raw = this.createMimeMessage(params.to, params.subject, params.body, params.cc, params.bcc)
+            const raw = this.createMimeMessage(params.to, params.subject, params.body, params.cc, params.bcc);
             const messageData = {
                 raw: raw
-            }
-            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send'
-            const response = await this.makeGmailRequest(url, 'POST', messageData, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error sending message: ${error}`, params)
+            };
+            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
+            const response = await this.makeGmailRequest(url, 'POST', messageData, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error sending message: ${error}`, params);
         }
     }
 }
@@ -356,29 +370,30 @@ class ModifyMessageTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/messages',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const messageId = params.messageId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const messageId = params.messageId || params.id;
         if (!messageId) {
-            return 'Error: Message ID is required'
+            return 'Error: Message ID is required';
         }
         try {
-            const modifyData = {}
+            const modifyData = {};
             if (params.addLabelIds && params.addLabelIds.length > 0) {
-                modifyData.addLabelIds = params.addLabelIds
+                modifyData.addLabelIds = params.addLabelIds;
             }
             if (params.removeLabelIds && params.removeLabelIds.length > 0) {
-                modifyData.removeLabelIds = params.removeLabelIds
+                modifyData.removeLabelIds = params.removeLabelIds;
             }
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`
-            const response = await this.makeGmailRequest(url, 'POST', modifyData, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error modifying message: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`;
+            const response = await this.makeGmailRequest(url, 'POST', modifyData, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error modifying message: ${error}`, params);
         }
     }
 }
@@ -391,22 +406,23 @@ class TrashMessageTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/messages',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const messageId = params.messageId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const messageId = params.messageId || params.id;
         if (!messageId) {
-            return 'Error: Message ID is required'
+            return 'Error: Message ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/trash`
-            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error moving message to trash: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/trash`;
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error moving message to trash: ${error}`, params);
         }
     }
 }
@@ -419,22 +435,23 @@ class UntrashMessageTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/messages',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const messageId = params.messageId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const messageId = params.messageId || params.id;
         if (!messageId) {
-            return 'Error: Message ID is required'
+            return 'Error: Message ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/untrash`
-            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error removing message from trash: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/untrash`;
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error removing message from trash: ${error}`, params);
         }
     }
 }
@@ -447,22 +464,23 @@ class DeleteMessageTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/messages',
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const messageId = params.messageId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const messageId = params.messageId || params.id;
         if (!messageId) {
-            return 'Error: Message ID is required'
+            return 'Error: Message ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`
-            await this.makeGmailRequest(url, 'DELETE', undefined, params)
-            return `Message ${messageId} deleted successfully`
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error deleting message: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`;
+            await this.makeGmailRequest(url, 'DELETE', undefined, params);
+            return `Message ${messageId} deleted successfully`;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error deleting message: ${error}`, params);
         }
     }
 }
@@ -476,17 +494,18 @@ class ListLabelsTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/labels',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call() {
         try {
-            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/labels'
-            const response = await this.makeGmailRequest(url, 'GET', undefined, {})
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error listing labels: ${error}`, {})
+            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/labels';
+            const response = await this.makeGmailRequest(url, 'GET', undefined, {});
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error listing labels: ${error}`, {});
         }
     }
 }
@@ -499,22 +518,23 @@ class GetLabelTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/labels',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const labelId = params.labelId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const labelId = params.labelId || params.id;
         if (!labelId) {
-            return 'Error: Label ID is required'
+            return 'Error: Label ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`
-            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting label: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`;
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting label: ${error}`, params);
         }
     }
 }
@@ -527,31 +547,32 @@ class CreateLabelTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/labels',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
+        const params = { ...arg, ...this.defaultParams };
         if (!params.labelName) {
-            return 'Error: Label name is required'
+            return 'Error: Label name is required';
         }
         try {
             const labelData = {
                 name: params.labelName,
                 labelListVisibility: 'labelShow',
                 messageListVisibility: 'show'
-            }
+            };
             if (params.labelColor) {
                 labelData.color = {
                     backgroundColor: params.labelColor
-                }
+                };
             }
-            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/labels'
-            const response = await this.makeGmailRequest(url, 'POST', labelData, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error creating label: ${error}`, params)
+            const url = 'https://gmail.googleapis.com/gmail/v1/users/me/labels';
+            const response = await this.makeGmailRequest(url, 'POST', labelData, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error creating label: ${error}`, params);
         }
     }
 }
@@ -564,31 +585,32 @@ class UpdateLabelTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/labels',
             method: 'PUT',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const labelId = params.labelId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const labelId = params.labelId || params.id;
         if (!labelId) {
-            return 'Error: Label ID is required'
+            return 'Error: Label ID is required';
         }
         try {
-            const labelData = {}
+            const labelData = {};
             if (params.labelName) {
-                labelData.name = params.labelName
+                labelData.name = params.labelName;
             }
             if (params.labelColor) {
                 labelData.color = {
                     backgroundColor: params.labelColor
-                }
+                };
             }
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`
-            const response = await this.makeGmailRequest(url, 'PUT', labelData, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error updating label: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`;
+            const response = await this.makeGmailRequest(url, 'PUT', labelData, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error updating label: ${error}`, params);
         }
     }
 }
@@ -601,22 +623,23 @@ class DeleteLabelTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/labels',
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const labelId = params.labelId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const labelId = params.labelId || params.id;
         if (!labelId) {
-            return 'Error: Label ID is required'
+            return 'Error: Label ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`
-            await this.makeGmailRequest(url, 'DELETE', undefined, params)
-            return `Label ${labelId} deleted successfully`
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error deleting label: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`;
+            await this.makeGmailRequest(url, 'DELETE', undefined, params);
+            return `Label ${labelId} deleted successfully`;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error deleting label: ${error}`, params);
         }
     }
 }
@@ -630,21 +653,24 @@ class ListThreadsTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/threads',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const queryParams = new URLSearchParams()
-        if (params.maxResults) queryParams.append('maxResults', params.maxResults.toString())
-        if (params.query) queryParams.append('q', params.query)
-        const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads?${queryParams.toString()}`
+        const params = { ...arg, ...this.defaultParams };
+        const queryParams = new URLSearchParams();
+        if (params.maxResults)
+            queryParams.append('maxResults', params.maxResults.toString());
+        if (params.query)
+            queryParams.append('q', params.query);
+        const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads?${queryParams.toString()}`;
         try {
-            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error listing threads: ${error}`, params)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error listing threads: ${error}`, params);
         }
     }
 }
@@ -657,22 +683,23 @@ class GetThreadTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/threads',
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const threadId = params.threadId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const threadId = params.threadId || params.id;
         if (!threadId) {
-            return 'Error: Thread ID is required'
+            return 'Error: Thread ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`
-            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error getting thread: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`;
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error getting thread: ${error}`, params);
         }
     }
 }
@@ -685,29 +712,30 @@ class ModifyThreadTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/threads',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const threadId = params.threadId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const threadId = params.threadId || params.id;
         if (!threadId) {
-            return 'Error: Thread ID is required'
+            return 'Error: Thread ID is required';
         }
         try {
-            const modifyData = {}
+            const modifyData = {};
             if (params.addLabelIds && params.addLabelIds.length > 0) {
-                modifyData.addLabelIds = params.addLabelIds
+                modifyData.addLabelIds = params.addLabelIds;
             }
             if (params.removeLabelIds && params.removeLabelIds.length > 0) {
-                modifyData.removeLabelIds = params.removeLabelIds
+                modifyData.removeLabelIds = params.removeLabelIds;
             }
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/modify`
-            const response = await this.makeGmailRequest(url, 'POST', modifyData, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error modifying thread: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/modify`;
+            const response = await this.makeGmailRequest(url, 'POST', modifyData, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error modifying thread: ${error}`, params);
         }
     }
 }
@@ -720,22 +748,23 @@ class TrashThreadTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/threads',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const threadId = params.threadId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const threadId = params.threadId || params.id;
         if (!threadId) {
-            return 'Error: Thread ID is required'
+            return 'Error: Thread ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/trash`
-            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error moving thread to trash: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/trash`;
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error moving thread to trash: ${error}`, params);
         }
     }
 }
@@ -748,22 +777,23 @@ class UntrashThreadTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/threads',
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const threadId = params.threadId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const threadId = params.threadId || params.id;
         if (!threadId) {
-            return 'Error: Thread ID is required'
+            return 'Error: Thread ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/untrash`
-            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
-            return response
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error removing thread from trash: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/untrash`;
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params);
+            return response;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error removing thread from trash: ${error}`, params);
         }
     }
 }
@@ -776,107 +806,108 @@ class DeleteThreadTool extends BaseGmailTool {
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/threads',
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken })
-        this.defaultParams = args.defaultParams || {}
+        };
+        super({ ...toolInput, accessToken: args.accessToken });
+        this.defaultParams = args.defaultParams || {};
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const threadId = params.threadId || params.id
+        const params = { ...arg, ...this.defaultParams };
+        const threadId = params.threadId || params.id;
         if (!threadId) {
-            return 'Error: Thread ID is required'
+            return 'Error: Thread ID is required';
         }
         try {
-            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`
-            await this.makeGmailRequest(url, 'DELETE', undefined, params)
-            return `Thread ${threadId} deleted successfully`
-        } catch (error) {
-            return (0, agents_1.formatToolError)(`Error deleting thread: ${error}`, params)
+            const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`;
+            await this.makeGmailRequest(url, 'DELETE', undefined, params);
+            return `Thread ${threadId} deleted successfully`;
+        }
+        catch (error) {
+            return (0, agents_1.formatToolError)(`Error deleting thread: ${error}`, params);
         }
     }
 }
 const createGmailTools = (args) => {
-    const tools = []
-    const actions = args?.actions || []
-    const accessToken = args?.accessToken || ''
-    const defaultParams = args?.defaultParams || {}
+    const tools = [];
+    const actions = args?.actions || [];
+    const accessToken = args?.accessToken || '';
+    const defaultParams = args?.defaultParams || {};
     // Draft tools
     if (actions.includes('listDrafts')) {
-        tools.push(new ListDraftsTool({ accessToken, defaultParams }))
+        tools.push(new ListDraftsTool({ accessToken, defaultParams }));
     }
     if (actions.includes('createDraft')) {
-        tools.push(new CreateDraftTool({ accessToken, defaultParams }))
+        tools.push(new CreateDraftTool({ accessToken, defaultParams }));
     }
     if (actions.includes('getDraft')) {
-        tools.push(new GetDraftTool({ accessToken, defaultParams }))
+        tools.push(new GetDraftTool({ accessToken, defaultParams }));
     }
     if (actions.includes('updateDraft')) {
-        tools.push(new UpdateDraftTool({ accessToken, defaultParams }))
+        tools.push(new UpdateDraftTool({ accessToken, defaultParams }));
     }
     if (actions.includes('sendDraft')) {
-        tools.push(new SendDraftTool({ accessToken, defaultParams }))
+        tools.push(new SendDraftTool({ accessToken, defaultParams }));
     }
     if (actions.includes('deleteDraft')) {
-        tools.push(new DeleteDraftTool({ accessToken, defaultParams }))
+        tools.push(new DeleteDraftTool({ accessToken, defaultParams }));
     }
     // Message tools
     if (actions.includes('listMessages')) {
-        tools.push(new ListMessagesTool({ accessToken, defaultParams }))
+        tools.push(new ListMessagesTool({ accessToken, defaultParams }));
     }
     if (actions.includes('getMessage')) {
-        tools.push(new GetMessageTool({ accessToken, defaultParams }))
+        tools.push(new GetMessageTool({ accessToken, defaultParams }));
     }
     if (actions.includes('sendMessage')) {
-        tools.push(new SendMessageTool({ accessToken, defaultParams }))
+        tools.push(new SendMessageTool({ accessToken, defaultParams }));
     }
     if (actions.includes('modifyMessage')) {
-        tools.push(new ModifyMessageTool({ accessToken, defaultParams }))
+        tools.push(new ModifyMessageTool({ accessToken, defaultParams }));
     }
     if (actions.includes('trashMessage')) {
-        tools.push(new TrashMessageTool({ accessToken, defaultParams }))
+        tools.push(new TrashMessageTool({ accessToken, defaultParams }));
     }
     if (actions.includes('untrashMessage')) {
-        tools.push(new UntrashMessageTool({ accessToken, defaultParams }))
+        tools.push(new UntrashMessageTool({ accessToken, defaultParams }));
     }
     if (actions.includes('deleteMessage')) {
-        tools.push(new DeleteMessageTool({ accessToken, defaultParams }))
+        tools.push(new DeleteMessageTool({ accessToken, defaultParams }));
     }
     // Label tools
     if (actions.includes('listLabels')) {
-        tools.push(new ListLabelsTool({ accessToken, defaultParams }))
+        tools.push(new ListLabelsTool({ accessToken, defaultParams }));
     }
     if (actions.includes('getLabel')) {
-        tools.push(new GetLabelTool({ accessToken, defaultParams }))
+        tools.push(new GetLabelTool({ accessToken, defaultParams }));
     }
     if (actions.includes('createLabel')) {
-        tools.push(new CreateLabelTool({ accessToken, defaultParams }))
+        tools.push(new CreateLabelTool({ accessToken, defaultParams }));
     }
     if (actions.includes('updateLabel')) {
-        tools.push(new UpdateLabelTool({ accessToken, defaultParams }))
+        tools.push(new UpdateLabelTool({ accessToken, defaultParams }));
     }
     if (actions.includes('deleteLabel')) {
-        tools.push(new DeleteLabelTool({ accessToken, defaultParams }))
+        tools.push(new DeleteLabelTool({ accessToken, defaultParams }));
     }
     // Thread tools
     if (actions.includes('listThreads')) {
-        tools.push(new ListThreadsTool({ accessToken, defaultParams }))
+        tools.push(new ListThreadsTool({ accessToken, defaultParams }));
     }
     if (actions.includes('getThread')) {
-        tools.push(new GetThreadTool({ accessToken, defaultParams }))
+        tools.push(new GetThreadTool({ accessToken, defaultParams }));
     }
     if (actions.includes('modifyThread')) {
-        tools.push(new ModifyThreadTool({ accessToken, defaultParams }))
+        tools.push(new ModifyThreadTool({ accessToken, defaultParams }));
     }
     if (actions.includes('trashThread')) {
-        tools.push(new TrashThreadTool({ accessToken, defaultParams }))
+        tools.push(new TrashThreadTool({ accessToken, defaultParams }));
     }
     if (actions.includes('untrashThread')) {
-        tools.push(new UntrashThreadTool({ accessToken, defaultParams }))
+        tools.push(new UntrashThreadTool({ accessToken, defaultParams }));
     }
     if (actions.includes('deleteThread')) {
-        tools.push(new DeleteThreadTool({ accessToken, defaultParams }))
+        tools.push(new DeleteThreadTool({ accessToken, defaultParams }));
     }
-    return tools
-}
-exports.createGmailTools = createGmailTools
+    return tools;
+};
+exports.createGmailTools = createGmailTools;
 //# sourceMappingURL=core.js.map

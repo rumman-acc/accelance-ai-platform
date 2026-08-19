@@ -1,8 +1,8 @@
-import { TextLoader } from '@langchain/classic/document_loaders/fs/text'
+import { TextLoader } from '@langchain/classic/document_loaders/fs/text';
 type CSVLoaderOptions = {
-    column?: string | number
-    separator?: string
-}
+    column?: string | number;
+    separator?: string;
+};
 /**
  * A class that extends the TextLoader class. It represents a document
  * loader that loads documents from a CSV file. It has a constructor that
@@ -12,8 +12,8 @@ type CSVLoaderOptions = {
  * document's pageContent.
  */
 export declare class CSVLoader extends TextLoader {
-    protected options: CSVLoaderOptions
-    constructor(filePathOrBlob: ConstructorParameters<typeof TextLoader>[0], options?: CSVLoaderOptions | string)
+    protected options: CSVLoaderOptions;
+    constructor(filePathOrBlob: ConstructorParameters<typeof TextLoader>[0], options?: CSVLoaderOptions | string);
     /**
      * A protected method that parses the raw CSV data and returns an array of
      * strings representing the pageContent of each document. It uses the
@@ -25,6 +25,6 @@ export declare class CSVLoader extends TextLoader {
      * @param raw The raw CSV data to be parsed.
      * @returns An array of strings representing the pageContent of each document.
      */
-    parse(raw: string): Promise<string[]>
+    parse(raw: string): Promise<string[]>;
 }
-export {}
+export {};

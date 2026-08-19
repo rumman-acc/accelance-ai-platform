@@ -1,49 +1,48 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-const node_fetch_1 = __importDefault(require('node-fetch'))
-const documents_1 = require('@langchain/core/documents')
-const chains_1 = require('@langchain/classic/chains')
-const utils_1 = require('../../../src/utils')
-const Moderation_1 = require('../../moderation/Moderation')
-const OutputParserHelpers_1 = require('../../outputparsers/OutputParserHelpers')
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const node_fetch_1 = __importDefault(require("node-fetch"));
+const documents_1 = require("@langchain/core/documents");
+const chains_1 = require("@langchain/classic/chains");
+const utils_1 = require("../../../src/utils");
+const Moderation_1 = require("../../moderation/Moderation");
+const OutputParserHelpers_1 = require("../../outputparsers/OutputParserHelpers");
 // functionality based on https://github.com/vectara/vectara-answer
 const reorderCitations = (unorderedSummary) => {
-    const allCitations = unorderedSummary.match(/\[\d+\]/g) || []
-    const uniqueCitations = [...new Set(allCitations)]
-    const citationToReplacement = {}
+    const allCitations = unorderedSummary.match(/\[\d+\]/g) || [];
+    const uniqueCitations = [...new Set(allCitations)];
+    const citationToReplacement = {};
     uniqueCitations.forEach((citation, index) => {
-        citationToReplacement[citation] = `[${index + 1}]`
-    })
-    return unorderedSummary.replace(/\[\d+\]/g, (match) => citationToReplacement[match])
-}
+        citationToReplacement[citation] = `[${index + 1}]`;
+    });
+    return unorderedSummary.replace(/\[\d+\]/g, (match) => citationToReplacement[match]);
+};
 const applyCitationOrder = (searchResults, unorderedSummary) => {
-    const orderedSearchResults = []
-    const allCitations = unorderedSummary.match(/\[\d+\]/g) || []
-    const addedIndices = new Set()
+    const orderedSearchResults = [];
+    const allCitations = unorderedSummary.match(/\[\d+\]/g) || [];
+    const addedIndices = new Set();
     for (let i = 0; i < allCitations.length; i++) {
-        const citation = allCitations[i]
-        const index = Number(citation.slice(1, citation.length - 1)) - 1
-        if (addedIndices.has(index)) continue
-        orderedSearchResults.push(searchResults[index])
-        addedIndices.add(index)
+        const citation = allCitations[i];
+        const index = Number(citation.slice(1, citation.length - 1)) - 1;
+        if (addedIndices.has(index))
+            continue;
+        orderedSearchResults.push(searchResults[index]);
+        addedIndices.add(index);
     }
-    return orderedSearchResults
-}
+    return orderedSearchResults;
+};
 class VectaraChain_Chains {
     constructor() {
-        this.label = 'Vectara QA Chain'
-        this.name = 'vectaraQAChain'
-        this.version = 2.0
-        this.type = 'VectaraQAChain'
-        this.icon = 'vectara.png'
-        this.category = 'Chains'
-        this.description = 'QA chain for Vectara'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(chains_1.VectorDBQAChain)]
+        this.label = 'Vectara QA Chain';
+        this.name = 'vectaraQAChain';
+        this.version = 2.0;
+        this.type = 'VectaraQAChain';
+        this.icon = 'vectara.png';
+        this.category = 'Chains';
+        this.description = 'QA chain for Vectara';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(chains_1.VectorDBQAChain)];
         this.inputs = [
             {
                 label: 'Vectara Store',
@@ -53,8 +52,7 @@ class VectaraChain_Chains {
             {
                 label: 'Summarizer Prompt Name',
                 name: 'summarizerPromptName',
-                description:
-                    'Summarize the results fetched from Vectara. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/select-a-summarizer">more</a>',
+                description: 'Summarize the results fetched from Vectara. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/select-a-summarizer">more</a>',
                 type: 'options',
                 options: [
                     {
@@ -83,8 +81,7 @@ class VectaraChain_Chains {
             {
                 label: 'Response Language',
                 name: 'responseLang',
-                description:
-                    'Return the response in specific language. If not selected, Vectara will automatically detects the language. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/grounded-generation-response-languages">more</a>',
+                description: 'Return the response in specific language. If not selected, Vectara will automatically detects the language. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/grounded-generation-response-languages">more</a>',
                 type: 'options',
                 options: [
                     {
@@ -218,42 +215,43 @@ class VectaraChain_Chains {
                 optional: true,
                 list: true
             }
-        ]
+        ];
     }
     async init() {
-        return null
+        return null;
     }
     async run(nodeData, input) {
-        const vectorStore = nodeData.inputs?.vectaraStore
-        const responseLang = nodeData.inputs?.responseLang ?? 'eng'
-        const summarizerPromptName = nodeData.inputs?.summarizerPromptName
-        const maxSummarizedResultsStr = nodeData.inputs?.maxSummarizedResults
-        const maxSummarizedResults = maxSummarizedResultsStr ? parseInt(maxSummarizedResultsStr, 10) : 7
-        const topK = vectorStore?.k ?? 10
-        const headers = await vectorStore.getJsonHeader()
-        const vectaraFilter = vectorStore.vectaraFilter ?? {}
-        const corpusId = vectorStore.corpusId ?? []
-        const customerId = vectorStore.customerId ?? ''
+        const vectorStore = nodeData.inputs?.vectaraStore;
+        const responseLang = nodeData.inputs?.responseLang ?? 'eng';
+        const summarizerPromptName = nodeData.inputs?.summarizerPromptName;
+        const maxSummarizedResultsStr = nodeData.inputs?.maxSummarizedResults;
+        const maxSummarizedResults = maxSummarizedResultsStr ? parseInt(maxSummarizedResultsStr, 10) : 7;
+        const topK = vectorStore?.k ?? 10;
+        const headers = await vectorStore.getJsonHeader();
+        const vectaraFilter = vectorStore.vectaraFilter ?? {};
+        const corpusId = vectorStore.corpusId ?? [];
+        const customerId = vectorStore.customerId ?? '';
         const corpusKeys = corpusId.map((corpusId) => ({
             customerId,
             corpusId,
             metadataFilter: vectaraFilter?.filter ?? '',
             lexicalInterpolationConfig: { lambda: vectaraFilter?.lambda ?? 0.025 }
-        }))
+        }));
         // Vectara reranker ID for MMR (https://docs.vectara.com/docs/api-reference/search-apis/reranking#maximal-marginal-relevance-mmr-reranker)
-        const mmrRerankerId = 272725718
-        const mmrEnabled = vectaraFilter?.mmrConfig?.enabled
-        const moderations = nodeData.inputs?.inputModeration
+        const mmrRerankerId = 272725718;
+        const mmrEnabled = vectaraFilter?.mmrConfig?.enabled;
+        const moderations = nodeData.inputs?.inputModeration;
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the Vectara chain
-                input = await (0, Moderation_1.checkInputs)(moderations, input)
-            } catch (e) {
-                await new Promise((resolve) => setTimeout(resolve, 500))
+                input = await (0, Moderation_1.checkInputs)(moderations, input);
+            }
+            catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 // if (options.shouldStreamResponse) {
                 //     streamResponse(options.sseStreamer, options.chatId, e.message)
                 // }
-                return (0, OutputParserHelpers_1.formatResponse)(e.message)
+                return (0, OutputParserHelpers_1.formatResponse)(e.message);
             }
         }
         const data = {
@@ -269,13 +267,13 @@ class VectaraChain_Chains {
                     },
                     ...(mmrEnabled
                         ? {
-                              rerankingConfig: {
-                                  rerankerId: mmrRerankerId,
-                                  mmrConfig: {
-                                      diversityBias: vectaraFilter?.mmrConfig.diversityBias
-                                  }
-                              }
-                          }
+                            rerankingConfig: {
+                                rerankerId: mmrRerankerId,
+                                mmrConfig: {
+                                    diversityBias: vectaraFilter?.mmrConfig.diversityBias
+                                }
+                            }
+                        }
                         : {}),
                     summary: [
                         {
@@ -286,69 +284,63 @@ class VectaraChain_Chains {
                     ]
                 }
             ]
-        }
+        };
         try {
             const response = await (0, node_fetch_1.default)(`https://api.vectara.io/v1/query`, {
                 method: 'POST',
                 headers: headers?.headers,
                 body: JSON.stringify(data)
-            })
+            });
             if (response.status !== 200) {
-                throw new Error(`Vectara API returned status code ${response.status}`)
+                throw new Error(`Vectara API returned status code ${response.status}`);
             }
-            const result = await response.json()
-            const responses = result.responseSet[0].response
-            const documents = result.responseSet[0].document
-            let rawSummarizedText = ''
+            const result = await response.json();
+            const responses = result.responseSet[0].response;
+            const documents = result.responseSet[0].document;
+            let rawSummarizedText = '';
             // remove responses that are not in the topK (in case of MMR)
             // Note that this does not really matter functionally due to the reorder citations, but it is more efficient
-            const maxResponses = mmrEnabled ? Math.min(responses.length, topK) : responses.length
+            const maxResponses = mmrEnabled ? Math.min(responses.length, topK) : responses.length;
             if (responses.length > maxResponses) {
-                responses.splice(0, maxResponses)
+                responses.splice(0, maxResponses);
             }
             // Add metadata to each text response given its corresponding document metadata
             for (let i = 0; i < responses.length; i += 1) {
-                const responseMetadata = responses[i].metadata
-                const documentMetadata = documents[responses[i].documentIndex].metadata
-                const combinedMetadata = {}
+                const responseMetadata = responses[i].metadata;
+                const documentMetadata = documents[responses[i].documentIndex].metadata;
+                const combinedMetadata = {};
                 responseMetadata.forEach((item) => {
-                    combinedMetadata[item.name] = item.value
-                })
+                    combinedMetadata[item.name] = item.value;
+                });
                 documentMetadata.forEach((item) => {
-                    combinedMetadata[item.name] = item.value
-                })
-                responses[i].metadata = combinedMetadata
+                    combinedMetadata[item.name] = item.value;
+                });
+                responses[i].metadata = combinedMetadata;
             }
             // Create the summarization response
-            const summaryStatus = result.responseSet[0].summary[0].status
+            const summaryStatus = result.responseSet[0].summary[0].status;
             if (summaryStatus.length > 0 && summaryStatus[0].code === 'BAD_REQUEST') {
-                throw new Error(
-                    `BAD REQUEST: Too much text for the summarizer to summarize. Please try reducing the number of search results to summarize, or the context of each result by adjusting the 'summary_num_sentences', and 'summary_num_results' parameters respectively.`
-                )
+                throw new Error(`BAD REQUEST: Too much text for the summarizer to summarize. Please try reducing the number of search results to summarize, or the context of each result by adjusting the 'summary_num_sentences', and 'summary_num_results' parameters respectively.`);
             }
-            if (
-                summaryStatus.length > 0 &&
+            if (summaryStatus.length > 0 &&
                 summaryStatus[0].code === 'NOT_FOUND' &&
-                summaryStatus[0].statusDetail === 'Failed to retrieve summarizer.'
-            ) {
-                throw new Error(`BAD REQUEST: summarizer ${summarizerPromptName} is invalid for this account.`)
+                summaryStatus[0].statusDetail === 'Failed to retrieve summarizer.') {
+                throw new Error(`BAD REQUEST: summarizer ${summarizerPromptName} is invalid for this account.`);
             }
             // Reorder citations in summary and create the list of returned source documents
-            rawSummarizedText = result.responseSet[0].summary[0]?.text
-            let summarizedText = reorderCitations(rawSummarizedText)
-            let summaryResponses = applyCitationOrder(responses, rawSummarizedText)
-            const sourceDocuments = summaryResponses.map(
-                (response) =>
-                    new documents_1.Document({
-                        pageContent: response.text,
-                        metadata: response.metadata
-                    })
-            )
-            return { text: summarizedText, sourceDocuments: sourceDocuments }
-        } catch (error) {
-            throw new Error(error)
+            rawSummarizedText = result.responseSet[0].summary[0]?.text;
+            let summarizedText = reorderCitations(rawSummarizedText);
+            let summaryResponses = applyCitationOrder(responses, rawSummarizedText);
+            const sourceDocuments = summaryResponses.map((response) => new documents_1.Document({
+                pageContent: response.text,
+                metadata: response.metadata
+            }));
+            return { text: summarizedText, sourceDocuments: sourceDocuments };
+        }
+        catch (error) {
+            throw new Error(error);
         }
     }
 }
-module.exports = { nodeClass: VectaraChain_Chains }
+module.exports = { nodeClass: VectaraChain_Chains };
 //# sourceMappingURL=VectaraChain.js.map

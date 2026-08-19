@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class DatadogApi {
     constructor() {
-        this.label = 'Datadog API'
-        this.name = 'datadogApi'
-        this.version = 1.0
+        this.label = 'Datadog API';
+        this.name = 'datadogApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://docs.datadoghq.com/account_management/api-app-keys/">official guide</a> on how to get an API Key and Application Key from Datadog Organization Settings → API Keys / Application Keys'
+            'Refer to <a target="_blank" href="https://docs.datadoghq.com/account_management/api-app-keys/">official guide</a> on how to get an API Key and Application Key from Datadog Organization Settings → API Keys / Application Keys';
         this.inputs = [
             {
                 label: 'API Key',
@@ -25,8 +25,8 @@ class DatadogApi {
                 default: 'datadoghq.com',
                 description: "e.g. datadoghq.com, datadoghq.eu, us3.datadoghq.com — matches your Datadog account's region"
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: DatadogApi }
+module.exports = { credClass: DatadogApi };
 //# sourceMappingURL=DatadogApi.credential.js.map

@@ -1,13 +1,13 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const scopes = ['openid', 'offline_access', 'Files.Read', 'Files.Read.All', 'Files.ReadWrite', 'Files.ReadWrite.All']
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const scopes = ['openid', 'offline_access', 'Files.Read', 'Files.Read.All', 'Files.ReadWrite', 'Files.ReadWrite.All'];
 class OneDriveOAuth2 {
     constructor() {
-        this.label = 'OneDrive OAuth2'
-        this.name = 'oneDriveOAuth2'
-        this.version = 1.0
+        this.label = 'OneDrive OAuth2';
+        this.name = 'oneDriveOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -38,8 +38,8 @@ class OneDriveOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: OneDriveOAuth2 }
+module.exports = { credClass: OneDriveOAuth2 };
 //# sourceMappingURL=OneDriveOAuth2.credential.js.map

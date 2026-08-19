@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const utils_2 = require('../utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const utils_2 = require("../utils");
 const exampleFunc = `/*
 * You can use any libraries imported in Flowise
 * You can use properties specified in Input Variables with the prefix $. For example: $foo
@@ -25,26 +25,26 @@ try {
 } catch (error) {
     console.error(error);
     return '';
-}`
+}`;
 class CustomFunction_Agentflow {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listRuntimeStateKeys(_, options) {
-                const previousNodes = options.previousNodes
-                const startAgentflowNode = previousNodes.find((node) => node.name === 'startAgentflow')
-                const state = startAgentflowNode?.inputs?.startState
-                return state.map((item) => ({ label: item.key, name: item.key }))
+                const previousNodes = options.previousNodes;
+                const startAgentflowNode = previousNodes.find((node) => node.name === 'startAgentflow');
+                const state = startAgentflowNode?.inputs?.startState;
+                return state.map((item) => ({ label: item.key, name: item.key }));
             }
-        }
-        this.label = 'Custom Function'
-        this.name = 'customFunctionAgentflow'
-        this.version = 1.1
-        this.type = 'CustomFunction'
-        this.category = 'Agent Flows'
-        this.description = 'Execute custom function'
-        this.baseClasses = [this.type]
-        this.color = '#E4B7FF'
+        };
+        this.label = 'Custom Function';
+        this.name = 'customFunctionAgentflow';
+        this.version = 1.1;
+        this.type = 'CustomFunction';
+        this.category = 'Agent Flows';
+        this.description = 'Execute custom function';
+        this.baseClasses = [this.type];
+        this.color = '#E4B7FF';
         this.inputs = [
             {
                 label: 'Input Variables',
@@ -97,19 +97,19 @@ class CustomFunction_Agentflow {
                     }
                 ]
             }
-        ]
+        ];
     }
     async run(nodeData, input, options) {
-        const javascriptFunction = nodeData.inputs?.customFunctionJavascriptFunction
-        const functionInputVariables = nodeData.inputs?.customFunctionInputVariables ?? []
-        const _customFunctionUpdateState = nodeData.inputs?.customFunctionUpdateState
-        const state = options.agentflowRuntime?.state
-        const chatId = options.chatId
-        const isLastNode = options.isLastNode
-        const isStreamable = isLastNode && options.sseStreamer !== undefined
-        const appDataSource = options.appDataSource
-        const databaseEntities = options.databaseEntities
-        const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options)
+        const javascriptFunction = nodeData.inputs?.customFunctionJavascriptFunction;
+        const functionInputVariables = nodeData.inputs?.customFunctionInputVariables ?? [];
+        const _customFunctionUpdateState = nodeData.inputs?.customFunctionUpdateState;
+        const state = options.agentflowRuntime?.state;
+        const chatId = options.chatId;
+        const isLastNode = options.isLastNode;
+        const isStreamable = isLastNode && options.sseStreamer !== undefined;
+        const appDataSource = options.appDataSource;
+        const databaseEntities = options.databaseEntities;
+        const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options);
         const flow = {
             input,
             state,
@@ -122,37 +122,37 @@ class CustomFunction_Agentflow {
             usedTools: options.postProcessing?.usedTools,
             artifacts: options.postProcessing?.artifacts,
             fileAnnotations: options.postProcessing?.fileAnnotations
-        }
+        };
         // Create additional sandbox variables for custom function inputs
-        const additionalSandbox = {}
+        const additionalSandbox = {};
         for (const item of functionInputVariables) {
-            const variableName = item.variableName
-            const variableValue = item.variableValue
-            additionalSandbox[`$${variableName}`] = variableValue
+            const variableName = item.variableName;
+            const variableValue = item.variableValue;
+            additionalSandbox[`$${variableName}`] = variableValue;
         }
-        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow, additionalSandbox)
+        const sandbox = (0, utils_1.createCodeExecutionSandbox)(input, variables, flow, additionalSandbox);
         // Setup streaming function if needed
         const streamOutput = isStreamable
             ? (output) => {
-                  const sseStreamer = options.sseStreamer
-                  sseStreamer.streamTokenEvent(chatId, output)
-              }
-            : undefined
+                const sseStreamer = options.sseStreamer;
+                sseStreamer.streamTokenEvent(chatId, output);
+            }
+            : undefined;
         try {
             const response = await (0, utils_1.executeJavaScriptCode)(javascriptFunction, sandbox, {
                 libraries: ['axios'],
                 streamOutput
-            })
-            let finalOutput = response
+            });
+            let finalOutput = response;
             if (typeof response === 'object') {
-                finalOutput = JSON.stringify(response, null, 2)
+                finalOutput = JSON.stringify(response, null, 2);
             }
             // Update flow state if needed
-            let newState = { ...state }
+            let newState = { ...state };
             if (_customFunctionUpdateState && Array.isArray(_customFunctionUpdateState) && _customFunctionUpdateState.length > 0) {
-                newState = (0, utils_2.updateFlowState)(state, _customFunctionUpdateState)
+                newState = (0, utils_2.updateFlowState)(state, _customFunctionUpdateState);
             }
-            newState = (0, utils_1.processTemplateVariables)(newState, finalOutput)
+            newState = (0, utils_1.processTemplateVariables)(newState, finalOutput);
             const returnOutput = {
                 id: nodeData.id,
                 name: this.name,
@@ -164,12 +164,13 @@ class CustomFunction_Agentflow {
                     content: finalOutput
                 },
                 state: newState
-            }
-            return returnOutput
-        } catch (e) {
-            throw new Error(e)
+            };
+            return returnOutput;
+        }
+        catch (e) {
+            throw new Error(e);
         }
     }
 }
-module.exports = { nodeClass: CustomFunction_Agentflow }
+module.exports = { nodeClass: CustomFunction_Agentflow };
 //# sourceMappingURL=CustomFunction.js.map

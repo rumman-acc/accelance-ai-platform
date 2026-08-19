@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.DEFAULT_AWS_REGION = exports.AWS_REGIONS = void 0
-exports.getAWSCredentialConfig = getAWSCredentialConfig
-exports.getAWSCredentials = getAWSCredentials
-const client_sts_1 = require('@aws-sdk/client-sts')
-const utils_1 = require('./utils')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DEFAULT_AWS_REGION = exports.AWS_REGIONS = void 0;
+exports.getAWSCredentialConfig = getAWSCredentialConfig;
+exports.getAWSCredentials = getAWSCredentials;
+const client_sts_1 = require("@aws-sdk/client-sts");
+const utils_1 = require("./utils");
 // AWS Regions constant
 exports.AWS_REGIONS = [
     { label: 'US East (N. Virginia) - us-east-1', name: 'us-east-1' },
@@ -28,14 +28,14 @@ exports.AWS_REGIONS = [
     { label: 'Europe (Stockholm) - eu-north-1', name: 'eu-north-1' },
     { label: 'Middle East (Bahrain) - me-south-1', name: 'me-south-1' },
     { label: 'South America (São Paulo) - sa-east-1', name: 'sa-east-1' }
-]
-exports.DEFAULT_AWS_REGION = 'us-east-1'
+];
+exports.DEFAULT_AWS_REGION = 'us-east-1';
 /**
  * Regex to validate AWS IAM Role ARN format.
  * Supports standard AWS partitions (aws, aws-cn, aws-us-gov).
  * Format: arn:<partition>:iam::<account-id>:role/<role-path-and-name>
  */
-const AWS_ROLE_ARN_REGEX = /^arn:aws(-[a-z]+(-[a-z]+)?)?:iam::\d{12}:role\/[\w+=,.@/-]+$/
+const AWS_ROLE_ARN_REGEX = /^arn:aws(-[a-z]+(-[a-z]+)?)?:iam::\d{12}:role\/[\w+=,.@/-]+$/;
 /**
  * Get AWS credential configuration from node data, supporting both static credentials
  * and STS AssumeRole flows.
@@ -61,17 +61,17 @@ const AWS_ROLE_ARN_REGEX = /^arn:aws(-[a-z]+(-[a-z]+)?)?:iam::\d{12}:role\/[\w+=
  *   External ID) — The full error is logged server-side.
  */
 async function getAWSCredentialConfig(nodeData, options, region) {
-    const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-    const awsRegion = region || exports.DEFAULT_AWS_REGION
-    const accessKeyId = (0, utils_1.getCredentialParam)('awsKey', credentialData, nodeData)
-    const secretAccessKey = (0, utils_1.getCredentialParam)('awsSecret', credentialData, nodeData)
-    const sessionToken = (0, utils_1.getCredentialParam)('awsSession', credentialData, nodeData)
-    const roleArn = (0, utils_1.getCredentialParam)('roleArn', credentialData, nodeData)
-    const externalId = (0, utils_1.getCredentialParam)('externalId', credentialData, nodeData)
+    const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+    const awsRegion = region || exports.DEFAULT_AWS_REGION;
+    const accessKeyId = (0, utils_1.getCredentialParam)('awsKey', credentialData, nodeData);
+    const secretAccessKey = (0, utils_1.getCredentialParam)('awsSecret', credentialData, nodeData);
+    const sessionToken = (0, utils_1.getCredentialParam)('awsSession', credentialData, nodeData);
+    const roleArn = (0, utils_1.getCredentialParam)('roleArn', credentialData, nodeData);
+    const externalId = (0, utils_1.getCredentialParam)('externalId', credentialData, nodeData);
     // --- AssumeRole flow ---
     if (roleArn) {
         if (!AWS_ROLE_ARN_REGEX.test(roleArn)) {
-            throw new Error('Invalid Role ARN format: Expected format: arn:aws:iam::<12-digit-account-id>:role/<role-name>')
+            throw new Error('Invalid Role ARN format: Expected format: arn:aws:iam::<12-digit-account-id>:role/<role-name>');
         }
         const assumedCredentials = await assumeRole({
             accessKeyId,
@@ -81,8 +81,8 @@ async function getAWSCredentialConfig(nodeData, options, region) {
             externalId,
             region: awsRegion,
             logger: options.logger
-        })
-        return { credentials: assumedCredentials, region: awsRegion }
+        });
+        return { credentials: assumedCredentials, region: awsRegion };
     }
     // --- Static credentials flow (backward-compatible) ---
     if (accessKeyId && secretAccessKey) {
@@ -90,11 +90,11 @@ async function getAWSCredentialConfig(nodeData, options, region) {
             accessKeyId,
             secretAccessKey,
             ...(sessionToken && { sessionToken })
-        }
-        return { credentials, region: awsRegion }
+        };
+        return { credentials, region: awsRegion };
     }
     // No explicit keys and no role — let SDK use default chain
-    return { credentials: undefined, region: awsRegion }
+    return { credentials: undefined, region: awsRegion };
 }
 /**
  * Assume an IAM role using AWS STS and return temporary session credentials.
@@ -121,50 +121,49 @@ async function getAWSCredentialConfig(nodeData, options, region) {
  * @throws {Error} When the STS API call fails — The full error is logged server-side.
  */
 async function assumeRole(params) {
-    const { accessKeyId, secretAccessKey, sessionToken, roleArn, externalId, region, logger } = params
+    const { accessKeyId, secretAccessKey, sessionToken, roleArn, externalId, region, logger } = params;
     // Build STS client config
-    const stsConfig = { region }
+    const stsConfig = { region };
     // Use explicit credentials if provided; otherwise SDK default chain
     if (accessKeyId && secretAccessKey) {
         stsConfig.credentials = {
             accessKeyId,
             secretAccessKey,
             ...(sessionToken && { sessionToken })
-        }
+        };
     }
-    const stsClient = new client_sts_1.STSClient(stsConfig)
+    const stsClient = new client_sts_1.STSClient(stsConfig);
     const assumeRoleInput = {
         RoleArn: roleArn,
         RoleSessionName: `FlowiseSession-${Date.now()}`
-    }
+    };
     if (externalId) {
-        assumeRoleInput.ExternalId = externalId
+        assumeRoleInput.ExternalId = externalId;
     }
     try {
-        const response = await stsClient.send(new client_sts_1.AssumeRoleCommand(assumeRoleInput))
+        const response = await stsClient.send(new client_sts_1.AssumeRoleCommand(assumeRoleInput));
         if (!response.Credentials?.AccessKeyId || !response.Credentials?.SecretAccessKey || !response.Credentials?.SessionToken) {
-            throw new Error('STS AssumeRole returned incomplete credentials')
+            throw new Error('STS AssumeRole returned incomplete credentials');
         }
         return {
             accessKeyId: response.Credentials.AccessKeyId,
             secretAccessKey: response.Credentials.SecretAccessKey,
             sessionToken: response.Credentials.SessionToken
-        }
-    } catch (error) {
+        };
+    }
+    catch (error) {
         if (error instanceof Error && error.message === 'STS AssumeRole returned incomplete credentials') {
-            throw error
+            throw error;
         }
-        const rawMessage = error instanceof Error ? error.message : String(error)
+        const rawMessage = error instanceof Error ? error.message : String(error);
         // Log full error server-side for operator debugging (includes IAM principal ARNs, account IDs, etc.)
         if (logger) {
-            logger.error(`[AWS STS] AssumeRole failed for role "${roleArn}": ${rawMessage}`)
+            logger.error(`[AWS STS] AssumeRole failed for role "${roleArn}": ${rawMessage}`);
         }
         // Return sanitized error to user — no raw STS message that may contain internal infrastructure details
-        throw new Error(
-            'Failed to assume IAM role. ' +
-                'Verify that the Role ARN is correct, the trust policy allows assumption from these credentials, ' +
-                'and the External ID matches (if required). Check server logs for details.'
-        )
+        throw new Error('Failed to assume IAM role. ' +
+            'Verify that the Role ARN is correct, the trust policy allows assumption from these credentials, ' +
+            'and the External ID matches (if required). Check server logs for details.');
     }
 }
 /**
@@ -187,7 +186,7 @@ async function assumeRole(params) {
  * @throws {Error} When STS AssumeRole fails (propagated from {@link getAWSCredentialConfig})
  */
 async function getAWSCredentials(nodeData, options) {
-    const config = await getAWSCredentialConfig(nodeData, options)
-    return config.credentials
+    const config = await getAWSCredentialConfig(nodeData, options);
+    return config.credentials;
 }
 //# sourceMappingURL=awsToolsUtils.js.map

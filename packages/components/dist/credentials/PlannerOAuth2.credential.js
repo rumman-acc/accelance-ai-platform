@@ -1,13 +1,13 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const scopes = ['openid', 'offline_access', 'Tasks.ReadWrite', 'Group.Read.All']
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const scopes = ['openid', 'offline_access', 'Tasks.ReadWrite', 'Group.Read.All'];
 class PlannerOAuth2 {
     constructor() {
-        this.label = 'Microsoft Planner OAuth2'
-        this.name = 'plannerOAuth2'
-        this.version = 1.0
+        this.label = 'Microsoft Planner OAuth2';
+        this.name = 'plannerOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/microsoft-outlook">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -38,8 +38,8 @@ class PlannerOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: PlannerOAuth2 }
+module.exports = { credClass: PlannerOAuth2 };
 //# sourceMappingURL=PlannerOAuth2.credential.js.map

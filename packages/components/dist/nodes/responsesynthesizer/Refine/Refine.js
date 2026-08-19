@@ -1,20 +1,20 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const base_1 = require('../base')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const base_1 = require("../base");
 class Refine_LlamaIndex {
     constructor() {
-        this.label = 'Refine'
-        this.name = 'refineLlamaIndex'
-        this.version = 1.0
-        this.type = 'Refine'
-        this.icon = 'refine.svg'
-        this.category = 'Response Synthesizer'
+        this.label = 'Refine';
+        this.name = 'refineLlamaIndex';
+        this.version = 1.0;
+        this.type = 'Refine';
+        this.icon = 'refine.svg';
+        this.category = 'Response Synthesizer';
         this.description =
-            'Create and refine an answer by sequentially going through each retrieved text chunk. This makes a separate LLM call per Node. Good for more detailed answers.'
-        this.baseClasses = [this.type, 'ResponseSynthesizer']
-        this.tags = ['LlamaIndex']
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
+            'Create and refine an answer by sequentially going through each retrieved text chunk. This makes a separate LLM call per Node. Good for more detailed answers.';
+        this.baseClasses = [this.type, 'ResponseSynthesizer'];
+        this.tags = ['LlamaIndex'];
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.';
         this.inputs = [
             {
                 label: 'Refine Prompt',
@@ -47,16 +47,15 @@ Answer:`,
                 warning: `Prompt can contains no variables, or up to 2 variables. Variables must be {context} and {query}`,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const refinePrompt = nodeData.inputs?.refinePrompt
-        const textQAPrompt = nodeData.inputs?.textQAPrompt
-        const refinePromptTemplate = ({ context = '', existingAnswer = '', query = '' }) =>
-            refinePrompt.replace('{existingAnswer}', existingAnswer).replace('{context}', context).replace('{query}', query)
-        const textQAPromptTemplate = ({ context = '', query = '' }) => textQAPrompt.replace('{context}', context).replace('{query}', query)
-        return new base_1.ResponseSynthesizerClass({ textQAPromptTemplate, refinePromptTemplate, type: 'Refine' })
+        const refinePrompt = nodeData.inputs?.refinePrompt;
+        const textQAPrompt = nodeData.inputs?.textQAPrompt;
+        const refinePromptTemplate = ({ context = '', existingAnswer = '', query = '' }) => refinePrompt.replace('{existingAnswer}', existingAnswer).replace('{context}', context).replace('{query}', query);
+        const textQAPromptTemplate = ({ context = '', query = '' }) => textQAPrompt.replace('{context}', context).replace('{query}', query);
+        return new base_1.ResponseSynthesizerClass({ textQAPromptTemplate, refinePromptTemplate, type: 'Refine' });
     }
 }
-module.exports = { nodeClass: Refine_LlamaIndex }
+module.exports = { nodeClass: Refine_LlamaIndex };
 //# sourceMappingURL=Refine.js.map

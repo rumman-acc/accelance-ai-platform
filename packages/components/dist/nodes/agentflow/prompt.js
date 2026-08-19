@@ -1,10 +1,6 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.CONDITION_AGENT_SYSTEM_PROMPT =
-    exports.DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML =
-    exports.DEFAULT_HUMAN_INPUT_DESCRIPTION =
-    exports.DEFAULT_SUMMARIZER_TEMPLATE =
-        void 0
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CONDITION_AGENT_SYSTEM_PROMPT = exports.DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML = exports.DEFAULT_HUMAN_INPUT_DESCRIPTION = exports.DEFAULT_SUMMARIZER_TEMPLATE = void 0;
 exports.DEFAULT_SUMMARIZER_TEMPLATE = `Progressively summarize the conversation provided and return a new summary.
 
 EXAMPLE:
@@ -18,7 +14,7 @@ END OF EXAMPLE
 Conversation:
 {conversation}
 
-New summary:`
+New summary:`;
 exports.DEFAULT_HUMAN_INPUT_DESCRIPTION = `Summarize the conversation between the user and the assistant, reiterate the last message from the assistant, and ask if user would like to proceed or if they have any feedback. 
 - Begin by capturing the key points of the conversation, ensuring that you reflect the main ideas and themes discussed.
 - Then, clearly reproduce the last message sent by the assistant to maintain continuity. Make sure the whole message is reproduced.
@@ -29,7 +25,7 @@ exports.DEFAULT_HUMAN_INPUT_DESCRIPTION = `Summarize the conversation between th
 - A summary of the conversation (1-3 sentences).
 - The last assistant message (exactly as it appeared).
 - Ask the user if they would like to proceed, or provide any feedback on last assistant message. No other explanation and elaboration is needed.
-`
+`;
 exports.DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML = `<p>Summarize the conversation between the user and the assistant, reiterate the last message from the assistant, and ask if user would like to proceed or if they have any feedback. </p>
 <ul>
 <li>Begin by capturing the key points of the conversation, ensuring that you reflect the main ideas and themes discussed.</li>
@@ -42,7 +38,7 @@ exports.DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML = `<p>Summarize the conversation be
 <li>The last assistant message (exactly as it appeared).</li>
 <li>Ask the user if they would like to proceed, or provide any feedback on last assistant message. No other explanation and elaboration is needed.</li>
 </ul>
-`
+`;
 exports.CONDITION_AGENT_SYSTEM_PROMPT = `<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>
     <ul>
         <li><strong>Input</strong>: A string representing the user's query, message or data.</li>
@@ -77,5 +73,5 @@ exports.CONDITION_AGENT_SYSTEM_PROMPT = `<p>You are part of a multi-agent system
     <ul>
         <li>Ensure that the input scenarios align well with potential user queries for accurate matching.</li>
         <li>DO NOT include anything other than the JSON in your response.</li>
-    </ul>`
+    </ul>`;
 //# sourceMappingURL=prompt.js.map

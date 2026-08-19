@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class FreshdeskApi {
     constructor() {
-        this.label = 'Freshdesk API'
-        this.name = 'freshdeskApi'
-        this.version = 1.0
+        this.label = 'Freshdesk API';
+        this.name = 'freshdeskApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Domain',
@@ -18,8 +18,8 @@ class FreshdeskApi {
                 name: 'apiKey',
                 type: 'password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: FreshdeskApi }
+module.exports = { credClass: FreshdeskApi };
 //# sourceMappingURL=FreshdeskApi.credential.js.map

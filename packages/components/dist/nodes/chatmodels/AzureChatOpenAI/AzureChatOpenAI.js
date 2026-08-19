@@ -1,37 +1,36 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const openai_1 = require('@langchain/openai')
-const utils_1 = require('../../../src/utils')
-const modelLoader_1 = require('../../../src/modelLoader')
-const FlowiseAzureChatOpenAI_1 = require('./FlowiseAzureChatOpenAI')
-const serverCredentialsExists =
-    !!process.env.AZURE_OPENAI_API_KEY &&
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const openai_1 = require("@langchain/openai");
+const utils_1 = require("../../../src/utils");
+const modelLoader_1 = require("../../../src/modelLoader");
+const FlowiseAzureChatOpenAI_1 = require("./FlowiseAzureChatOpenAI");
+const serverCredentialsExists = !!process.env.AZURE_OPENAI_API_KEY &&
     !!process.env.AZURE_OPENAI_API_INSTANCE_NAME &&
     !!process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME &&
-    !!process.env.AZURE_OPENAI_API_VERSION
+    !!process.env.AZURE_OPENAI_API_VERSION;
 class AzureChatOpenAI_ChatModels {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'azureChatOpenAI')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.CHAT, 'azureChatOpenAI');
             }
-        }
-        this.label = 'Azure OpenAI'
-        this.name = 'azureChatOpenAI'
-        this.version = 7.1
-        this.type = 'AzureChatOpenAI'
-        this.icon = 'Azure.svg'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around Azure OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(openai_1.AzureChatOpenAI)]
+        };
+        this.label = 'Azure OpenAI';
+        this.name = 'azureChatOpenAI';
+        this.version = 7.1;
+        this.type = 'AzureChatOpenAI';
+        this.icon = 'Azure.svg';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around Azure OpenAI large language models that use the Chat endpoint';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(openai_1.AzureChatOpenAI)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['azureOpenAIApi'],
             optional: serverCredentialsExists
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -74,8 +73,7 @@ class AzureChatOpenAI_ChatModels {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                description: 'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             },
@@ -184,28 +182,28 @@ class AzureChatOpenAI_ChatModels {
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const modelName = nodeData.inputs?.modelName
-        const temperature = nodeData.inputs?.temperature
-        const maxTokens = nodeData.inputs?.maxTokens
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty
-        const presencePenalty = nodeData.inputs?.presencePenalty
-        const timeout = nodeData.inputs?.timeout
-        const streaming = nodeData.inputs?.streaming
-        const cache = nodeData.inputs?.cache
-        const topP = nodeData.inputs?.topP
-        const basePath = nodeData.inputs?.basepath
-        const baseOptions = nodeData.inputs?.baseOptions
-        const reasoningEffort = nodeData.inputs?.reasoningEffort
-        const reasoningSummary = nodeData.inputs?.reasoningSummary
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const azureOpenAIApiKey = (0, utils_1.getCredentialParam)('azureOpenAIApiKey', credentialData, nodeData)
-        const azureOpenAIApiInstanceName = (0, utils_1.getCredentialParam)('azureOpenAIApiInstanceName', credentialData, nodeData)
-        const azureOpenAIApiDeploymentName = (0, utils_1.getCredentialParam)('azureOpenAIApiDeploymentName', credentialData, nodeData)
-        const azureOpenAIApiVersion = (0, utils_1.getCredentialParam)('azureOpenAIApiVersion', credentialData, nodeData)
-        const allowImageUploads = nodeData.inputs?.allowImageUploads
+        const modelName = nodeData.inputs?.modelName;
+        const temperature = nodeData.inputs?.temperature;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty;
+        const presencePenalty = nodeData.inputs?.presencePenalty;
+        const timeout = nodeData.inputs?.timeout;
+        const streaming = nodeData.inputs?.streaming;
+        const cache = nodeData.inputs?.cache;
+        const topP = nodeData.inputs?.topP;
+        const basePath = nodeData.inputs?.basepath;
+        const baseOptions = nodeData.inputs?.baseOptions;
+        const reasoningEffort = nodeData.inputs?.reasoningEffort;
+        const reasoningSummary = nodeData.inputs?.reasoningSummary;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const azureOpenAIApiKey = (0, utils_1.getCredentialParam)('azureOpenAIApiKey', credentialData, nodeData);
+        const azureOpenAIApiInstanceName = (0, utils_1.getCredentialParam)('azureOpenAIApiInstanceName', credentialData, nodeData);
+        const azureOpenAIApiDeploymentName = (0, utils_1.getCredentialParam)('azureOpenAIApiDeploymentName', credentialData, nodeData);
+        const azureOpenAIApiVersion = (0, utils_1.getCredentialParam)('azureOpenAIApiVersion', credentialData, nodeData);
+        const allowImageUploads = nodeData.inputs?.allowImageUploads;
         const obj = {
             temperature: parseFloat(temperature),
             modelName,
@@ -214,45 +212,53 @@ class AzureChatOpenAI_ChatModels {
             azureOpenAIApiDeploymentName,
             azureOpenAIApiVersion,
             streaming: streaming ?? true
-        }
-        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (cache) obj.cache = cache
-        if (topP) obj.topP = parseFloat(topP)
-        if (basePath) obj.azureOpenAIBasePath = basePath
+        };
+        if (maxTokens)
+            obj.maxCompletionTokens = parseInt(maxTokens, 10);
+        if (frequencyPenalty)
+            obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (presencePenalty)
+            obj.presencePenalty = parseFloat(presencePenalty);
+        if (timeout)
+            obj.timeout = parseInt(timeout, 10);
+        if (cache)
+            obj.cache = cache;
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (basePath)
+            obj.azureOpenAIBasePath = basePath;
         if (baseOptions) {
             try {
-                const parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                const parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions);
                 obj.configuration = {
                     defaultHeaders: parsedBaseOptions
-                }
-            } catch (exception) {
-                console.error('Error parsing base options', exception)
+                };
+            }
+            catch (exception) {
+                console.error('Error parsing base options', exception);
             }
         }
         if ((0, utils_1.isReasoningModelOpenAI)(modelName)) {
-            delete obj.temperature
-            delete obj.stop
-            const reasoning = {}
+            delete obj.temperature;
+            delete obj.stop;
+            const reasoning = {};
             if (reasoningEffort) {
-                reasoning.effort = reasoningEffort
+                reasoning.effort = reasoningEffort;
             }
             if (reasoningSummary) {
-                reasoning.summary = reasoningSummary
+                reasoning.summary = reasoningSummary;
             }
-            obj.reasoning = reasoning
+            obj.reasoning = reasoning;
         }
         const multiModalOption = {
             image: {
                 allowImageUploads: allowImageUploads ?? false
             }
-        }
-        const model = new FlowiseAzureChatOpenAI_1.AzureChatOpenAI(nodeData.id, obj)
-        model.setMultiModalOption(multiModalOption)
-        return model
+        };
+        const model = new FlowiseAzureChatOpenAI_1.AzureChatOpenAI(nodeData.id, obj);
+        model.setMultiModalOption(multiModalOption);
+        return model;
     }
 }
-module.exports = { nodeClass: AzureChatOpenAI_ChatModels }
+module.exports = { nodeClass: AzureChatOpenAI_ChatModels };
 //# sourceMappingURL=AzureChatOpenAI.js.map

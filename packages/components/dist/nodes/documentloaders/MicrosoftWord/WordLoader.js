@@ -1,8 +1,8 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.WordLoader = void 0
-const buffer_1 = require('@langchain/classic/document_loaders/fs/buffer')
-const officeparser_1 = require('officeparser')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.WordLoader = void 0;
+const buffer_1 = require("@langchain/classic/document_loaders/fs/buffer");
+const officeparser_1 = require("officeparser");
 /**
  * Document loader that uses officeparser to load Word documents.
  *
@@ -11,9 +11,9 @@ const officeparser_1 = require('officeparser')
  */
 class WordLoader extends buffer_1.BufferLoader {
     constructor(filePathOrBlob) {
-        super(filePathOrBlob)
-        this.attributes = []
-        this.attributes = []
+        super(filePathOrBlob);
+        this.attributes = [];
+        this.attributes = [];
     }
     /**
      * Parse Word document
@@ -23,17 +23,17 @@ class WordLoader extends buffer_1.BufferLoader {
      * @returns Array of Documents
      */
     async parse(raw, metadata) {
-        const result = []
+        const result = [];
         this.attributes = [
             { name: 'documentType', description: 'Type of document', type: 'string' },
             { name: 'pageCount', description: 'Number of pages/sections', type: 'number' }
-        ]
+        ];
         try {
             // Use officeparser to extract text from Word document
-            const data = await (0, officeparser_1.parseOfficeAsync)(raw)
+            const data = await (0, officeparser_1.parseOfficeAsync)(raw);
             if (typeof data === 'string' && data.trim()) {
                 // Split content by common page/section separators
-                const sections = this.splitIntoSections(data)
+                const sections = this.splitIntoSections(data);
                 sections.forEach((sectionContent, index) => {
                     if (sectionContent.trim()) {
                         result.push({
@@ -43,15 +43,16 @@ class WordLoader extends buffer_1.BufferLoader {
                                 pageNumber: index + 1,
                                 ...metadata
                             }
-                        })
+                        });
                     }
-                })
+                });
             }
-        } catch (error) {
-            console.error('Error parsing Word file:', error)
-            throw new Error(`Failed to parse Word file: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
-        return result
+        catch (error) {
+            console.error('Error parsing Word file:', error);
+            throw new Error(`Failed to parse Word file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        return result;
     }
     /**
      * Split content into sections based on common patterns
@@ -67,31 +68,31 @@ class WordLoader extends buffer_1.BufferLoader {
             /\n\s*[A-Z][A-Z\s]{2,}\n/g, // ALL CAPS headings
             /\n\s*_{5,}/g, // Long underscores as separators
             /\n\s*-{5,}/g // Long dashes as separators
-        ]
-        let sections = []
+        ];
+        let sections = [];
         // Try each pattern and use the one that creates the most reasonable splits
         for (const pattern of sectionPatterns) {
-            const potentialSections = content.split(pattern)
+            const potentialSections = content.split(pattern);
             if (potentialSections.length > 1 && potentialSections.length < 50) {
                 // Reasonable number of sections
-                sections = potentialSections
-                break
+                sections = potentialSections;
+                break;
             }
         }
         // If no good pattern found, split by multiple newlines as a fallback
         if (sections.length === 0) {
-            sections = content.split(/\n\s*\n\s*\n\s*\n/)
+            sections = content.split(/\n\s*\n\s*\n\s*\n/);
         }
         // If still no good split, split by double newlines
         if (sections.length === 0 || sections.every((section) => section.trim().length < 20)) {
-            sections = content.split(/\n\s*\n\s*\n/)
+            sections = content.split(/\n\s*\n\s*\n/);
         }
         // If still no good split, treat entire content as one section
         if (sections.length === 0 || sections.every((section) => section.trim().length < 10)) {
-            sections = [content]
+            sections = [content];
         }
-        return sections.filter((section) => section.trim().length > 0)
+        return sections.filter((section) => section.trim().length > 0);
     }
 }
-exports.WordLoader = WordLoader
+exports.WordLoader = WordLoader;
 //# sourceMappingURL=WordLoader.js.map

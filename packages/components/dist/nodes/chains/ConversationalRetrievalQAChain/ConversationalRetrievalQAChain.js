@@ -1,28 +1,28 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const fast_json_patch_1 = require('fast-json-patch')
-const prompts_1 = require('@langchain/core/prompts')
-const runnables_1 = require('@langchain/core/runnables')
-const messages_1 = require('@langchain/core/messages')
-const console_1 = require('@langchain/core/tracers/console')
-const Moderation_1 = require('../../moderation/Moderation')
-const OutputParserHelpers_1 = require('../../outputparsers/OutputParserHelpers')
-const chains_1 = require('@langchain/classic/chains')
-const utils_1 = require('../../../src/utils')
-const handler_1 = require('../../../src/handler')
-const Interface_1 = require('../../../src/Interface')
-const prompts_2 = require('./prompts')
-const sourceRunnableName = 'FindDocs'
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const fast_json_patch_1 = require("fast-json-patch");
+const prompts_1 = require("@langchain/core/prompts");
+const runnables_1 = require("@langchain/core/runnables");
+const messages_1 = require("@langchain/core/messages");
+const console_1 = require("@langchain/core/tracers/console");
+const Moderation_1 = require("../../moderation/Moderation");
+const OutputParserHelpers_1 = require("../../outputparsers/OutputParserHelpers");
+const chains_1 = require("@langchain/classic/chains");
+const utils_1 = require("../../../src/utils");
+const handler_1 = require("../../../src/handler");
+const Interface_1 = require("../../../src/Interface");
+const prompts_2 = require("./prompts");
+const sourceRunnableName = 'FindDocs';
 class ConversationalRetrievalQAChain_Chains {
     constructor(fields) {
-        this.label = 'Conversational Retrieval QA Chain'
-        this.name = 'conversationalRetrievalQAChain'
-        this.version = 3.0
-        this.type = 'ConversationalRetrievalQAChain'
-        this.icon = 'qa.svg'
-        this.category = 'Chains'
-        this.description = 'Document QA - built on RetrievalQAChain to provide a chat history component'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(chains_1.ConversationalRetrievalQAChain)]
+        this.label = 'Conversational Retrieval QA Chain';
+        this.name = 'conversationalRetrievalQAChain';
+        this.version = 3.0;
+        this.type = 'ConversationalRetrievalQAChain';
+        this.icon = 'qa.svg';
+        this.category = 'Chains';
+        this.description = 'Document QA - built on RetrievalQAChain to provide a chat history component';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(chains_1.ConversationalRetrievalQAChain)];
         this.inputs = [
             {
                 label: 'Chat Model',
@@ -115,46 +115,46 @@ class ConversationalRetrievalQAChain_Chains {
                 optional: true
             }
             */
-        ]
-        this.sessionId = fields?.sessionId
+        ];
+        this.sessionId = fields?.sessionId;
     }
     async init(nodeData) {
-        const model = nodeData.inputs?.model
-        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever
-        const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt
-        const rephrasePrompt = nodeData.inputs?.rephrasePrompt
-        const responsePrompt = nodeData.inputs?.responsePrompt
-        let customResponsePrompt = responsePrompt
+        const model = nodeData.inputs?.model;
+        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever;
+        const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt;
+        const rephrasePrompt = nodeData.inputs?.rephrasePrompt;
+        const responsePrompt = nodeData.inputs?.responsePrompt;
+        let customResponsePrompt = responsePrompt;
         // If the deprecated systemMessagePrompt is still exists
         if (systemMessagePrompt) {
-            customResponsePrompt = `${systemMessagePrompt}\n${prompts_2.QA_TEMPLATE}`
+            customResponsePrompt = `${systemMessagePrompt}\n${prompts_2.QA_TEMPLATE}`;
         }
-        const answerChain = createChain(model, vectorStoreRetriever, rephrasePrompt, customResponsePrompt)
-        return answerChain
+        const answerChain = createChain(model, vectorStoreRetriever, rephrasePrompt, customResponsePrompt);
+        return answerChain;
     }
     async run(nodeData, input, options) {
-        const model = nodeData.inputs?.model
-        const externalMemory = nodeData.inputs?.memory
-        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever
-        const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt
-        const rephrasePrompt = nodeData.inputs?.rephrasePrompt
-        const responsePrompt = nodeData.inputs?.responsePrompt
-        const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments
-        const prependMessages = options?.prependMessages
-        const appDataSource = options.appDataSource
-        const databaseEntities = options.databaseEntities
-        const chatflowid = options.chatflowid
-        const shouldStreamResponse = options.shouldStreamResponse
-        const sseStreamer = options.sseStreamer
-        const chatId = options.chatId
-        const orgId = options.orgId
-        let customResponsePrompt = responsePrompt
+        const model = nodeData.inputs?.model;
+        const externalMemory = nodeData.inputs?.memory;
+        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever;
+        const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt;
+        const rephrasePrompt = nodeData.inputs?.rephrasePrompt;
+        const responsePrompt = nodeData.inputs?.responsePrompt;
+        const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments;
+        const prependMessages = options?.prependMessages;
+        const appDataSource = options.appDataSource;
+        const databaseEntities = options.databaseEntities;
+        const chatflowid = options.chatflowid;
+        const shouldStreamResponse = options.shouldStreamResponse;
+        const sseStreamer = options.sseStreamer;
+        const chatId = options.chatId;
+        const orgId = options.orgId;
+        let customResponsePrompt = responsePrompt;
         // If the deprecated systemMessagePrompt is still exists
         if (systemMessagePrompt) {
-            customResponsePrompt = `${systemMessagePrompt}\n${prompts_2.QA_TEMPLATE}`
+            customResponsePrompt = `${systemMessagePrompt}\n${prompts_2.QA_TEMPLATE}`;
         }
-        let memory = externalMemory
-        const moderations = nodeData.inputs?.inputModeration
+        let memory = externalMemory;
+        const moderations = nodeData.inputs?.inputModeration;
         if (!memory) {
             memory = new BufferMemory({
                 returnMessages: true,
@@ -163,141 +163,129 @@ class ConversationalRetrievalQAChain_Chains {
                 databaseEntities,
                 chatflowid,
                 orgId
-            })
+            });
         }
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the Conversational Retrieval QA Chain
-                input = await (0, Moderation_1.checkInputs)(moderations, input)
-            } catch (e) {
-                await new Promise((resolve) => setTimeout(resolve, 500))
+                input = await (0, Moderation_1.checkInputs)(moderations, input);
+            }
+            catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 if (options.shouldStreamResponse) {
-                    ;(0, Moderation_1.streamResponse)(options.sseStreamer, options.chatId, e.message)
+                    (0, Moderation_1.streamResponse)(options.sseStreamer, options.chatId, e.message);
                 }
-                return (0, OutputParserHelpers_1.formatResponse)(e.message)
+                return (0, OutputParserHelpers_1.formatResponse)(e.message);
             }
         }
-        const answerChain = createChain(model, vectorStoreRetriever, rephrasePrompt, customResponsePrompt)
-        const history = (await memory.getChatMessages(this.sessionId, false, prependMessages)) ?? []
-        const loggerHandler = new handler_1.ConsoleCallbackHandler(options.logger, options?.orgId)
-        const additionalCallback = await (0, handler_1.additionalCallbacks)(nodeData, options)
-        let callbacks = [loggerHandler, ...additionalCallback]
+        const answerChain = createChain(model, vectorStoreRetriever, rephrasePrompt, customResponsePrompt);
+        const history = (await memory.getChatMessages(this.sessionId, false, prependMessages)) ?? [];
+        const loggerHandler = new handler_1.ConsoleCallbackHandler(options.logger, options?.orgId);
+        const additionalCallback = await (0, handler_1.additionalCallbacks)(nodeData, options);
+        let callbacks = [loggerHandler, ...additionalCallback];
         if (process.env.DEBUG === 'true') {
-            callbacks.push(new console_1.ConsoleCallbackHandler())
+            callbacks.push(new console_1.ConsoleCallbackHandler());
         }
-        const stream = answerChain.streamLog(
-            { question: input, chat_history: history },
-            { callbacks },
-            {
-                includeNames: [sourceRunnableName]
-            }
-        )
-        let streamedResponse = {}
-        let sourceDocuments = []
-        let text = ''
-        let isStreamingStarted = false
+        const stream = answerChain.streamLog({ question: input, chat_history: history }, { callbacks }, {
+            includeNames: [sourceRunnableName]
+        });
+        let streamedResponse = {};
+        let sourceDocuments = [];
+        let text = '';
+        let isStreamingStarted = false;
         for await (const chunk of stream) {
-            streamedResponse = (0, fast_json_patch_1.applyPatch)(streamedResponse, chunk.ops).newDocument
+            streamedResponse = (0, fast_json_patch_1.applyPatch)(streamedResponse, chunk.ops).newDocument;
             if (streamedResponse.final_output) {
-                text = streamedResponse.final_output?.output
+                text = streamedResponse.final_output?.output;
                 if (Array.isArray(streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output)) {
-                    sourceDocuments = streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output
+                    sourceDocuments = streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output;
                     if (shouldStreamResponse && returnSourceDocuments) {
                         if (sseStreamer) {
-                            sseStreamer.streamSourceDocumentsEvent(chatId, sourceDocuments)
+                            sseStreamer.streamSourceDocumentsEvent(chatId, sourceDocuments);
                         }
                     }
                 }
                 if (shouldStreamResponse && sseStreamer) {
-                    sseStreamer.streamEndEvent(chatId)
+                    sseStreamer.streamEndEvent(chatId);
                 }
             }
-            if (
-                Array.isArray(streamedResponse?.streamed_output) &&
+            if (Array.isArray(streamedResponse?.streamed_output) &&
                 streamedResponse?.streamed_output.length &&
-                !streamedResponse.final_output
-            ) {
-                const token = streamedResponse.streamed_output[streamedResponse.streamed_output.length - 1]
+                !streamedResponse.final_output) {
+                const token = streamedResponse.streamed_output[streamedResponse.streamed_output.length - 1];
                 if (!isStreamingStarted) {
-                    isStreamingStarted = true
+                    isStreamingStarted = true;
                     if (shouldStreamResponse) {
                         if (sseStreamer) {
-                            sseStreamer.streamStartEvent(chatId, token)
+                            sseStreamer.streamStartEvent(chatId, token);
                         }
                     }
                 }
                 if (shouldStreamResponse) {
                     if (sseStreamer) {
-                        sseStreamer.streamTokenEvent(chatId, token)
+                        sseStreamer.streamTokenEvent(chatId, token);
                     }
                 }
             }
         }
-        await memory.addChatMessages(
-            [
-                {
-                    text: input,
-                    type: 'userMessage'
-                },
-                {
-                    text: text,
-                    type: 'apiMessage'
-                }
-            ],
-            this.sessionId
-        )
-        if (returnSourceDocuments) return { text, sourceDocuments }
-        else return { text }
+        await memory.addChatMessages([
+            {
+                text: input,
+                type: 'userMessage'
+            },
+            {
+                text: text,
+                type: 'apiMessage'
+            }
+        ], this.sessionId);
+        if (returnSourceDocuments)
+            return { text, sourceDocuments };
+        else
+            return { text };
     }
 }
 const createRetrieverChain = (llm, retriever, rephrasePrompt) => {
     // Small speed/accuracy optimization: no need to rephrase the first question
     // since there shouldn't be any meta-references to prior chat history
-    const CONDENSE_QUESTION_PROMPT = prompts_1.PromptTemplate.fromTemplate(rephrasePrompt)
-    const condenseQuestionChain = runnables_1.RunnableSequence.from([
-        CONDENSE_QUESTION_PROMPT,
-        llm,
-        (0, utils_1.createTextOnlyOutputParser)()
-    ]).withConfig({
+    const CONDENSE_QUESTION_PROMPT = prompts_1.PromptTemplate.fromTemplate(rephrasePrompt);
+    const condenseQuestionChain = runnables_1.RunnableSequence.from([CONDENSE_QUESTION_PROMPT, llm, (0, utils_1.createTextOnlyOutputParser)()]).withConfig({
         runName: 'CondenseQuestion'
-    })
+    });
     const hasHistoryCheckFn = runnables_1.RunnableLambda.from((input) => input.chat_history.length > 0).withConfig({
         runName: 'HasChatHistoryCheck'
-    })
+    });
     const conversationChain = condenseQuestionChain.pipe(retriever).withConfig({
         runName: 'RetrievalChainWithHistory'
-    })
+    });
     const basicRetrievalChain = runnables_1.RunnableLambda.from((input) => input.question)
         .withConfig({
-            runName: 'Itemgetter:question'
-        })
-        .pipe(retriever)
-        .withConfig({ runName: 'RetrievalChainWithNoHistory' })
-    return runnables_1.RunnableBranch.from([[hasHistoryCheckFn, conversationChain], basicRetrievalChain]).withConfig({
-        runName: sourceRunnableName
+        runName: 'Itemgetter:question'
     })
-}
+        .pipe(retriever)
+        .withConfig({ runName: 'RetrievalChainWithNoHistory' });
+    return runnables_1.RunnableBranch.from([[hasHistoryCheckFn, conversationChain], basicRetrievalChain]).withConfig({ runName: sourceRunnableName });
+};
 const formatDocs = (docs) => {
-    return docs.map((doc, i) => `<doc id='${i}'>${doc.pageContent}</doc>`).join('\n')
-}
+    return docs.map((doc, i) => `<doc id='${i}'>${doc.pageContent}</doc>`).join('\n');
+};
 const formatChatHistoryAsString = (history) => {
-    return history.map((message) => `${message._getType()}: ${message.content}`).join('\n')
-}
+    return history.map((message) => `${message._getType()}: ${message.content}`).join('\n');
+};
 const serializeHistory = (input) => {
-    const chatHistory = input.chat_history || []
-    const convertedChatHistory = []
+    const chatHistory = input.chat_history || [];
+    const convertedChatHistory = [];
     for (const message of chatHistory) {
         if (message.type === 'userMessage') {
-            convertedChatHistory.push(new messages_1.HumanMessage({ content: message.message }))
+            convertedChatHistory.push(new messages_1.HumanMessage({ content: message.message }));
         }
         if (message.type === 'apiMessage') {
-            convertedChatHistory.push(new messages_1.AIMessage({ content: message.message }))
+            convertedChatHistory.push(new messages_1.AIMessage({ content: message.message }));
         }
     }
-    return convertedChatHistory
-}
+    return convertedChatHistory;
+};
 const createChain = (llm, retriever, rephrasePrompt = prompts_2.REPHRASE_TEMPLATE, responsePrompt = prompts_2.RESPONSE_TEMPLATE) => {
-    const retrieverChain = createRetrieverChain(llm, retriever, rephrasePrompt)
+    const retrieverChain = createRetrieverChain(llm, retriever, rephrasePrompt);
     const context = runnables_1.RunnableMap.from({
         context: runnables_1.RunnableSequence.from([
             ({ question, chat_history }) => ({
@@ -315,17 +303,15 @@ const createChain = (llm, retriever, rephrasePrompt = prompts_2.REPHRASE_TEMPLAT
         chat_history: runnables_1.RunnableLambda.from((input) => input.chat_history).withConfig({
             runName: 'Itemgetter:chat_history'
         })
-    }).withConfig({ tags: ['RetrieveDocs'] })
+    }).withConfig({ tags: ['RetrieveDocs'] });
     const prompt = prompts_1.ChatPromptTemplate.fromMessages([
         ['system', responsePrompt],
         new prompts_1.MessagesPlaceholder('chat_history'),
         ['human', `{question}`]
-    ])
-    const responseSynthesizerChain = runnables_1.RunnableSequence.from([prompt, llm, (0, utils_1.createTextOnlyOutputParser)()]).withConfig(
-        {
-            tags: ['GenerateResponse']
-        }
-    )
+    ]);
+    const responseSynthesizerChain = runnables_1.RunnableSequence.from([prompt, llm, (0, utils_1.createTextOnlyOutputParser)()]).withConfig({
+        tags: ['GenerateResponse']
+    });
     const conversationalQAChain = runnables_1.RunnableSequence.from([
         {
             question: runnables_1.RunnableLambda.from((input) => input.question).withConfig({
@@ -337,19 +323,20 @@ const createChain = (llm, retriever, rephrasePrompt = prompts_2.REPHRASE_TEMPLAT
         },
         context,
         responseSynthesizerChain
-    ])
-    return conversationalQAChain
-}
+    ]);
+    return conversationalQAChain;
+};
 class BufferMemory extends Interface_1.FlowiseMemory {
     constructor(fields) {
-        super(fields)
-        this.appDataSource = fields.appDataSource
-        this.databaseEntities = fields.databaseEntities
-        this.chatflowid = fields.chatflowid
-        this.orgId = fields.orgId
+        super(fields);
+        this.appDataSource = fields.appDataSource;
+        this.databaseEntities = fields.databaseEntities;
+        this.chatflowid = fields.chatflowid;
+        this.orgId = fields.orgId;
     }
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false, prependMessages) {
-        if (!overrideSessionId) return []
+        if (!overrideSessionId)
+            return [];
         const chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
             where: {
                 sessionId: overrideSessionId,
@@ -358,30 +345,30 @@ class BufferMemory extends Interface_1.FlowiseMemory {
             order: {
                 createdDate: 'ASC'
             }
-        })
+        });
         if (prependMessages?.length) {
-            chatMessage.unshift(...prependMessages)
+            chatMessage.unshift(...prependMessages);
         }
         if (returnBaseMessages) {
-            return await (0, utils_1.mapChatMessageToBaseMessage)(chatMessage, this.orgId)
+            return await (0, utils_1.mapChatMessageToBaseMessage)(chatMessage, this.orgId);
         }
-        let returnIMessages = []
+        let returnIMessages = [];
         for (const m of chatMessage) {
             returnIMessages.push({
                 message: m.content,
                 type: m.role
-            })
+            });
         }
-        return returnIMessages
+        return returnIMessages;
     }
     async addChatMessages() {
         // adding chat messages is done on server level
-        return
+        return;
     }
     async clearChatMessages() {
         // clearing chat messages is done on server level
-        return
+        return;
     }
 }
-module.exports = { nodeClass: ConversationalRetrievalQAChain_Chains }
+module.exports = { nodeClass: ConversationalRetrievalQAChain_Chains };
 //# sourceMappingURL=ConversationalRetrievalQAChain.js.map

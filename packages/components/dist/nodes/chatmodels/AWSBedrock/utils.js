@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 /**
  * Bedrock-specific utilities for the AWS Bedrock Converse node.
  *
@@ -26,55 +26,39 @@
  * All model metadata (inference profile geos, stop_sequences flags) lives in
  * models.json as the single source of truth, loaded via the model loader.
  */
-var __createBinding =
-    (this && this.__createBinding) ||
-    (Object.create
-        ? function (o, m, k, k2) {
-              if (k2 === undefined) k2 = k
-              var desc = Object.getOwnPropertyDescriptor(m, k)
-              if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-                  desc = {
-                      enumerable: true,
-                      get: function () {
-                          return m[k]
-                      }
-                  }
-              }
-              Object.defineProperty(o, k2, desc)
-          }
-        : function (o, m, k, k2) {
-              if (k2 === undefined) k2 = k
-              o[k2] = m[k]
-          })
-var __setModuleDefault =
-    (this && this.__setModuleDefault) ||
-    (Object.create
-        ? function (o, v) {
-              Object.defineProperty(o, 'default', { enumerable: true, value: v })
-          }
-        : function (o, v) {
-              o['default'] = v
-          })
-var __importStar =
-    (this && this.__importStar) ||
-    function (mod) {
-        if (mod && mod.__esModule) return mod
-        var result = {}
-        if (mod != null)
-            for (var k in mod) if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
-        __setModuleDefault(result, mod)
-        return result
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.validateEndpointHost = validateEndpointHost
-exports.discoverInferenceProfiles = discoverInferenceProfiles
-exports._resetRegionProfileCache = _resetRegionProfileCache
-exports.getStopSeqUnsupportedModels = getStopSeqUnsupportedModels
-exports._resetStopSeqCache = _resetStopSeqCache
-exports._resetInferenceProfileCache = _resetInferenceProfileCache
-exports.regionToGeoCandidates = regionToGeoCandidates
-exports.resolveBedrockModel = resolveBedrockModel
-exports.normalizeBedrockError = normalizeBedrockError
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.validateEndpointHost = validateEndpointHost;
+exports.discoverInferenceProfiles = discoverInferenceProfiles;
+exports._resetRegionProfileCache = _resetRegionProfileCache;
+exports.getStopSeqUnsupportedModels = getStopSeqUnsupportedModels;
+exports._resetStopSeqCache = _resetStopSeqCache;
+exports._resetInferenceProfileCache = _resetInferenceProfileCache;
+exports.regionToGeoCandidates = regionToGeoCandidates;
+exports.resolveBedrockModel = resolveBedrockModel;
+exports.normalizeBedrockError = normalizeBedrockError;
 /**
  * Inspects the endpointHost value and decides what to do with it.
  *
@@ -89,33 +73,30 @@ exports.normalizeBedrockError = normalizeBedrockError
 function validateEndpointHost(value) {
     // ARN in endpointHost — auto-migrate to inference profile
     if (value.startsWith('arn:aws:bedrock:')) {
-        console.warn(
-            `[AWSBedrock] "Custom Endpoint Host" contained an ARN (${value}). ` +
-                `This has been auto-migrated to the inference profile path. ` +
-                `Please move this value to the "Custom Model ARN" field instead.`
-        )
-        return { migratedArn: value }
+        console.warn(`[AWSBedrock] "Custom Endpoint Host" contained an ARN (${value}). ` +
+            `This has been auto-migrated to the inference profile path. ` +
+            `Please move this value to the "Custom Model ARN" field instead.`);
+        return { migratedArn: value };
     }
     // URL with scheme — extract hostname
     if (value.includes('://')) {
         try {
-            const url = new URL(value)
-            console.warn(`[AWSBedrock] "Custom Endpoint Host" contained a full URL. ` + `Using hostname "${url.hostname}" only.`)
-            return { hostname: url.hostname }
-        } catch {
+            const url = new URL(value);
+            console.warn(`[AWSBedrock] "Custom Endpoint Host" contained a full URL. ` + `Using hostname "${url.hostname}" only.`);
+            return { hostname: url.hostname };
+        }
+        catch {
             // If URL parsing fails, reject
-            return {}
+            return {};
         }
     }
     // Contains a path — likely a mistake, but not an ARN
     if (value.includes('/')) {
-        console.warn(
-            `[AWSBedrock] "Custom Endpoint Host" contained a path separator. ` + `Using the value before the first "/" as hostname.`
-        )
-        return { hostname: value.split('/')[0] }
+        console.warn(`[AWSBedrock] "Custom Endpoint Host" contained a path separator. ` + `Using the value before the first "/" as hostname.`);
+        return { hostname: value.split('/')[0] };
     }
     // Valid bare hostname
-    return { hostname: value }
+    return { hostname: value };
 }
 // ---------------------------------------------------------------------------
 // Runtime inference-profile discovery
@@ -124,7 +105,7 @@ function validateEndpointHost(value) {
  * Per-region cache of available inference profile IDs.
  * Populated by calling `ListInferenceProfiles` once per region.
  */
-const _regionProfileCache = new Map()
+const _regionProfileCache = new Map();
 /**
  * Discovers which system-defined inference profiles are available in a
  * given region by calling the Bedrock control-plane API.  Results are
@@ -147,44 +128,41 @@ const _regionProfileCache = new Map()
  */
 async function discoverInferenceProfiles(region, credentials) {
     if (_regionProfileCache.has(region)) {
-        return _regionProfileCache.get(region)
+        return _regionProfileCache.get(region);
     }
     try {
-        const { BedrockClient, ListInferenceProfilesCommand } = await Promise.resolve().then(() =>
-            __importStar(require('@aws-sdk/client-bedrock'))
-        )
+        const { BedrockClient, ListInferenceProfilesCommand } = await Promise.resolve().then(() => __importStar(require('@aws-sdk/client-bedrock')));
         const client = new BedrockClient({
             region,
             ...(credentials && { credentials })
-        })
-        const ids = new Set()
-        let nextToken
+        });
+        const ids = new Set();
+        let nextToken;
         do {
-            const resp = await client.send(
-                new ListInferenceProfilesCommand({
-                    typeEquals: 'SYSTEM_DEFINED',
-                    maxResults: 100,
-                    ...(nextToken && { nextToken })
-                })
-            )
+            const resp = await client.send(new ListInferenceProfilesCommand({
+                typeEquals: 'SYSTEM_DEFINED',
+                maxResults: 100,
+                ...(nextToken && { nextToken })
+            }));
             for (const p of resp.inferenceProfileSummaries ?? []) {
                 if (p.inferenceProfileId) {
-                    ids.add(p.inferenceProfileId)
+                    ids.add(p.inferenceProfileId);
                 }
             }
-            nextToken = resp.nextToken
-        } while (nextToken)
-        _regionProfileCache.set(region, ids)
-        return ids
-    } catch {
-        const empty = new Set()
-        _regionProfileCache.set(region, empty)
-        return empty
+            nextToken = resp.nextToken;
+        } while (nextToken);
+        _regionProfileCache.set(region, ids);
+        return ids;
+    }
+    catch {
+        const empty = new Set();
+        _regionProfileCache.set(region, empty);
+        return empty;
     }
 }
 /** Exported for testing — resets the region profile cache. */
 function _resetRegionProfileCache() {
-    _regionProfileCache.clear()
+    _regionProfileCache.clear();
 }
 // ---------------------------------------------------------------------------
 // Stop-sequence support
@@ -201,21 +179,23 @@ function _resetRegionProfileCache() {
  *
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html
  */
-let _stopSeqUnsupported = null
+let _stopSeqUnsupported = null;
 async function getStopSeqUnsupportedModels() {
-    if (_stopSeqUnsupported) return _stopSeqUnsupported
+    if (_stopSeqUnsupported)
+        return _stopSeqUnsupported;
     try {
-        const { getModels, MODEL_TYPE } = await Promise.resolve().then(() => __importStar(require('../../../src/modelLoader')))
-        const models = await getModels(MODEL_TYPE.CHAT, 'awsChatBedrock')
-        _stopSeqUnsupported = new Set(models.filter((m) => m.stop_sequences === false).map((m) => m.name))
-    } catch {
-        _stopSeqUnsupported = new Set()
+        const { getModels, MODEL_TYPE } = await Promise.resolve().then(() => __importStar(require('../../../src/modelLoader')));
+        const models = await getModels(MODEL_TYPE.CHAT, 'awsChatBedrock');
+        _stopSeqUnsupported = new Set(models.filter((m) => m.stop_sequences === false).map((m) => m.name));
     }
-    return _stopSeqUnsupported
+    catch {
+        _stopSeqUnsupported = new Set();
+    }
+    return _stopSeqUnsupported;
 }
 /** Exported for testing — resets the stop-sequence cache. */
 function _resetStopSeqCache() {
-    _stopSeqUnsupported = null
+    _stopSeqUnsupported = null;
 }
 // ---------------------------------------------------------------------------
 // Model / inference-profile resolution
@@ -225,26 +205,28 @@ function _resetStopSeqCache() {
  * Populated at first use from the model catalog (models.json via the
  * model loader) by reading the `inference_profile_geos` array on each model.
  */
-let _inferenceProfileGeos = null
+let _inferenceProfileGeos = null;
 async function getInferenceProfileGeos() {
-    if (_inferenceProfileGeos) return _inferenceProfileGeos
+    if (_inferenceProfileGeos)
+        return _inferenceProfileGeos;
     try {
-        const { getModels, MODEL_TYPE } = await Promise.resolve().then(() => __importStar(require('../../../src/modelLoader')))
-        const models = await getModels(MODEL_TYPE.CHAT, 'awsChatBedrock')
-        _inferenceProfileGeos = new Map()
+        const { getModels, MODEL_TYPE } = await Promise.resolve().then(() => __importStar(require('../../../src/modelLoader')));
+        const models = await getModels(MODEL_TYPE.CHAT, 'awsChatBedrock');
+        _inferenceProfileGeos = new Map();
         for (const m of models) {
             if (m.inference_profile_geos?.length) {
-                _inferenceProfileGeos.set(m.name, m.inference_profile_geos)
+                _inferenceProfileGeos.set(m.name, m.inference_profile_geos);
             }
         }
-    } catch {
-        _inferenceProfileGeos = new Map()
     }
-    return _inferenceProfileGeos
+    catch {
+        _inferenceProfileGeos = new Map();
+    }
+    return _inferenceProfileGeos;
 }
 /** Exported for testing -- resets the cached map so tests can control it. */
 function _resetInferenceProfileCache() {
-    _inferenceProfileGeos = null
+    _inferenceProfileGeos = null;
 }
 /**
  * Returns an ordered list of geo-prefix candidates for a given AWS region.
@@ -259,14 +241,21 @@ function _resetInferenceProfileCache() {
  * ap-northeast-1, ca-central-1, sa-east-1 (2026-04-16).
  */
 function regionToGeoCandidates(region) {
-    if (region.startsWith('us-')) return ['us']
-    if (region.startsWith('eu-')) return ['eu']
-    if (region === 'ap-northeast-1' || region === 'ap-northeast-3') return ['jp', 'apac']
-    if (region === 'ap-southeast-2') return ['au', 'apac']
-    if (region.startsWith('ap-')) return ['apac']
-    if (region.startsWith('ca-')) return ['ca', 'us']
-    if (region.startsWith('sa-')) return [] // SA only has global. profiles, handled by fallback
-    return ['us']
+    if (region.startsWith('us-'))
+        return ['us'];
+    if (region.startsWith('eu-'))
+        return ['eu'];
+    if (region === 'ap-northeast-1' || region === 'ap-northeast-3')
+        return ['jp', 'apac'];
+    if (region === 'ap-southeast-2')
+        return ['au', 'apac'];
+    if (region.startsWith('ap-'))
+        return ['apac'];
+    if (region.startsWith('ca-'))
+        return ['ca', 'us'];
+    if (region.startsWith('sa-'))
+        return []; // SA only has global. profiles, handled by fallback
+    return ['us'];
 }
 /**
  * Geo-prefixes used by Bedrock cross-region inference profile IDs.
@@ -275,7 +264,7 @@ function regionToGeoCandidates(region) {
  *
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html
  */
-const GEO_PREFIX_RE = /^(us|eu|apac|jp|au|ca|global)\./
+const GEO_PREFIX_RE = /^(us|eu|apac|jp|au|ca|global)\./;
 /**
  * Accepts whatever the user typed into `customModel` (or the dropdown
  * selection) and returns the values that should be passed to
@@ -304,17 +293,18 @@ const GEO_PREFIX_RE = /^(us|eu|apac|jp|au|ca|global)\./
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html
  */
 async function resolveBedrockModel(customModel, dropdownModel, region, availableProfiles, useGlobalEndpoint) {
-    const resolvedInput = customModel?.trim() || dropdownModel
-    let modelId = resolvedInput
-    let applicationInferenceProfile
+    const resolvedInput = customModel?.trim() || dropdownModel;
+    let modelId = resolvedInput;
+    let applicationInferenceProfile;
     if (resolvedInput.startsWith('arn:aws:bedrock:')) {
         // Full ARN — use as inference profile, keep dropdown for metadata
-        applicationInferenceProfile = resolvedInput
-        modelId = dropdownModel
-    } else if (GEO_PREFIX_RE.test(resolvedInput)) {
+        applicationInferenceProfile = resolvedInput;
+        modelId = dropdownModel;
+    }
+    else if (GEO_PREFIX_RE.test(resolvedInput)) {
         // Cross-region inference profile ID (e.g. us.anthropic.claude-sonnet-4-6)
-        applicationInferenceProfile = resolvedInput
-        modelId = resolvedInput.replace(GEO_PREFIX_RE, '')
+        applicationInferenceProfile = resolvedInput;
+        modelId = resolvedInput.replace(GEO_PREFIX_RE, '');
     }
     // Auto-apply inference profile using best available geo for the region.
     // If useGlobalEndpoint is true, try global.* first.
@@ -322,36 +312,41 @@ async function resolveBedrockModel(customModel, dropdownModel, region, available
     // If availableProfiles is provided (from runtime discovery), only apply
     // a profile that is confirmed to exist in the target region.
     if (!applicationInferenceProfile) {
-        const geoMap = await getInferenceProfileGeos()
-        const modelGeos = geoMap.get(modelId)
+        const geoMap = await getInferenceProfileGeos();
+        const modelGeos = geoMap.get(modelId);
         if (modelGeos?.length) {
-            let allCandidateGeos
+            let allCandidateGeos;
             if (useGlobalEndpoint && modelGeos.includes('global')) {
-                allCandidateGeos = ['global']
-            } else {
-                const candidates = regionToGeoCandidates(region || 'us-east-1')
-                allCandidateGeos = [...candidates]
-                if (modelGeos.includes('global')) allCandidateGeos.push('global')
-                if (modelGeos.includes('us') && !allCandidateGeos.includes('us')) allCandidateGeos.push('us')
+                allCandidateGeos = ['global'];
+            }
+            else {
+                const candidates = regionToGeoCandidates(region || 'us-east-1');
+                allCandidateGeos = [...candidates];
+                if (modelGeos.includes('global'))
+                    allCandidateGeos.push('global');
+                if (modelGeos.includes('us') && !allCandidateGeos.includes('us'))
+                    allCandidateGeos.push('us');
             }
             for (const geo of allCandidateGeos) {
-                if (!modelGeos.includes(geo)) continue
-                const profileId = `${geo}.${modelId}`
+                if (!modelGeos.includes(geo))
+                    continue;
+                const profileId = `${geo}.${modelId}`;
                 if (availableProfiles) {
                     // Runtime discovery: only apply if confirmed in this region
                     if (availableProfiles.has(profileId)) {
-                        applicationInferenceProfile = profileId
-                        break
+                        applicationInferenceProfile = profileId;
+                        break;
                     }
-                } else {
+                }
+                else {
                     // No runtime data: trust models.json (backward compat)
-                    applicationInferenceProfile = profileId
-                    break
+                    applicationInferenceProfile = profileId;
+                    break;
                 }
             }
         }
     }
-    return { modelId, applicationInferenceProfile }
+    return { modelId, applicationInferenceProfile };
 }
 // ---------------------------------------------------------------------------
 // Error normalization
@@ -369,34 +364,29 @@ async function resolveBedrockModel(customModel, dropdownModel, region, available
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html
  */
 function normalizeBedrockError(err) {
-    if (!(err instanceof Error)) return err
-    const msg = err.message ?? ''
+    if (!(err instanceof Error))
+        return err;
+    const msg = err.message ?? '';
     // Model requires an inference profile
     if (msg.includes('inference profile') || (msg.includes('ValidationException') && msg.includes('on-demand throughput'))) {
-        return new Error(
-            `This model requires a cross-region inference profile. ` +
-                `The system attempted to auto-apply one but none was available in this region. ` +
-                `For built-in models, select the model from the "Model Name" dropdown and choose a supported region. ` +
-                `Original error: ${msg}`
-        )
+        return new Error(`This model requires a cross-region inference profile. ` +
+            `The system attempted to auto-apply one but none was available in this region. ` +
+            `For built-in models, select the model from the "Model Name" dropdown and choose a supported region. ` +
+            `Original error: ${msg}`);
     }
     // Model does not support the Converse API
     if (msg.includes("doesn't support") && msg.includes('Converse')) {
-        return new Error(
-            `This model does not support the Bedrock Converse API. ` +
-                `If this is an imported model, provide its full ARN in the "Custom Model ARN" field ` +
-                `— it will be auto-routed to the InvokeModel API. ` +
-                `Original error: ${msg}`
-        )
+        return new Error(`This model does not support the Bedrock Converse API. ` +
+            `If this is an imported model, provide its full ARN in the "Custom Model ARN" field ` +
+            `— it will be auto-routed to the InvokeModel API. ` +
+            `Original error: ${msg}`);
     }
     // Model doesn't support a specific field (e.g. stopSequences)
     if (msg.includes("doesn't support") && msg.includes('field')) {
-        return new Error(
-            `This model rejected a request parameter. ` +
-                `Some Bedrock models do not support all inference configuration fields. ` +
-                `Original error: ${msg}`
-        )
+        return new Error(`This model rejected a request parameter. ` +
+            `Some Bedrock models do not support all inference configuration fields. ` +
+            `Original error: ${msg}`);
     }
-    return err
+    return err;
 }
 //# sourceMappingURL=utils.js.map

@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class RedisCacheApi {
     constructor() {
-        this.label = 'Redis API'
-        this.name = 'redisCacheApi'
-        this.version = 1.0
+        this.label = 'Redis API';
+        this.name = 'redisCacheApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Redis Host',
@@ -35,8 +35,8 @@ class RedisCacheApi {
                 name: 'redisCacheSslEnabled',
                 type: 'boolean'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: RedisCacheApi }
+module.exports = { credClass: RedisCacheApi };
 //# sourceMappingURL=RedisCacheApi.credential.js.map

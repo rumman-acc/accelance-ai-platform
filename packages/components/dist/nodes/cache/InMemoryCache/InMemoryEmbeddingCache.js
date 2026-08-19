@@ -1,18 +1,18 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const stores_1 = require('@langchain/core/stores')
-const cache_backed_1 = require('@langchain/classic/embeddings/cache_backed')
-const src_1 = require('../../../src')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const stores_1 = require("@langchain/core/stores");
+const cache_backed_1 = require("@langchain/classic/embeddings/cache_backed");
+const src_1 = require("../../../src");
 class InMemoryEmbeddingCache {
     constructor() {
-        this.label = 'InMemory Embedding Cache'
-        this.name = 'inMemoryEmbeddingCache'
-        this.version = 1.0
-        this.type = 'InMemoryEmbeddingCache'
-        this.description = 'Cache generated Embeddings in memory to avoid needing to recompute them.'
-        this.icon = 'Memory.svg'
-        this.category = 'Cache'
-        this.baseClasses = [this.type, ...(0, src_1.getBaseClasses)(cache_backed_1.CacheBackedEmbeddings)]
+        this.label = 'InMemory Embedding Cache';
+        this.name = 'inMemoryEmbeddingCache';
+        this.version = 1.0;
+        this.type = 'InMemoryEmbeddingCache';
+        this.description = 'Cache generated Embeddings in memory to avoid needing to recompute them.';
+        this.icon = 'Memory.svg';
+        this.category = 'Cache';
+        this.baseClasses = [this.type, ...(0, src_1.getBaseClasses)(cache_backed_1.CacheBackedEmbeddings)];
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -26,40 +26,40 @@ class InMemoryEmbeddingCache {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const namespace = nodeData.inputs?.namespace
-        const underlyingEmbeddings = nodeData.inputs?.embeddings
-        const memoryMap = (await options.cachePool.getEmbeddingCache(options.chatflowid)) ?? {}
-        const inMemCache = new InMemoryEmbeddingCacheExtended(memoryMap)
+        const namespace = nodeData.inputs?.namespace;
+        const underlyingEmbeddings = nodeData.inputs?.embeddings;
+        const memoryMap = (await options.cachePool.getEmbeddingCache(options.chatflowid)) ?? {};
+        const inMemCache = new InMemoryEmbeddingCacheExtended(memoryMap);
         inMemCache.mget = async (keys) => {
-            const memory = (await options.cachePool.getEmbeddingCache(options.chatflowid)) ?? inMemCache.store
-            return keys.map((key) => memory[key])
-        }
+            const memory = (await options.cachePool.getEmbeddingCache(options.chatflowid)) ?? inMemCache.store;
+            return keys.map((key) => memory[key]);
+        };
         inMemCache.mset = async (keyValuePairs) => {
             for (const [key, value] of keyValuePairs) {
-                inMemCache.store[key] = value
+                inMemCache.store[key] = value;
             }
-            await options.cachePool.addEmbeddingCache(options.chatflowid, inMemCache.store)
-        }
+            await options.cachePool.addEmbeddingCache(options.chatflowid, inMemCache.store);
+        };
         inMemCache.mdelete = async (keys) => {
             for (const key of keys) {
-                delete inMemCache.store[key]
+                delete inMemCache.store[key];
             }
-            await options.cachePool.addEmbeddingCache(options.chatflowid, inMemCache.store)
-        }
+            await options.cachePool.addEmbeddingCache(options.chatflowid, inMemCache.store);
+        };
         return cache_backed_1.CacheBackedEmbeddings.fromBytesStore(underlyingEmbeddings, inMemCache, {
             namespace: namespace
-        })
+        });
     }
 }
 class InMemoryEmbeddingCacheExtended extends stores_1.BaseStore {
     constructor(map) {
-        super()
-        this.lc_namespace = ['langchain', 'storage', 'in_memory']
-        this.store = {}
-        this.store = map
+        super();
+        this.lc_namespace = ['langchain', 'storage', 'in_memory'];
+        this.store = {};
+        this.store = map;
     }
     /**
      * Retrieves the values associated with the given keys from the store.
@@ -67,7 +67,7 @@ class InMemoryEmbeddingCacheExtended extends stores_1.BaseStore {
      * @returns Array of values associated with the given keys.
      */
     async mget(keys) {
-        return keys.map((key) => this.store[key])
+        return keys.map((key) => this.store[key]);
     }
     /**
      * Sets the values for the given keys in the store.
@@ -76,7 +76,7 @@ class InMemoryEmbeddingCacheExtended extends stores_1.BaseStore {
      */
     async mset(keyValuePairs) {
         for (const [key, value] of keyValuePairs) {
-            this.store[key] = value
+            this.store[key] = value;
         }
     }
     /**
@@ -86,7 +86,7 @@ class InMemoryEmbeddingCacheExtended extends stores_1.BaseStore {
      */
     async mdelete(keys) {
         for (const key of keys) {
-            delete this.store[key]
+            delete this.store[key];
         }
     }
     /**
@@ -96,13 +96,13 @@ class InMemoryEmbeddingCacheExtended extends stores_1.BaseStore {
      * @returns AsyncGenerator that yields keys from the store.
      */
     async *yieldKeys(prefix) {
-        const keys = Object.keys(this.store)
+        const keys = Object.keys(this.store);
         for (const key of keys) {
             if (prefix === undefined || key.startsWith(prefix)) {
-                yield key
+                yield key;
             }
         }
     }
 }
-module.exports = { nodeClass: InMemoryEmbeddingCache }
+module.exports = { nodeClass: InMemoryEmbeddingCache };
 //# sourceMappingURL=InMemoryEmbeddingCache.js.map

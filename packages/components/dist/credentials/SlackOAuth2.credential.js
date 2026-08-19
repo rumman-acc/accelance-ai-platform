@@ -1,5 +1,5 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const scopes = [
     'search:read.public',
     'search:read.private',
@@ -16,14 +16,14 @@ const scopes = [
     'canvases:write',
     'users:read',
     'users:read.email'
-]
+];
 class SlackOAuth2 {
     constructor() {
-        this.label = 'Slack User Token OAuth2'
-        this.name = 'slackOAuth2'
-        this.version = 1.0
+        this.label = 'Slack User Token OAuth2';
+        this.name = 'slackOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/slack-mcp-user-guide">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/slack-mcp-user-guide">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -58,13 +58,12 @@ class SlackOAuth2 {
                 label: 'Scope',
                 name: 'scope',
                 type: 'string',
-                description:
-                    'Space-separated list of scopes. Refer to <a target="_blank" href="https://docs.slack.dev/ai/slack-mcp-server/developing#add-scopes">official guide</a> for more details.',
+                description: 'Space-separated list of scopes. Refer to <a target="_blank" href="https://docs.slack.dev/ai/slack-mcp-server/developing#add-scopes">official guide</a> for more details.',
                 optional: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: SlackOAuth2 }
+module.exports = { credClass: SlackOAuth2 };
 //# sourceMappingURL=SlackOAuth2.credential.js.map

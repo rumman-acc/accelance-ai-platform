@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 /*
 * Temporary disabled due to increasing open connections without releasing them
 * Use TypeORM instead

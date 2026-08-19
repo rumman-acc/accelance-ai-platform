@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class Gmail_Tools {
     constructor() {
-        this.label = 'Gmail'
-        this.name = 'gmail'
-        this.version = 1.0
-        this.type = 'Gmail'
-        this.icon = 'gmail.svg'
-        this.category = 'Tools'
-        this.description = 'Perform Gmail operations for drafts, messages, labels, and threads'
-        this.baseClasses = [this.type, 'Tool']
+        this.label = 'Gmail';
+        this.name = 'gmail';
+        this.version = 1.0;
+        this.type = 'Gmail';
+        this.icon = 'gmail.svg';
+        this.category = 'Tools';
+        this.description = 'Perform Gmail operations for drafts, messages, labels, and threads';
+        this.baseClasses = [this.type, 'Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['gmailOAuth2']
-        }
+        };
         this.inputs = [
             {
                 label: 'Type',
@@ -534,73 +534,104 @@ class Gmail_Tools {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options)
-        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData)
+        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options);
+        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData);
         if (!accessToken) {
-            throw new Error('No access token found in credential')
+            throw new Error('No access token found in credential');
         }
         // Get all actions based on type
-        const gmailType = nodeData.inputs?.gmailType
-        let actions = []
+        const gmailType = nodeData.inputs?.gmailType;
+        let actions = [];
         if (gmailType === 'drafts') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.draftActions)
-        } else if (gmailType === 'messages') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.messageActions)
-        } else if (gmailType === 'labels') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.labelActions)
-        } else if (gmailType === 'threads') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.threadActions)
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.draftActions);
         }
-        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
+        else if (gmailType === 'messages') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.messageActions);
+        }
+        else if (gmailType === 'labels') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.labelActions);
+        }
+        else if (gmailType === 'threads') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.threadActions);
+        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData);
         // Create and return tools based on selected actions
         const tools = (0, core_1.createGmailTools)({
             actions,
             accessToken,
             defaultParams
-        })
-        return tools
+        });
+        return tools;
     }
     transformNodeInputsToToolArgs(nodeData) {
         // Collect default parameters from inputs
-        const defaultParams = {}
+        const defaultParams = {};
         // Draft parameters
-        if (nodeData.inputs?.draftMaxResults) defaultParams.draftMaxResults = nodeData.inputs.draftMaxResults
-        if (nodeData.inputs?.draftTo) defaultParams.draftTo = nodeData.inputs.draftTo
-        if (nodeData.inputs?.draftSubject) defaultParams.draftSubject = nodeData.inputs.draftSubject
-        if (nodeData.inputs?.draftBody) defaultParams.draftBody = nodeData.inputs.draftBody
-        if (nodeData.inputs?.draftCc) defaultParams.draftCc = nodeData.inputs.draftCc
-        if (nodeData.inputs?.draftBcc) defaultParams.draftBcc = nodeData.inputs.draftBcc
-        if (nodeData.inputs?.draftId) defaultParams.draftId = nodeData.inputs.draftId
-        if (nodeData.inputs?.draftUpdateTo) defaultParams.draftUpdateTo = nodeData.inputs.draftUpdateTo
-        if (nodeData.inputs?.draftUpdateSubject) defaultParams.draftUpdateSubject = nodeData.inputs.draftUpdateSubject
-        if (nodeData.inputs?.draftUpdateBody) defaultParams.draftUpdateBody = nodeData.inputs.draftUpdateBody
+        if (nodeData.inputs?.draftMaxResults)
+            defaultParams.draftMaxResults = nodeData.inputs.draftMaxResults;
+        if (nodeData.inputs?.draftTo)
+            defaultParams.draftTo = nodeData.inputs.draftTo;
+        if (nodeData.inputs?.draftSubject)
+            defaultParams.draftSubject = nodeData.inputs.draftSubject;
+        if (nodeData.inputs?.draftBody)
+            defaultParams.draftBody = nodeData.inputs.draftBody;
+        if (nodeData.inputs?.draftCc)
+            defaultParams.draftCc = nodeData.inputs.draftCc;
+        if (nodeData.inputs?.draftBcc)
+            defaultParams.draftBcc = nodeData.inputs.draftBcc;
+        if (nodeData.inputs?.draftId)
+            defaultParams.draftId = nodeData.inputs.draftId;
+        if (nodeData.inputs?.draftUpdateTo)
+            defaultParams.draftUpdateTo = nodeData.inputs.draftUpdateTo;
+        if (nodeData.inputs?.draftUpdateSubject)
+            defaultParams.draftUpdateSubject = nodeData.inputs.draftUpdateSubject;
+        if (nodeData.inputs?.draftUpdateBody)
+            defaultParams.draftUpdateBody = nodeData.inputs.draftUpdateBody;
         // Message parameters
-        if (nodeData.inputs?.messageMaxResults) defaultParams.messageMaxResults = nodeData.inputs.messageMaxResults
-        if (nodeData.inputs?.messageQuery) defaultParams.messageQuery = nodeData.inputs.messageQuery
-        if (nodeData.inputs?.messageTo) defaultParams.messageTo = nodeData.inputs.messageTo
-        if (nodeData.inputs?.messageSubject) defaultParams.messageSubject = nodeData.inputs.messageSubject
-        if (nodeData.inputs?.messageBody) defaultParams.messageBody = nodeData.inputs.messageBody
-        if (nodeData.inputs?.messageCc) defaultParams.messageCc = nodeData.inputs.messageCc
-        if (nodeData.inputs?.messageBcc) defaultParams.messageBcc = nodeData.inputs.messageBcc
-        if (nodeData.inputs?.messageId) defaultParams.messageId = nodeData.inputs.messageId
-        if (nodeData.inputs?.messageAddLabelIds) defaultParams.messageAddLabelIds = nodeData.inputs.messageAddLabelIds
-        if (nodeData.inputs?.messageRemoveLabelIds) defaultParams.messageRemoveLabelIds = nodeData.inputs.messageRemoveLabelIds
+        if (nodeData.inputs?.messageMaxResults)
+            defaultParams.messageMaxResults = nodeData.inputs.messageMaxResults;
+        if (nodeData.inputs?.messageQuery)
+            defaultParams.messageQuery = nodeData.inputs.messageQuery;
+        if (nodeData.inputs?.messageTo)
+            defaultParams.messageTo = nodeData.inputs.messageTo;
+        if (nodeData.inputs?.messageSubject)
+            defaultParams.messageSubject = nodeData.inputs.messageSubject;
+        if (nodeData.inputs?.messageBody)
+            defaultParams.messageBody = nodeData.inputs.messageBody;
+        if (nodeData.inputs?.messageCc)
+            defaultParams.messageCc = nodeData.inputs.messageCc;
+        if (nodeData.inputs?.messageBcc)
+            defaultParams.messageBcc = nodeData.inputs.messageBcc;
+        if (nodeData.inputs?.messageId)
+            defaultParams.messageId = nodeData.inputs.messageId;
+        if (nodeData.inputs?.messageAddLabelIds)
+            defaultParams.messageAddLabelIds = nodeData.inputs.messageAddLabelIds;
+        if (nodeData.inputs?.messageRemoveLabelIds)
+            defaultParams.messageRemoveLabelIds = nodeData.inputs.messageRemoveLabelIds;
         // Label parameters
-        if (nodeData.inputs?.labelName) defaultParams.labelName = nodeData.inputs.labelName
-        if (nodeData.inputs?.labelColor) defaultParams.labelColor = nodeData.inputs.labelColor
-        if (nodeData.inputs?.labelId) defaultParams.labelId = nodeData.inputs.labelId
+        if (nodeData.inputs?.labelName)
+            defaultParams.labelName = nodeData.inputs.labelName;
+        if (nodeData.inputs?.labelColor)
+            defaultParams.labelColor = nodeData.inputs.labelColor;
+        if (nodeData.inputs?.labelId)
+            defaultParams.labelId = nodeData.inputs.labelId;
         // Thread parameters
-        if (nodeData.inputs?.threadMaxResults) defaultParams.threadMaxResults = nodeData.inputs.threadMaxResults
-        if (nodeData.inputs?.threadQuery) defaultParams.threadQuery = nodeData.inputs.threadQuery
-        if (nodeData.inputs?.threadId) defaultParams.threadId = nodeData.inputs.threadId
-        if (nodeData.inputs?.threadAddLabelIds) defaultParams.threadAddLabelIds = nodeData.inputs.threadAddLabelIds
-        if (nodeData.inputs?.threadRemoveLabelIds) defaultParams.threadRemoveLabelIds = nodeData.inputs.threadRemoveLabelIds
-        return defaultParams
+        if (nodeData.inputs?.threadMaxResults)
+            defaultParams.threadMaxResults = nodeData.inputs.threadMaxResults;
+        if (nodeData.inputs?.threadQuery)
+            defaultParams.threadQuery = nodeData.inputs.threadQuery;
+        if (nodeData.inputs?.threadId)
+            defaultParams.threadId = nodeData.inputs.threadId;
+        if (nodeData.inputs?.threadAddLabelIds)
+            defaultParams.threadAddLabelIds = nodeData.inputs.threadAddLabelIds;
+        if (nodeData.inputs?.threadRemoveLabelIds)
+            defaultParams.threadRemoveLabelIds = nodeData.inputs.threadRemoveLabelIds;
+        return defaultParams;
     }
 }
-module.exports = { nodeClass: Gmail_Tools }
+module.exports = { nodeClass: Gmail_Tools };
 //# sourceMappingURL=Gmail.js.map

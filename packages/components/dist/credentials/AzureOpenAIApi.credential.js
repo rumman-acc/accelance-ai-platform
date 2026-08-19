@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class AzureOpenAIApi {
     constructor() {
-        this.label = 'Azure OpenAI API'
-        this.name = 'azureOpenAIApi'
-        this.version = 1.0
+        this.label = 'Azure OpenAI API';
+        this.name = 'azureOpenAIApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service">official guide</a> of how to use Azure OpenAI service'
+            'Refer to <a target="_blank" href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service">official guide</a> of how to use Azure OpenAI service';
         this.inputs = [
             {
                 label: 'Azure OpenAI Api Key',
@@ -31,11 +31,10 @@ class AzureOpenAIApi {
                 name: 'azureOpenAIApiVersion',
                 type: 'string',
                 placeholder: '2024-10-21',
-                description:
-                    'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/ai-foundry/openai/api-version-lifecycle">API version lifecycle</a>'
+                description: 'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/ai-foundry/openai/api-version-lifecycle">API version lifecycle</a>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: AzureOpenAIApi }
+module.exports = { credClass: AzureOpenAIApi };
 //# sourceMappingURL=AzureOpenAIApi.credential.js.map

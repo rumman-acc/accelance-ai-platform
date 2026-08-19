@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 const codeExample = `{
     "name": {
         "type": "string",
@@ -12,17 +12,17 @@ const codeExample = `{
         "type": "string",
         "description": "Date of the item"
     }
-}`
+}`;
 class RequestsPost_Tools {
     constructor() {
-        this.label = 'Requests Post'
-        this.name = 'requestsPost'
-        this.version = 2.0
-        this.type = 'RequestsPost'
-        this.icon = 'post.png'
-        this.category = 'Tools'
-        this.description = 'Execute HTTP POST requests'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.RequestsPostTool), 'Tool']
+        this.label = 'Requests Post';
+        this.name = 'requestsPost';
+        this.version = 2.0;
+        this.type = 'RequestsPost';
+        this.icon = 'post.png';
+        this.category = 'Tools';
+        this.description = 'Execute HTTP POST requests';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.RequestsPostTool), 'Tool'];
         this.inputs = [
             {
                 label: 'URL',
@@ -106,37 +106,40 @@ class RequestsPost_Tools {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const headers = nodeData.inputs?.headers || nodeData.inputs?.requestsPostHeaders
-        const url = nodeData.inputs?.url || nodeData.inputs?.requestsPostUrl
-        const name = nodeData.inputs?.name || nodeData.inputs?.requestsPostName
-        const description = nodeData.inputs?.description || nodeData.inputs?.requestsPostDescription
-        const body = nodeData.inputs?.body || nodeData.inputs?.requestPostBody
-        const bodySchema = nodeData.inputs?.requestsPostBodySchema
-        const maxOutputLength = nodeData.inputs?.maxOutputLength || nodeData.inputs?.requestsPostMaxOutputLength
-        const obj = {}
-        if (url) obj.url = (0, utils_1.stripHTMLFromToolInput)(url)
-        if (description) obj.description = description
+        const headers = nodeData.inputs?.headers || nodeData.inputs?.requestsPostHeaders;
+        const url = nodeData.inputs?.url || nodeData.inputs?.requestsPostUrl;
+        const name = nodeData.inputs?.name || nodeData.inputs?.requestsPostName;
+        const description = nodeData.inputs?.description || nodeData.inputs?.requestsPostDescription;
+        const body = nodeData.inputs?.body || nodeData.inputs?.requestPostBody;
+        const bodySchema = nodeData.inputs?.requestsPostBodySchema;
+        const maxOutputLength = nodeData.inputs?.maxOutputLength || nodeData.inputs?.requestsPostMaxOutputLength;
+        const obj = {};
+        if (url)
+            obj.url = (0, utils_1.stripHTMLFromToolInput)(url);
+        if (description)
+            obj.description = description;
         if (name)
             obj.name = name
                 .toLowerCase()
                 .replace(/ /g, '_')
-                .replace(/[^a-z0-9_-]/g, '')
-        if (bodySchema) obj.bodySchema = (0, utils_1.stripHTMLFromToolInput)(bodySchema)
-        if (maxOutputLength) obj.maxOutputLength = parseInt(maxOutputLength, 10)
+                .replace(/[^a-z0-9_-]/g, '');
+        if (bodySchema)
+            obj.bodySchema = (0, utils_1.stripHTMLFromToolInput)(bodySchema);
+        if (maxOutputLength)
+            obj.maxOutputLength = parseInt(maxOutputLength, 10);
         if (headers) {
-            const parsedHeaders =
-                typeof headers === 'object' ? headers : (0, utils_1.parseJsonBody)((0, utils_1.stripHTMLFromToolInput)(headers))
-            obj.headers = parsedHeaders
+            const parsedHeaders = typeof headers === 'object' ? headers : (0, utils_1.parseJsonBody)((0, utils_1.stripHTMLFromToolInput)(headers));
+            obj.headers = parsedHeaders;
         }
         if (body) {
-            const parsedBody = typeof body === 'object' ? body : (0, utils_1.parseJsonBody)(body)
-            obj.body = parsedBody
+            const parsedBody = typeof body === 'object' ? body : (0, utils_1.parseJsonBody)(body);
+            obj.body = parsedBody;
         }
-        return new core_1.RequestsPostTool(obj)
+        return new core_1.RequestsPostTool(obj);
     }
 }
-module.exports = { nodeClass: RequestsPost_Tools }
+module.exports = { nodeClass: RequestsPost_Tools };
 //# sourceMappingURL=RequestsPost.js.map

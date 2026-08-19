@@ -1,46 +1,47 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../../src/utils')
-const core_1 = require('../core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../../src/utils");
+const core_1 = require("../core");
 class Slack_MCP {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             listActions: async (nodeData, options) => {
                 try {
-                    const toolset = await this.getTools(nodeData, options)
-                    toolset.sort((a, b) => a.name.localeCompare(b.name))
+                    const toolset = await this.getTools(nodeData, options);
+                    toolset.sort((a, b) => a.name.localeCompare(b.name));
                     return toolset.map(({ name, ...rest }) => ({
                         label: name.toUpperCase(),
                         name: name,
                         description: rest.description || name
-                    }))
-                } catch (error) {
-                    console.error('Error listing actions:', error)
+                    }));
+                }
+                catch (error) {
+                    console.error('Error listing actions:', error);
                     return [
                         {
                             label: 'No Available Actions',
                             name: 'error',
                             description: 'No available actions, please check your Slack credential and refresh'
                         }
-                    ]
+                    ];
                 }
             }
-        }
-        this.label = 'Slack MCP'
-        this.name = 'slackMCP'
-        this.version = 1.0
-        this.type = 'Slack MCP Tool'
-        this.icon = 'slack.svg'
-        this.category = 'Tools (MCP)'
-        this.description = 'MCP Server for the Slack API'
-        this.documentation = 'https://docs.slack.dev/ai/slack-mcp-server'
+        };
+        this.label = 'Slack MCP';
+        this.name = 'slackMCP';
+        this.version = 1.0;
+        this.type = 'Slack MCP Tool';
+        this.icon = 'slack.svg';
+        this.category = 'Tools (MCP)';
+        this.description = 'MCP Server for the Slack API';
+        this.documentation = 'https://docs.slack.dev/ai/slack-mcp-server';
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['slackOAuth2', 'slackApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Available Actions',
@@ -49,47 +50,43 @@ class Slack_MCP {
                 loadMethod: 'listActions',
                 refresh: true
             }
-        ]
-        this.baseClasses = ['Tool']
+        ];
+        this.baseClasses = ['Tool'];
     }
     async init(nodeData, _, options) {
-        const tools = await this.getTools(nodeData, options)
-        const _mcpActions = nodeData.inputs?.mcpActions
-        let mcpActions = []
+        const tools = await this.getTools(nodeData, options);
+        const _mcpActions = nodeData.inputs?.mcpActions;
+        let mcpActions = [];
         if (_mcpActions) {
             try {
-                mcpActions = typeof _mcpActions === 'string' ? JSON.parse(_mcpActions) : _mcpActions
-            } catch (error) {
-                console.error('Error parsing mcp actions:', error)
+                mcpActions = typeof _mcpActions === 'string' ? JSON.parse(_mcpActions) : _mcpActions;
+            }
+            catch (error) {
+                console.error('Error parsing mcp actions:', error);
             }
         }
-        return tools.filter((tool) => mcpActions.includes(tool.name))
+        return tools.filter((tool) => mcpActions.includes(tool.name));
     }
     async getTools(nodeData, options) {
-        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const accessToken =
-            (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData) ||
-            (0, utils_1.getCredentialParam)('accessToken', credentialData, nodeData)
-        const botToken = (0, utils_1.getCredentialParam)('botToken', credentialData, nodeData)
-        const teamId = (0, utils_1.getCredentialParam)('teamId', credentialData, nodeData)
-        let toolkit
+        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData) || (0, utils_1.getCredentialParam)('accessToken', credentialData, nodeData);
+        const botToken = (0, utils_1.getCredentialParam)('botToken', credentialData, nodeData);
+        const teamId = (0, utils_1.getCredentialParam)('teamId', credentialData, nodeData);
+        let toolkit;
         if (accessToken) {
-            credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options)
-            const refreshedAccessToken =
-                (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData) ||
+            credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options);
+            const refreshedAccessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData) ||
                 (0, utils_1.getCredentialParam)('accessToken', credentialData, nodeData) ||
-                accessToken
-            toolkit = new core_1.MCPToolkit(
-                {
-                    url: 'https://mcp.slack.com/mcp',
-                    headers: {
-                        Authorization: `Bearer ${refreshedAccessToken}`
-                    }
-                },
-                'http'
-            )
-        } else if (botToken && teamId) {
-            const packagePath = (0, utils_1.getNodeModulesPackagePath)('@modelcontextprotocol/server-slack/dist/index.js')
+                accessToken;
+            toolkit = new core_1.MCPToolkit({
+                url: 'https://mcp.slack.com/mcp',
+                headers: {
+                    Authorization: `Bearer ${refreshedAccessToken}`
+                }
+            }, 'http');
+        }
+        else if (botToken && teamId) {
+            const packagePath = (0, utils_1.getNodeModulesPackagePath)('@modelcontextprotocol/server-slack/dist/index.js');
             const serverParams = {
                 command: 'node',
                 args: [packagePath],
@@ -97,15 +94,16 @@ class Slack_MCP {
                     SLACK_BOT_TOKEN: botToken,
                     SLACK_TEAM_ID: teamId
                 }
-            }
-            toolkit = new core_1.MCPToolkit(serverParams, 'stdio')
-        } else {
-            throw new Error('Missing Slack credentials. Provide either an OAuth2 access token or a Bot Token with Team ID.')
+            };
+            toolkit = new core_1.MCPToolkit(serverParams, 'stdio');
         }
-        await toolkit.initialize()
-        const tools = toolkit.tools ?? []
-        return tools
+        else {
+            throw new Error('Missing Slack credentials. Provide either an OAuth2 access token or a Bot Token with Team ID.');
+        }
+        await toolkit.initialize();
+        const tools = toolkit.tools ?? [];
+        return tools;
     }
 }
-module.exports = { nodeClass: Slack_MCP }
+module.exports = { nodeClass: Slack_MCP };
 //# sourceMappingURL=SlackMCP.js.map

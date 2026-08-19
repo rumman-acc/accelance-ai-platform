@@ -1,32 +1,32 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const openai_1 = require('@langchain/openai')
-const utils_1 = require('../../../src/utils')
-const modelLoader_1 = require('../../../src/modelLoader')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const openai_1 = require("@langchain/openai");
+const utils_1 = require("../../../src/utils");
+const modelLoader_1 = require("../../../src/modelLoader");
 class OpenAI_LLMs {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.LLM, 'openAI')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.LLM, 'openAI');
             }
-        }
-        this.label = 'OpenAI'
-        this.name = 'openAI'
-        this.version = 4.0
-        this.type = 'OpenAI'
-        this.icon = 'openai.svg'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around OpenAI large language models'
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'Use OpenAI Chat Models instead'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(openai_1.OpenAI)]
+        };
+        this.label = 'OpenAI';
+        this.name = 'openAI';
+        this.version = 4.0;
+        this.type = 'OpenAI';
+        this.icon = 'openai.svg';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around OpenAI large language models';
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'Use OpenAI Chat Models instead';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(openai_1.OpenAI)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['openAIApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -121,55 +121,64 @@ class OpenAI_LLMs {
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const temperature = nodeData.inputs?.temperature
-        const modelName = nodeData.inputs?.modelName
-        const maxTokens = nodeData.inputs?.maxTokens
-        const topP = nodeData.inputs?.topP
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty
-        const presencePenalty = nodeData.inputs?.presencePenalty
-        const timeout = nodeData.inputs?.timeout
-        const batchSize = nodeData.inputs?.batchSize
-        const bestOf = nodeData.inputs?.bestOf
-        const streaming = nodeData.inputs?.streaming
-        const basePath = nodeData.inputs?.basepath
-        const baseOptions = nodeData.inputs?.baseOptions
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const openAIApiKey = (0, utils_1.getCredentialParam)('openAIApiKey', credentialData, nodeData)
-        const cache = nodeData.inputs?.cache
+        const temperature = nodeData.inputs?.temperature;
+        const modelName = nodeData.inputs?.modelName;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const topP = nodeData.inputs?.topP;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty;
+        const presencePenalty = nodeData.inputs?.presencePenalty;
+        const timeout = nodeData.inputs?.timeout;
+        const batchSize = nodeData.inputs?.batchSize;
+        const bestOf = nodeData.inputs?.bestOf;
+        const streaming = nodeData.inputs?.streaming;
+        const basePath = nodeData.inputs?.basepath;
+        const baseOptions = nodeData.inputs?.baseOptions;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const openAIApiKey = (0, utils_1.getCredentialParam)('openAIApiKey', credentialData, nodeData);
+        const cache = nodeData.inputs?.cache;
         const obj = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
             streaming: streaming ?? true
-        }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (batchSize) obj.batchSize = parseInt(batchSize, 10)
-        if (bestOf) obj.bestOf = parseInt(bestOf, 10)
-        if (cache) obj.cache = cache
-        let parsedBaseOptions = undefined
+        };
+        if (maxTokens)
+            obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (frequencyPenalty)
+            obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (presencePenalty)
+            obj.presencePenalty = parseFloat(presencePenalty);
+        if (timeout)
+            obj.timeout = parseInt(timeout, 10);
+        if (batchSize)
+            obj.batchSize = parseInt(batchSize, 10);
+        if (bestOf)
+            obj.bestOf = parseInt(bestOf, 10);
+        if (cache)
+            obj.cache = cache;
+        let parsedBaseOptions = undefined;
         if (baseOptions) {
             try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the OpenAI's BaseOptions: " + exception)
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions);
+            }
+            catch (exception) {
+                throw new Error("Invalid JSON in the OpenAI's BaseOptions: " + exception);
             }
         }
         if (basePath || parsedBaseOptions) {
             obj.configuration = {
                 baseURL: basePath,
                 defaultHeaders: parsedBaseOptions
-            }
+            };
         }
-        const model = new openai_1.OpenAI(obj)
-        return model
+        const model = new openai_1.OpenAI(obj);
+        return model;
     }
 }
-module.exports = { nodeClass: OpenAI_LLMs }
+module.exports = { nodeClass: OpenAI_LLMs };
 //# sourceMappingURL=OpenAI.js.map

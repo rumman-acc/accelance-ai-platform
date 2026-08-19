@@ -1,18 +1,18 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const community_1 = require('@mem0/community')
-const utils_1 = require('../../../src/utils')
-const uuid_1 = require('uuid')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const community_1 = require("@mem0/community");
+const utils_1 = require("../../../src/utils");
+const uuid_1 = require("uuid");
 class Mem0_Memory {
     constructor() {
-        this.label = 'Mem0'
-        this.name = 'mem0'
-        this.version = 1.1
-        this.type = 'Mem0'
-        this.icon = 'mem0.svg'
-        this.category = 'Memory'
-        this.description = 'Stores and manages chat memory using Mem0 service'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(community_1.Mem0Memory)]
+        this.label = 'Mem0';
+        this.name = 'mem0';
+        this.version = 1.1;
+        this.type = 'Mem0';
+        this.icon = 'mem0.svg';
+        this.category = 'Memory';
+        this.description = 'Stores and manages chat memory using Mem0 service';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(community_1.Mem0Memory)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -20,7 +20,7 @@ class Mem0_Memory {
             optional: false,
             description: 'Configure API Key for Mem0 service',
             credentialNames: ['mem0MemoryApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'User ID',
@@ -117,29 +117,29 @@ class Mem0_Memory {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, input, options) {
-        return await initializeMem0(nodeData, input, options)
+        return await initializeMem0(nodeData, input, options);
     }
 }
 const initializeMem0 = async (nodeData, input, options) => {
-    const initialUserId = nodeData.inputs?.user_id
-    const useFlowiseChatId = nodeData.inputs?.useFlowiseChatId
-    const orgId = options.orgId
+    const initialUserId = nodeData.inputs?.user_id;
+    const useFlowiseChatId = nodeData.inputs?.useFlowiseChatId;
+    const orgId = options.orgId;
     if (!useFlowiseChatId && !initialUserId) {
-        throw new Error('User ID field cannot be empty when "Use Flowise Chat ID" is OFF.')
+        throw new Error('User ID field cannot be empty when "Use Flowise Chat ID" is OFF.');
     }
-    const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-    const apiKey = (0, utils_1.getCredentialParam)('apiKey', credentialData, nodeData)
+    const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+    const apiKey = (0, utils_1.getCredentialParam)('apiKey', credentialData, nodeData);
     const mem0Options = {
         apiKey: apiKey,
         host: nodeData.inputs?.host,
         organizationId: nodeData.inputs?.org_id,
         projectId: nodeData.inputs?.project_id
-    }
-    const memOptionsUserId = initialUserId
-    const constructorSessionId = initialUserId || (useFlowiseChatId ? 'flowise-chat-id-placeholder' : '')
+    };
+    const memOptionsUserId = initialUserId;
+    const constructorSessionId = initialUserId || (useFlowiseChatId ? 'flowise-chat-id-placeholder' : '');
     const memoryOptions = {
         user_id: memOptionsUserId,
         run_id: nodeData.inputs?.run_id || undefined,
@@ -151,7 +151,7 @@ const initializeMem0 = async (nodeData, input, options) => {
         enable_graph: nodeData.inputs?.enable_graph || false,
         metadata: nodeData.inputs?.metadata || {},
         filters: nodeData.inputs?.filters || {}
-    }
+    };
     const obj = {
         apiKey: apiKey,
         humanPrefix: nodeData.inputs?.humanPrefix,
@@ -169,75 +169,77 @@ const initializeMem0 = async (nodeData, input, options) => {
         useFlowiseChatId: useFlowiseChatId,
         input: input,
         orgId: orgId
-    }
-    return new Mem0MemoryExtended(obj)
-}
+    };
+    return new Mem0MemoryExtended(obj);
+};
 class Mem0MemoryExtended extends community_1.Mem0Memory {
     constructor(fields) {
-        super(fields)
-        this.initialUserId = fields.memoryOptions?.user_id ?? ''
-        this.userId = this.initialUserId
-        this.memoryKey = 'history'
-        this.inputKey = fields.inputKey ?? 'input'
-        this.appDataSource = fields.appDataSource
-        this.databaseEntities = fields.databaseEntities
-        this.chatflowid = fields.chatflowid
-        this.searchOnly = fields.searchOnly
-        this.useFlowiseChatId = fields.useFlowiseChatId
-        this.input = fields.input
-        this.orgId = fields.orgId
+        super(fields);
+        this.initialUserId = fields.memoryOptions?.user_id ?? '';
+        this.userId = this.initialUserId;
+        this.memoryKey = 'history';
+        this.inputKey = fields.inputKey ?? 'input';
+        this.appDataSource = fields.appDataSource;
+        this.databaseEntities = fields.databaseEntities;
+        this.chatflowid = fields.chatflowid;
+        this.searchOnly = fields.searchOnly;
+        this.useFlowiseChatId = fields.useFlowiseChatId;
+        this.input = fields.input;
+        this.orgId = fields.orgId;
     }
     // Selects Mem0 user_id based on toggle state (Flowise chat ID or input field)
     getEffectiveUserId(overrideUserId) {
-        let effectiveUserId
+        let effectiveUserId;
         if (this.useFlowiseChatId) {
             if (overrideUserId) {
-                effectiveUserId = overrideUserId
-            } else {
-                throw new Error('Mem0: "Use Flowise Chat ID" is ON, but no runtime chat ID (overrideUserId) was provided.')
+                effectiveUserId = overrideUserId;
             }
-        } else {
+            else {
+                throw new Error('Mem0: "Use Flowise Chat ID" is ON, but no runtime chat ID (overrideUserId) was provided.');
+            }
+        }
+        else {
             // If toggle is OFF, ALWAYS use the ID from the input field.
-            effectiveUserId = this.initialUserId
+            effectiveUserId = this.initialUserId;
         }
         // This check is now primarily for the case where the toggle is OFF and the initialUserId was somehow empty (should be caught by init validation).
         if (!effectiveUserId) {
-            throw new Error('Mem0: Could not determine a valid User ID for the operation. Check User ID input field.')
+            throw new Error('Mem0: Could not determine a valid User ID for the operation. Check User ID input field.');
         }
-        return effectiveUserId
+        return effectiveUserId;
     }
     async loadMemoryVariables(values, overrideUserId = '') {
-        const effectiveUserId = this.getEffectiveUserId(overrideUserId)
-        this.userId = effectiveUserId
+        const effectiveUserId = this.getEffectiveUserId(overrideUserId);
+        this.userId = effectiveUserId;
         if (this.memoryOptions) {
-            this.memoryOptions.user_id = effectiveUserId
+            this.memoryOptions.user_id = effectiveUserId;
         }
-        return super.loadMemoryVariables(values)
+        return super.loadMemoryVariables(values);
     }
     async saveContext(inputValues, outputValues, overrideUserId = '') {
         if (this.searchOnly) {
-            return
+            return;
         }
-        const effectiveUserId = this.getEffectiveUserId(overrideUserId)
-        this.userId = effectiveUserId
+        const effectiveUserId = this.getEffectiveUserId(overrideUserId);
+        this.userId = effectiveUserId;
         if (this.memoryOptions) {
-            this.memoryOptions.user_id = effectiveUserId
+            this.memoryOptions.user_id = effectiveUserId;
         }
-        return super.saveContext(inputValues, outputValues)
+        return super.saveContext(inputValues, outputValues);
     }
     async clear(overrideUserId = '') {
-        const effectiveUserId = this.getEffectiveUserId(overrideUserId)
-        this.userId = effectiveUserId
+        const effectiveUserId = this.getEffectiveUserId(overrideUserId);
+        this.userId = effectiveUserId;
         if (this.memoryOptions) {
-            this.memoryOptions.user_id = effectiveUserId
+            this.memoryOptions.user_id = effectiveUserId;
         }
-        return super.clear()
+        return super.clear();
     }
     async getChatMessages(overrideUserId = '', returnBaseMessages = false, prependMessages) {
-        const flowiseSessionId = overrideUserId
+        const flowiseSessionId = overrideUserId;
         if (!flowiseSessionId) {
-            console.warn('Mem0: getChatMessages called without overrideUserId (Flowise Session ID). Cannot fetch DB messages.')
-            return []
+            console.warn('Mem0: getChatMessages called without overrideUserId (Flowise Session ID). Cannot fetch DB messages.');
+            return [];
         }
         let chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
             where: {
@@ -248,64 +250,64 @@ class Mem0MemoryExtended extends community_1.Mem0Memory {
                 createdDate: 'DESC'
             },
             take: 10
-        })
-        chatMessage = chatMessage.reverse()
+        });
+        chatMessage = chatMessage.reverse();
         let returnIMessages = chatMessage.map((m) => ({
             message: m.content,
             type: m.role
-        }))
+        }));
         if (prependMessages?.length) {
-            returnIMessages.unshift(...prependMessages)
+            returnIMessages.unshift(...prependMessages);
             // Reverted to original simpler unshift
-            chatMessage.unshift(...prependMessages)
+            chatMessage.unshift(...prependMessages);
         }
         if (returnBaseMessages) {
-            const memoryVariables = await this.loadMemoryVariables(
-                {
-                    [this.inputKey]: this.input ?? ''
-                },
-                overrideUserId
-            )
-            const mem0History = memoryVariables[this.memoryKey]
+            const memoryVariables = await this.loadMemoryVariables({
+                [this.inputKey]: this.input ?? ''
+            }, overrideUserId);
+            const mem0History = memoryVariables[this.memoryKey];
             if (mem0History && typeof mem0History === 'string') {
                 const systemMessage = {
                     role: 'apiMessage',
                     content: mem0History,
                     id: (0, uuid_1.v4)()
-                }
+                };
                 // Ensure Mem0 history message also conforms structurally if mapChatMessageToBaseMessage is strict
-                chatMessage.unshift(systemMessage) // Cast needed if mixing structures
-            } else if (mem0History) {
-                console.warn('Mem0 history is not a string, cannot prepend directly.')
+                chatMessage.unshift(systemMessage); // Cast needed if mixing structures
             }
-            return await (0, utils_1.mapChatMessageToBaseMessage)(chatMessage, this.orgId)
+            else if (mem0History) {
+                console.warn('Mem0 history is not a string, cannot prepend directly.');
+            }
+            return await (0, utils_1.mapChatMessageToBaseMessage)(chatMessage, this.orgId);
         }
-        return returnIMessages
+        return returnIMessages;
     }
     async addChatMessages(msgArray, overrideUserId = '') {
-        const effectiveUserId = this.getEffectiveUserId(overrideUserId)
-        const input = msgArray.find((msg) => msg.type === 'userMessage')
-        const output = msgArray.find((msg) => msg.type === 'apiMessage')
+        const effectiveUserId = this.getEffectiveUserId(overrideUserId);
+        const input = msgArray.find((msg) => msg.type === 'userMessage');
+        const output = msgArray.find((msg) => msg.type === 'apiMessage');
         if (input && output) {
-            const inputValues = { [this.inputKey ?? 'input']: input.text }
-            const outputValues = { output: output.text }
-            await this.saveContext(inputValues, outputValues, effectiveUserId)
-        } else {
-            console.warn('Mem0: Could not find both input and output messages to save context.')
+            const inputValues = { [this.inputKey ?? 'input']: input.text };
+            const outputValues = { output: output.text };
+            await this.saveContext(inputValues, outputValues, effectiveUserId);
+        }
+        else {
+            console.warn('Mem0: Could not find both input and output messages to save context.');
         }
     }
     async clearChatMessages(overrideUserId = '') {
-        const effectiveUserId = this.getEffectiveUserId(overrideUserId)
-        await this.clear(effectiveUserId)
-        const flowiseSessionId = overrideUserId
+        const effectiveUserId = this.getEffectiveUserId(overrideUserId);
+        await this.clear(effectiveUserId);
+        const flowiseSessionId = overrideUserId;
         if (flowiseSessionId) {
             await this.appDataSource
                 .getRepository(this.databaseEntities['ChatMessage'])
-                .delete({ sessionId: flowiseSessionId, chatflowid: this.chatflowid })
-        } else {
-            console.warn('Mem0: clearChatMessages called without overrideUserId (Flowise Session ID). Cannot clear DB messages.')
+                .delete({ sessionId: flowiseSessionId, chatflowid: this.chatflowid });
+        }
+        else {
+            console.warn('Mem0: clearChatMessages called without overrideUserId (Flowise Session ID). Cannot clear DB messages.');
         }
     }
 }
-module.exports = { nodeClass: Mem0_Memory }
+module.exports = { nodeClass: Mem0_Memory };
 //# sourceMappingURL=Mem0.js.map

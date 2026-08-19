@@ -1,38 +1,37 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const openai_1 = require('@langchain/openai')
-const utils_1 = require('../../../src/utils')
-const modelLoader_1 = require('../../../src/modelLoader')
-const serverCredentialsExists =
-    !!process.env.AZURE_OPENAI_API_KEY &&
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const openai_1 = require("@langchain/openai");
+const utils_1 = require("../../../src/utils");
+const modelLoader_1 = require("../../../src/modelLoader");
+const serverCredentialsExists = !!process.env.AZURE_OPENAI_API_KEY &&
     !!process.env.AZURE_OPENAI_API_INSTANCE_NAME &&
     !!process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME &&
-    !!process.env.AZURE_OPENAI_API_VERSION
+    !!process.env.AZURE_OPENAI_API_VERSION;
 class AzureOpenAI_LLMs {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.LLM, 'azureOpenAI')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.LLM, 'azureOpenAI');
             }
-        }
-        this.label = 'Azure OpenAI'
-        this.name = 'azureOpenAI'
-        this.version = 4.0
-        this.type = 'AzureOpenAI'
-        this.icon = 'Azure.svg'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around Azure OpenAI large language models'
-        this.badge = 'DEPRECATING'
-        this.deprecateMessage = 'Use Azure OpenAI Chat Models instead'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(openai_1.AzureOpenAI)]
+        };
+        this.label = 'Azure OpenAI';
+        this.name = 'azureOpenAI';
+        this.version = 4.0;
+        this.type = 'AzureOpenAI';
+        this.icon = 'Azure.svg';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around Azure OpenAI large language models';
+        this.badge = 'DEPRECATING';
+        this.deprecateMessage = 'Use Azure OpenAI Chat Models instead';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(openai_1.AzureOpenAI)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['azureOpenAIApi'],
             optional: serverCredentialsExists
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -111,25 +110,25 @@ class AzureOpenAI_LLMs {
                 description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const temperature = nodeData.inputs?.temperature
-        const modelName = nodeData.inputs?.modelName
-        const maxTokens = nodeData.inputs?.maxTokens
-        const topP = nodeData.inputs?.topP
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty
-        const presencePenalty = nodeData.inputs?.presencePenalty
-        const timeout = nodeData.inputs?.timeout
-        const bestOf = nodeData.inputs?.bestOf
-        const streaming = nodeData.inputs?.streaming
-        const basePath = nodeData.inputs?.basepath
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const azureOpenAIApiKey = (0, utils_1.getCredentialParam)('azureOpenAIApiKey', credentialData, nodeData)
-        const azureOpenAIApiInstanceName = (0, utils_1.getCredentialParam)('azureOpenAIApiInstanceName', credentialData, nodeData)
-        const azureOpenAIApiDeploymentName = (0, utils_1.getCredentialParam)('azureOpenAIApiDeploymentName', credentialData, nodeData)
-        const azureOpenAIApiVersion = (0, utils_1.getCredentialParam)('azureOpenAIApiVersion', credentialData, nodeData)
-        const cache = nodeData.inputs?.cache
+        const temperature = nodeData.inputs?.temperature;
+        const modelName = nodeData.inputs?.modelName;
+        const maxTokens = nodeData.inputs?.maxTokens;
+        const topP = nodeData.inputs?.topP;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty;
+        const presencePenalty = nodeData.inputs?.presencePenalty;
+        const timeout = nodeData.inputs?.timeout;
+        const bestOf = nodeData.inputs?.bestOf;
+        const streaming = nodeData.inputs?.streaming;
+        const basePath = nodeData.inputs?.basepath;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const azureOpenAIApiKey = (0, utils_1.getCredentialParam)('azureOpenAIApiKey', credentialData, nodeData);
+        const azureOpenAIApiInstanceName = (0, utils_1.getCredentialParam)('azureOpenAIApiInstanceName', credentialData, nodeData);
+        const azureOpenAIApiDeploymentName = (0, utils_1.getCredentialParam)('azureOpenAIApiDeploymentName', credentialData, nodeData);
+        const azureOpenAIApiVersion = (0, utils_1.getCredentialParam)('azureOpenAIApiVersion', credentialData, nodeData);
+        const cache = nodeData.inputs?.cache;
         const obj = {
             temperature: parseFloat(temperature),
             modelName,
@@ -138,18 +137,26 @@ class AzureOpenAI_LLMs {
             azureOpenAIApiDeploymentName,
             azureOpenAIApiVersion,
             streaming: streaming ?? true
-        }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (bestOf) obj.bestOf = parseInt(bestOf, 10)
-        if (cache) obj.cache = cache
-        if (basePath) obj.azureOpenAIBasePath = basePath
-        const model = new openai_1.AzureOpenAI(obj)
-        return model
+        };
+        if (maxTokens)
+            obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP)
+            obj.topP = parseFloat(topP);
+        if (frequencyPenalty)
+            obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (presencePenalty)
+            obj.presencePenalty = parseFloat(presencePenalty);
+        if (timeout)
+            obj.timeout = parseInt(timeout, 10);
+        if (bestOf)
+            obj.bestOf = parseInt(bestOf, 10);
+        if (cache)
+            obj.cache = cache;
+        if (basePath)
+            obj.azureOpenAIBasePath = basePath;
+        const model = new openai_1.AzureOpenAI(obj);
+        return model;
     }
 }
-module.exports = { nodeClass: AzureOpenAI_LLMs }
+module.exports = { nodeClass: AzureOpenAI_LLMs };
 //# sourceMappingURL=AzureOpenAI.js.map

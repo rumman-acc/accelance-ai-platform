@@ -1,23 +1,22 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class Loop_SeqAgents {
     constructor() {
-        this.label = 'Loop'
-        this.name = 'seqLoop'
-        this.version = 2.1
-        this.type = 'Loop'
-        this.icon = 'loop.svg'
-        this.category = 'Sequential Agents'
-        this.description = 'Loop back to the specific sequential node'
-        this.baseClasses = [this.type]
-        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-9.-loop-node'
+        this.label = 'Loop';
+        this.name = 'seqLoop';
+        this.version = 2.1;
+        this.type = 'Loop';
+        this.icon = 'loop.svg';
+        this.category = 'Sequential Agents';
+        this.description = 'Loop back to the specific sequential node';
+        this.baseClasses = [this.type];
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-9.-loop-node';
         this.inputs = [
             {
                 label: 'Sequential Node',
                 name: 'sequentialNode',
                 type: 'Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
-                description:
-                    'Can be connected to one of the following nodes: Agent, Condition, LLM Node, Tool Node, Custom Function, Execute Flow',
+                description: 'Can be connected to one of the following nodes: Agent, Condition, LLM Node, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -27,15 +26,17 @@ class Loop_SeqAgents {
                 type: 'string',
                 placeholder: 'Agent'
             }
-        ]
-        this.hideOutput = true
+        ];
+        this.hideOutput = true;
     }
     async init(nodeData) {
-        const sequentialNodes = nodeData.inputs?.sequentialNode
-        const loopToNameLabel = nodeData.inputs?.loopToName
-        if (!sequentialNodes || !sequentialNodes.length) throw new Error('Loop must have a predecessor!')
-        if (!loopToNameLabel) throw new Error('Loop to name is required')
-        const loopToName = loopToNameLabel.toLowerCase().replace(/\s/g, '_').trim()
+        const sequentialNodes = nodeData.inputs?.sequentialNode;
+        const loopToNameLabel = nodeData.inputs?.loopToName;
+        if (!sequentialNodes || !sequentialNodes.length)
+            throw new Error('Loop must have a predecessor!');
+        if (!loopToNameLabel)
+            throw new Error('Loop to name is required');
+        const loopToName = loopToNameLabel.toLowerCase().replace(/\s/g, '_').trim();
         const returnOutput = {
             id: nodeData.id,
             node: loopToName,
@@ -44,9 +45,9 @@ class Loop_SeqAgents {
             type: 'agent',
             predecessorAgents: sequentialNodes,
             output: loopToName
-        }
-        return returnOutput
+        };
+        return returnOutput;
     }
 }
-module.exports = { nodeClass: Loop_SeqAgents }
+module.exports = { nodeClass: Loop_SeqAgents };
 //# sourceMappingURL=Loop.js.map

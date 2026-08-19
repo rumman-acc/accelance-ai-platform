@@ -1,13 +1,13 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const scopes = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events']
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const scopes = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events'];
 class GoogleCalendarOAuth2 {
     constructor() {
-        this.label = 'Google Calendar OAuth2'
-        this.name = 'googleCalendarOAuth2'
-        this.version = 1.0
+        this.label = 'Google Calendar OAuth2';
+        this.name = 'googleCalendarOAuth2';
+        this.version = 1.0;
         this.description =
-            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/google-calendar">here</a>'
+            'You can find the setup instructions <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/google-calendar">here</a>';
         this.inputs = [
             {
                 label: 'Authorization URL',
@@ -45,8 +45,8 @@ class GoogleCalendarOAuth2 {
                 hidden: true,
                 default: scopes.join(' ')
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: GoogleCalendarOAuth2 }
+module.exports = { credClass: GoogleCalendarOAuth2 };
 //# sourceMappingURL=GoogleCalendarOAuth2.credential.js.map

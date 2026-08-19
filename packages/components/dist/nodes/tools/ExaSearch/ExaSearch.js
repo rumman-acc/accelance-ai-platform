@@ -1,23 +1,21 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-const exa_1 = require('@langchain/exa')
-const exa_js_1 = __importDefault(require('exa-js'))
-const utils_1 = require('../../../src/utils')
-const DESC = `A wrapper around Exa Search. Input should be an Exa-optimized query. Output is a JSON array of the query results`
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const exa_1 = require("@langchain/exa");
+const exa_js_1 = __importDefault(require("exa-js"));
+const utils_1 = require("../../../src/utils");
+const DESC = `A wrapper around Exa Search. Input should be an Exa-optimized query. Output is a JSON array of the query results`;
 class ExaSearch_Tools {
     constructor() {
-        this.label = 'Exa Search'
-        this.name = 'exaSearch'
-        this.version = 1.1
-        this.type = 'ExaSearch'
-        this.icon = 'exa.svg'
-        this.category = 'Tools'
-        this.description = 'Wrapper around Exa Search API - search engine fully designed for use by LLMs'
+        this.label = 'Exa Search';
+        this.name = 'exaSearch';
+        this.version = 1.1;
+        this.type = 'ExaSearch';
+        this.icon = 'exa.svg';
+        this.category = 'Tools';
+        this.description = 'Wrapper around Exa Search API - search engine fully designed for use by LLMs';
         this.inputs = [
             {
                 label: 'Tool Description',
@@ -71,8 +69,7 @@ class ExaSearch_Tools {
                 label: 'Category (Beta)',
                 name: 'category',
                 type: 'options',
-                description:
-                    'A data category to focus on, with higher comprehensivity and data cleanliness. Categories right now include company, research paper, news, github, tweet, movie, song, personal site, and pdf',
+                description: 'A data category to focus on, with higher comprehensivity and data cleanliness. Categories right now include company, research paper, news, github, tweet, movie, song, personal site, and pdf',
                 options: [
                     {
                         label: 'company',
@@ -129,8 +126,7 @@ class ExaSearch_Tools {
                 rows: 4,
                 optional: true,
                 additionalParams: true,
-                description:
-                    'List of domains to include in the search, separated by comma. If specified, results will only come from these domains.'
+                description: 'List of domains to include in the search, separated by comma. If specified, results will only come from these domains.'
             },
             {
                 label: 'Exclude Domains',
@@ -139,8 +135,7 @@ class ExaSearch_Tools {
                 rows: 4,
                 optional: true,
                 additionalParams: true,
-                description:
-                    'List of domains to exclude in the search, separated by comma. If specified, results will not include any from these domains.'
+                description: 'List of domains to exclude in the search, separated by comma. If specified, results will not include any from these domains.'
             },
             {
                 label: 'Start Crawl Date',
@@ -149,8 +144,7 @@ class ExaSearch_Tools {
                 optional: true,
                 additionalParams: true,
                 placeholder: '2023-01-01T00:00:00.000Z',
-                description:
-                    'Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled after this date. Must be specified in ISO 8601 format.'
+                description: 'Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled after this date. Must be specified in ISO 8601 format.'
             },
             {
                 label: 'End Crawl Date',
@@ -159,8 +153,7 @@ class ExaSearch_Tools {
                 optional: true,
                 additionalParams: true,
                 placeholder: '2023-12-31T00:00:00.000Z',
-                description:
-                    'Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled before this date. Must be specified in ISO 8601 format.'
+                description: 'Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled before this date. Must be specified in ISO 8601 format.'
             },
             {
                 label: 'Start Published Date',
@@ -180,29 +173,29 @@ class ExaSearch_Tools {
                 placeholder: '2023-12-31T00:00:00.000Z',
                 description: 'Only links with a published date before this will be returned. Must be specified in ISO 8601 format.'
             }
-        ]
+        ];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['exaSearchApi']
-        }
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(exa_1.ExaSearchResults)]
+        };
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(exa_1.ExaSearchResults)];
     }
     async init(nodeData, _, options) {
-        const description = nodeData.inputs?.description
-        const numResults = nodeData.inputs?.numResults
-        const type = nodeData.inputs?.type
-        const useAutoprompt = nodeData.inputs?.useAutoprompt
-        const category = nodeData.inputs?.category
-        const includeDomains = nodeData.inputs?.includeDomains
-        const excludeDomains = nodeData.inputs?.excludeDomains
-        const startCrawlDate = nodeData.inputs?.startCrawlDate
-        const endCrawlDate = nodeData.inputs?.endCrawlDate
-        const startPublishedDate = nodeData.inputs?.startPublishedDate
-        const endPublishedDate = nodeData.inputs?.endPublishedDate
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const exaSearchApiKey = (0, utils_1.getCredentialParam)('exaSearchApiKey', credentialData, nodeData)
+        const description = nodeData.inputs?.description;
+        const numResults = nodeData.inputs?.numResults;
+        const type = nodeData.inputs?.type;
+        const useAutoprompt = nodeData.inputs?.useAutoprompt;
+        const category = nodeData.inputs?.category;
+        const includeDomains = nodeData.inputs?.includeDomains;
+        const excludeDomains = nodeData.inputs?.excludeDomains;
+        const startCrawlDate = nodeData.inputs?.startCrawlDate;
+        const endCrawlDate = nodeData.inputs?.endCrawlDate;
+        const startPublishedDate = nodeData.inputs?.startPublishedDate;
+        const endPublishedDate = nodeData.inputs?.endPublishedDate;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const exaSearchApiKey = (0, utils_1.getCredentialParam)('exaSearchApiKey', credentialData, nodeData);
         const tool = new exa_1.ExaSearchResults({
             client: new exa_js_1.default(exaSearchApiKey),
             searchArgs: {
@@ -217,10 +210,11 @@ class ExaSearch_Tools {
                 startPublishedDate: startPublishedDate || undefined,
                 endPublishedDate: endPublishedDate || undefined
             }
-        })
-        if (description) tool.description = description
-        return tool
+        });
+        if (description)
+            tool.description = description;
+        return tool;
     }
 }
-module.exports = { nodeClass: ExaSearch_Tools }
+module.exports = { nodeClass: ExaSearch_Tools };
 //# sourceMappingURL=ExaSearch.js.map

@@ -1,51 +1,52 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.createTeamsTools = createTeamsTools
-const v3_1 = require('zod/v3')
-const core_1 = require('../OpenAPIToolkit/core')
-const agents_1 = require('../../../src/agents')
-const BASE_URL = 'https://graph.microsoft.com/v1.0'
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createTeamsTools = createTeamsTools;
+const v3_1 = require("zod/v3");
+const core_1 = require("../OpenAPIToolkit/core");
+const agents_1 = require("../../../src/agents");
+const BASE_URL = 'https://graph.microsoft.com/v1.0';
 // Helper function to make Graph API requests
 async function makeGraphRequest(endpoint, method = 'GET', body, accessToken) {
     const headers = {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
-    }
+    };
     const config = {
         method,
         headers
-    }
+    };
     if (body && (method === 'POST' || method === 'PATCH')) {
-        config.body = JSON.stringify(body)
+        config.body = JSON.stringify(body);
     }
     try {
-        const response = await fetch(`${BASE_URL}${endpoint}`, config)
+        const response = await fetch(`${BASE_URL}${endpoint}`, config);
         if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Microsoft Graph API error: ${response.status} ${response.statusText} - ${errorText}`)
+            const errorText = await response.text();
+            throw new Error(`Microsoft Graph API error: ${response.status} ${response.statusText} - ${errorText}`);
         }
         // Handle empty responses for DELETE operations
         if (method === 'DELETE' || response.status === 204) {
-            return { success: true, message: 'Operation completed successfully' }
+            return { success: true, message: 'Operation completed successfully' };
         }
-        return await response.json()
-    } catch (error) {
-        throw new Error(`Microsoft Graph request failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        return await response.json();
+    }
+    catch (error) {
+        throw new Error(`Microsoft Graph request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 // Base Teams Tool class
 class BaseTeamsTool extends core_1.DynamicStructuredTool {
     constructor(args) {
-        super(args)
-        this.accessToken = ''
-        this.accessToken = args.accessToken ?? ''
-        this.defaultParams = args.defaultParams || {}
+        super(args);
+        this.accessToken = '';
+        this.accessToken = args.accessToken ?? '';
+        this.defaultParams = args.defaultParams || {};
     }
     async makeTeamsRequest(endpoint, method = 'GET', body) {
-        return await makeGraphRequest(endpoint, method, body, this.accessToken)
+        return await makeGraphRequest(endpoint, method, body, this.accessToken);
     }
     formatResponse(data, params) {
-        return JSON.stringify(data) + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params)
+        return JSON.stringify(data) + agents_1.TOOL_ARGS_PREFIX + JSON.stringify(params);
     }
 }
 // CHANNEL TOOLS
@@ -61,30 +62,31 @@ class ListChannelsTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, maxResults = 50 } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, maxResults = 50 } = params;
         if (!teamId) {
-            throw new Error('Team ID is required to list channels')
+            throw new Error('Team ID is required to list channels');
         }
         try {
-            const endpoint = `/teams/${teamId}/channels`
-            const result = await this.makeTeamsRequest(endpoint)
+            const endpoint = `/teams/${teamId}/channels`;
+            const result = await this.makeTeamsRequest(endpoint);
             // Filter results to maxResults on client side since $top is not supported
-            const channels = result.value || []
-            const limitedChannels = channels.slice(0, maxResults)
+            const channels = result.value || [];
+            const limitedChannels = channels.slice(0, maxResults);
             const responseData = {
                 success: true,
                 channels: limitedChannels,
                 count: limitedChannels.length,
                 total: channels.length
-            }
-            return this.formatResponse(responseData, params)
-        } catch (error) {
-            return this.formatResponse(`Error listing channels: ${error}`, params)
+            };
+            return this.formatResponse(responseData, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error listing channels: ${error}`, params);
         }
     }
 }
@@ -100,27 +102,25 @@ class GetChannelTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId } = params;
         if (!teamId || !channelId) {
-            throw new Error('Both Team ID and Channel ID are required')
+            throw new Error('Both Team ID and Channel ID are required');
         }
         try {
-            const endpoint = `/teams/${teamId}/channels/${channelId}`
-            const result = await this.makeTeamsRequest(endpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    channel: result
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error getting channel: ${error}`, params)
+            const endpoint = `/teams/${teamId}/channels/${channelId}`;
+            const result = await this.makeTeamsRequest(endpoint);
+            return this.formatResponse({
+                success: true,
+                channel: result
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error getting channel: ${error}`, params);
         }
     }
 }
@@ -142,33 +142,31 @@ class CreateChannelTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, displayName, description, membershipType = 'standard' } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, displayName, description, membershipType = 'standard' } = params;
         if (!teamId || !displayName) {
-            throw new Error('Team ID and Display Name are required to create a channel')
+            throw new Error('Team ID and Display Name are required to create a channel');
         }
         try {
             const body = {
                 displayName,
                 membershipType,
                 ...(description && { description })
-            }
-            const endpoint = `/teams/${teamId}/channels`
-            const result = await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    channel: result,
-                    message: `Channel "${displayName}" created successfully`
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error creating channel: ${error}`, params)
+            };
+            const endpoint = `/teams/${teamId}/channels`;
+            const result = await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                channel: result,
+                message: `Channel "${displayName}" created successfully`
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error creating channel: ${error}`, params);
         }
     }
 }
@@ -186,33 +184,33 @@ class UpdateChannelTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'PATCH',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId, displayName, description } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId, displayName, description } = params;
         if (!teamId || !channelId) {
-            throw new Error('Both Team ID and Channel ID are required')
+            throw new Error('Both Team ID and Channel ID are required');
         }
         try {
-            const body = {}
-            if (displayName) body.displayName = displayName
-            if (description) body.description = description
+            const body = {};
+            if (displayName)
+                body.displayName = displayName;
+            if (description)
+                body.description = description;
             if (Object.keys(body).length === 0) {
-                throw new Error('At least one field to update must be provided')
+                throw new Error('At least one field to update must be provided');
             }
-            const endpoint = `/teams/${teamId}/channels/${channelId}`
-            await this.makeTeamsRequest(endpoint, 'PATCH', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Channel updated successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error updating channel: ${error}`, params)
+            const endpoint = `/teams/${teamId}/channels/${channelId}`;
+            await this.makeTeamsRequest(endpoint, 'PATCH', body);
+            return this.formatResponse({
+                success: true,
+                message: 'Channel updated successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error updating channel: ${error}`, params);
         }
     }
 }
@@ -228,27 +226,25 @@ class DeleteChannelTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId } = params;
         if (!teamId || !channelId) {
-            throw new Error('Both Team ID and Channel ID are required')
+            throw new Error('Both Team ID and Channel ID are required');
         }
         try {
-            const endpoint = `/teams/${teamId}/channels/${channelId}`
-            await this.makeTeamsRequest(endpoint, 'DELETE')
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Channel deleted successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error deleting channel: ${error}`, params)
+            const endpoint = `/teams/${teamId}/channels/${channelId}`;
+            await this.makeTeamsRequest(endpoint, 'DELETE');
+            return this.formatResponse({
+                success: true,
+                message: 'Channel deleted successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error deleting channel: ${error}`, params);
         }
     }
 }
@@ -264,27 +260,25 @@ class ArchiveChannelTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId } = params;
         if (!teamId || !channelId) {
-            throw new Error('Both Team ID and Channel ID are required')
+            throw new Error('Both Team ID and Channel ID are required');
         }
         try {
-            const endpoint = `/teams/${teamId}/channels/${channelId}/archive`
-            await this.makeTeamsRequest(endpoint, 'POST', {})
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Channel archived successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error archiving channel: ${error}`, params)
+            const endpoint = `/teams/${teamId}/channels/${channelId}/archive`;
+            await this.makeTeamsRequest(endpoint, 'POST', {});
+            return this.formatResponse({
+                success: true,
+                message: 'Channel archived successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error archiving channel: ${error}`, params);
         }
     }
 }
@@ -300,27 +294,25 @@ class UnarchiveChannelTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId } = params;
         if (!teamId || !channelId) {
-            throw new Error('Both Team ID and Channel ID are required')
+            throw new Error('Both Team ID and Channel ID are required');
         }
         try {
-            const endpoint = `/teams/${teamId}/channels/${channelId}/unarchive`
-            await this.makeTeamsRequest(endpoint, 'POST', {})
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Channel unarchived successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error unarchiving channel: ${error}`, params)
+            const endpoint = `/teams/${teamId}/channels/${channelId}/unarchive`;
+            await this.makeTeamsRequest(endpoint, 'POST', {});
+            return this.formatResponse({
+                success: true,
+                message: 'Channel unarchived successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error unarchiving channel: ${error}`, params);
         }
     }
 }
@@ -336,28 +328,26 @@ class ListChannelMembersTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId } = params;
         if (!teamId || !channelId) {
-            throw new Error('Both Team ID and Channel ID are required')
+            throw new Error('Both Team ID and Channel ID are required');
         }
         try {
-            const endpoint = `/teams/${teamId}/channels/${channelId}/members`
-            const result = await this.makeTeamsRequest(endpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    members: result.value || [],
-                    count: result.value?.length || 0
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error listing channel members: ${error}`, params)
+            const endpoint = `/teams/${teamId}/channels/${channelId}/members`;
+            const result = await this.makeTeamsRequest(endpoint);
+            return this.formatResponse({
+                success: true,
+                members: result.value || [],
+                count: result.value?.length || 0
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error listing channel members: ${error}`, params);
         }
     }
 }
@@ -374,31 +364,29 @@ class AddChannelMemberTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId, userId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId, userId } = params;
         if (!teamId || !channelId || !userId) {
-            throw new Error('Team ID, Channel ID, and User ID are all required')
+            throw new Error('Team ID, Channel ID, and User ID are all required');
         }
         try {
             const body = {
                 '@odata.type': '#microsoft.graph.aadUserConversationMember',
                 'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userId}')`
-            }
-            const endpoint = `/teams/${teamId}/channels/${channelId}/members`
-            await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Member added to channel successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error adding channel member: ${error}`, params)
+            };
+            const endpoint = `/teams/${teamId}/channels/${channelId}/members`;
+            await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                message: 'Member added to channel successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error adding channel member: ${error}`, params);
         }
     }
 }
@@ -415,34 +403,32 @@ class RemoveChannelMemberTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { teamId, channelId, userId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { teamId, channelId, userId } = params;
         if (!teamId || !channelId || !userId) {
-            throw new Error('Team ID, Channel ID, and User ID are all required')
+            throw new Error('Team ID, Channel ID, and User ID are all required');
         }
         try {
             // First get the membership ID
-            const membersEndpoint = `/teams/${teamId}/channels/${channelId}/members`
-            const membersResult = await this.makeTeamsRequest(membersEndpoint)
-            const member = membersResult.value?.find((m) => m.userId === userId)
+            const membersEndpoint = `/teams/${teamId}/channels/${channelId}/members`;
+            const membersResult = await this.makeTeamsRequest(membersEndpoint);
+            const member = membersResult.value?.find((m) => m.userId === userId);
             if (!member) {
-                throw new Error('User is not a member of this channel')
+                throw new Error('User is not a member of this channel');
             }
-            const endpoint = `/teams/${teamId}/channels/${channelId}/members/${member.id}`
-            await this.makeTeamsRequest(endpoint, 'DELETE')
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Member removed from channel successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error removing channel member: ${error}`, params)
+            const endpoint = `/teams/${teamId}/channels/${channelId}/members/${member.id}`;
+            await this.makeTeamsRequest(endpoint, 'DELETE');
+            return this.formatResponse({
+                success: true,
+                message: 'Member removed from channel successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error removing channel member: ${error}`, params);
         }
     }
 }
@@ -458,25 +444,23 @@ class ListChatsTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { maxResults = 50 } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { maxResults = 50 } = params;
         try {
-            const endpoint = `/me/chats?$top=${maxResults}`
-            const result = await this.makeTeamsRequest(endpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    chats: result.value || [],
-                    count: result.value?.length || 0
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error listing chats: ${error}`, params)
+            const endpoint = `/me/chats?$top=${maxResults}`;
+            const result = await this.makeTeamsRequest(endpoint);
+            return this.formatResponse({
+                success: true,
+                chats: result.value || [],
+                count: result.value?.length || 0
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error listing chats: ${error}`, params);
         }
     }
 }
@@ -491,27 +475,25 @@ class GetChatTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId } = params;
         if (!chatId) {
-            throw new Error('Chat ID is required')
+            throw new Error('Chat ID is required');
         }
         try {
-            const endpoint = `/chats/${chatId}`
-            const result = await this.makeTeamsRequest(endpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    chat: result
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error getting chat: ${error}`, params)
+            const endpoint = `/chats/${chatId}`;
+            const result = await this.makeTeamsRequest(endpoint);
+            return this.formatResponse({
+                success: true,
+                chat: result
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error getting chat: ${error}`, params);
         }
     }
 }
@@ -528,40 +510,38 @@ class CreateChatTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatType = 'group', topic, members } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatType = 'group', topic, members } = params;
         if (!members) {
-            throw new Error('Members list is required to create a chat')
+            throw new Error('Members list is required to create a chat');
         }
         try {
-            const memberIds = members.split(',').map((id) => id.trim())
+            const memberIds = members.split(',').map((id) => id.trim());
             const chatMembers = memberIds.map((userId) => ({
                 '@odata.type': '#microsoft.graph.aadUserConversationMember',
                 'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userId}')`
-            }))
+            }));
             const body = {
                 chatType,
                 members: chatMembers
-            }
+            };
             if (topic && chatType === 'group') {
-                body.topic = topic
+                body.topic = topic;
             }
-            const endpoint = '/chats'
-            const result = await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    chat: result,
-                    message: 'Chat created successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error creating chat: ${error}`, params)
+            const endpoint = '/chats';
+            const result = await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                chat: result,
+                message: 'Chat created successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error creating chat: ${error}`, params);
         }
     }
 }
@@ -577,31 +557,29 @@ class UpdateChatTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'PATCH',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId, topic } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId, topic } = params;
         if (!chatId) {
-            throw new Error('Chat ID is required')
+            throw new Error('Chat ID is required');
         }
         if (!topic) {
-            throw new Error('Topic is required to update a chat')
+            throw new Error('Topic is required to update a chat');
         }
         try {
-            const body = { topic }
-            const endpoint = `/chats/${chatId}`
-            await this.makeTeamsRequest(endpoint, 'PATCH', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Chat updated successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error updating chat: ${error}`, params)
+            const body = { topic };
+            const endpoint = `/chats/${chatId}`;
+            await this.makeTeamsRequest(endpoint, 'PATCH', body);
+            return this.formatResponse({
+                success: true,
+                message: 'Chat updated successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error updating chat: ${error}`, params);
         }
     }
 }
@@ -616,27 +594,25 @@ class DeleteChatTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId } = params;
         if (!chatId) {
-            throw new Error('Chat ID is required')
+            throw new Error('Chat ID is required');
         }
         try {
-            const endpoint = `/chats/${chatId}`
-            await this.makeTeamsRequest(endpoint, 'DELETE')
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Chat deleted successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error deleting chat: ${error}`, params)
+            const endpoint = `/chats/${chatId}`;
+            await this.makeTeamsRequest(endpoint, 'DELETE');
+            return this.formatResponse({
+                success: true,
+                message: 'Chat deleted successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error deleting chat: ${error}`, params);
         }
     }
 }
@@ -651,28 +627,26 @@ class ListChatMembersTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId } = params;
         if (!chatId) {
-            throw new Error('Chat ID is required')
+            throw new Error('Chat ID is required');
         }
         try {
-            const endpoint = `/chats/${chatId}/members`
-            const result = await this.makeTeamsRequest(endpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    members: result.value || [],
-                    count: result.value?.length || 0
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error listing chat members: ${error}`, params)
+            const endpoint = `/chats/${chatId}/members`;
+            const result = await this.makeTeamsRequest(endpoint);
+            return this.formatResponse({
+                success: true,
+                members: result.value || [],
+                count: result.value?.length || 0
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error listing chat members: ${error}`, params);
         }
     }
 }
@@ -688,31 +662,29 @@ class AddChatMemberTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId, userId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId, userId } = params;
         if (!chatId || !userId) {
-            throw new Error('Both Chat ID and User ID are required')
+            throw new Error('Both Chat ID and User ID are required');
         }
         try {
             const body = {
                 '@odata.type': '#microsoft.graph.aadUserConversationMember',
                 'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userId}')`
-            }
-            const endpoint = `/chats/${chatId}/members`
-            await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Member added to chat successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error adding chat member: ${error}`, params)
+            };
+            const endpoint = `/chats/${chatId}/members`;
+            await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                message: 'Member added to chat successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error adding chat member: ${error}`, params);
         }
     }
 }
@@ -728,34 +700,32 @@ class RemoveChatMemberTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId, userId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId, userId } = params;
         if (!chatId || !userId) {
-            throw new Error('Both Chat ID and User ID are required')
+            throw new Error('Both Chat ID and User ID are required');
         }
         try {
             // First get the membership ID
-            const membersEndpoint = `/chats/${chatId}/members`
-            const membersResult = await this.makeTeamsRequest(membersEndpoint)
-            const member = membersResult.value?.find((m) => m.userId === userId)
+            const membersEndpoint = `/chats/${chatId}/members`;
+            const membersResult = await this.makeTeamsRequest(membersEndpoint);
+            const member = membersResult.value?.find((m) => m.userId === userId);
             if (!member) {
-                throw new Error('User is not a member of this chat')
+                throw new Error('User is not a member of this chat');
             }
-            const endpoint = `/chats/${chatId}/members/${member.id}`
-            await this.makeTeamsRequest(endpoint, 'DELETE')
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Member removed from chat successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error removing chat member: ${error}`, params)
+            const endpoint = `/chats/${chatId}/members/${member.id}`;
+            await this.makeTeamsRequest(endpoint, 'DELETE');
+            return this.formatResponse({
+                success: true,
+                message: 'Member removed from chat successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error removing chat member: ${error}`, params);
         }
     }
 }
@@ -771,32 +741,30 @@ class PinMessageTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId, messageId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId, messageId } = params;
         if (!chatId || !messageId) {
-            throw new Error('Both Chat ID and Message ID are required')
+            throw new Error('Both Chat ID and Message ID are required');
         }
         try {
             const body = {
                 message: {
                     '@odata.bind': `https://graph.microsoft.com/v1.0/chats('${chatId}')/messages('${messageId}')`
                 }
-            }
-            const endpoint = `/chats/${chatId}/pinnedMessages`
-            await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Message pinned successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error pinning message: ${error}`, params)
+            };
+            const endpoint = `/chats/${chatId}/pinnedMessages`;
+            await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                message: 'Message pinned successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error pinning message: ${error}`, params);
         }
     }
 }
@@ -812,34 +780,32 @@ class UnpinMessageTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatId, messageId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatId, messageId } = params;
         if (!chatId || !messageId) {
-            throw new Error('Both Chat ID and Message ID are required')
+            throw new Error('Both Chat ID and Message ID are required');
         }
         try {
             // First get the pinned messages to find the pinned message ID
-            const pinnedEndpoint = `/chats/${chatId}/pinnedMessages`
-            const pinnedResult = await this.makeTeamsRequest(pinnedEndpoint)
-            const pinnedMessage = pinnedResult.value?.find((pm) => pm.message?.id === messageId)
+            const pinnedEndpoint = `/chats/${chatId}/pinnedMessages`;
+            const pinnedResult = await this.makeTeamsRequest(pinnedEndpoint);
+            const pinnedMessage = pinnedResult.value?.find((pm) => pm.message?.id === messageId);
             if (!pinnedMessage) {
-                throw new Error('Message is not pinned in this chat')
+                throw new Error('Message is not pinned in this chat');
             }
-            const endpoint = `/chats/${chatId}/pinnedMessages/${pinnedMessage.id}`
-            await this.makeTeamsRequest(endpoint, 'DELETE')
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Message unpinned successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error unpinning message: ${error}`, params)
+            const endpoint = `/chats/${chatId}/pinnedMessages/${pinnedMessage.id}`;
+            await this.makeTeamsRequest(endpoint, 'DELETE');
+            return this.formatResponse({
+                success: true,
+                message: 'Message unpinned successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error unpinning message: ${error}`, params);
         }
     }
 }
@@ -857,36 +823,35 @@ class ListMessagesTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, maxResults = 50 } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, maxResults = 50 } = params;
         if (!chatChannelId) {
-            throw new Error('Chat or Channel ID is required')
+            throw new Error('Chat or Channel ID is required');
         }
         try {
-            let endpoint
+            let endpoint;
             if (teamId) {
                 // Channel messages
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages?$top=${maxResults}`
-            } else {
-                // Chat messages
-                endpoint = `/chats/${chatChannelId}/messages?$top=${maxResults}`
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages?$top=${maxResults}`;
             }
-            const result = await this.makeTeamsRequest(endpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    messages: result.value || [],
-                    count: result.value?.length || 0,
-                    context: teamId ? 'channel' : 'chat'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error listing messages: ${error}`, params)
+            else {
+                // Chat messages
+                endpoint = `/chats/${chatChannelId}/messages?$top=${maxResults}`;
+            }
+            const result = await this.makeTeamsRequest(endpoint);
+            return this.formatResponse({
+                success: true,
+                messages: result.value || [],
+                count: result.value?.length || 0,
+                context: teamId ? 'channel' : 'chat'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error listing messages: ${error}`, params);
         }
     }
 }
@@ -903,35 +868,34 @@ class GetMessageTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, messageId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, messageId } = params;
         if (!chatChannelId || !messageId) {
-            throw new Error('Chat/Channel ID and Message ID are required')
+            throw new Error('Chat/Channel ID and Message ID are required');
         }
         try {
-            let endpoint
+            let endpoint;
             if (teamId) {
                 // Channel message
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}`
-            } else {
-                // Chat message
-                endpoint = `/chats/${chatChannelId}/messages/${messageId}`
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}`;
             }
-            const result = await this.makeTeamsRequest(endpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: result,
-                    context: teamId ? 'channel' : 'chat'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error getting message: ${error}`, params)
+            else {
+                // Chat message
+                endpoint = `/chats/${chatChannelId}/messages/${messageId}`;
+            }
+            const result = await this.makeTeamsRequest(endpoint);
+            return this.formatResponse({
+                success: true,
+                message: result,
+                context: teamId ? 'channel' : 'chat'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error getting message: ${error}`, params);
         }
     }
 }
@@ -949,14 +913,14 @@ class SendMessageTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, messageBody, contentType = 'text' } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, messageBody, contentType = 'text' } = params;
         if (!chatChannelId || !messageBody) {
-            throw new Error('Chat/Channel ID and Message Body are required')
+            throw new Error('Chat/Channel ID and Message Body are required');
         }
         try {
             const body = {
@@ -964,27 +928,26 @@ class SendMessageTool extends BaseTeamsTool {
                     contentType,
                     content: messageBody
                 }
-            }
-            let endpoint
+            };
+            let endpoint;
             if (teamId) {
                 // Channel message
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages`
-            } else {
-                // Chat message
-                endpoint = `/chats/${chatChannelId}/messages`
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages`;
             }
-            const result = await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: result,
-                    context: teamId ? 'channel' : 'chat',
-                    messageText: 'Message sent successfully'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error sending message: ${error}`, params)
+            else {
+                // Chat message
+                endpoint = `/chats/${chatChannelId}/messages`;
+            }
+            const result = await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                message: result,
+                context: teamId ? 'channel' : 'chat',
+                messageText: 'Message sent successfully'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error sending message: ${error}`, params);
         }
     }
 }
@@ -1001,39 +964,38 @@ class UpdateMessageTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'PATCH',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, messageId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, messageId } = params;
         if (!chatChannelId || !messageId) {
-            throw new Error('Chat/Channel ID and Message ID are required')
+            throw new Error('Chat/Channel ID and Message ID are required');
         }
         try {
             // Note: Message update is primarily for policy violations in Teams
             const body = {
                 policyViolation: null
-            }
-            let endpoint
+            };
+            let endpoint;
             if (teamId) {
                 // Channel message
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}`
-            } else {
-                // Chat message
-                endpoint = `/chats/${chatChannelId}/messages/${messageId}`
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}`;
             }
-            await this.makeTeamsRequest(endpoint, 'PATCH', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Message updated successfully',
-                    context: teamId ? 'channel' : 'chat'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error updating message: ${error}`, params)
+            else {
+                // Chat message
+                endpoint = `/chats/${chatChannelId}/messages/${messageId}`;
+            }
+            await this.makeTeamsRequest(endpoint, 'PATCH', body);
+            return this.formatResponse({
+                success: true,
+                message: 'Message updated successfully',
+                context: teamId ? 'channel' : 'chat'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error updating message: ${error}`, params);
         }
     }
 }
@@ -1050,35 +1012,34 @@ class DeleteMessageTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'DELETE',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, messageId } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, messageId } = params;
         if (!chatChannelId || !messageId) {
-            throw new Error('Chat/Channel ID and Message ID are required')
+            throw new Error('Chat/Channel ID and Message ID are required');
         }
         try {
-            let endpoint
+            let endpoint;
             if (teamId) {
                 // Channel message - use soft delete
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/softDelete`
-            } else {
-                // Chat message - use soft delete
-                endpoint = `/chats/${chatChannelId}/messages/${messageId}/softDelete`
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/softDelete`;
             }
-            await this.makeTeamsRequest(endpoint, 'POST', {})
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: 'Message deleted successfully',
-                    context: teamId ? 'channel' : 'chat'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error deleting message: ${error}`, params)
+            else {
+                // Chat message - use soft delete
+                endpoint = `/chats/${chatChannelId}/messages/${messageId}/softDelete`;
+            }
+            await this.makeTeamsRequest(endpoint, 'POST', {});
+            return this.formatResponse({
+                success: true,
+                message: 'Message deleted successfully',
+                context: teamId ? 'channel' : 'chat'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error deleting message: ${error}`, params);
         }
     }
 }
@@ -1097,14 +1058,14 @@ class ReplyToMessageTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, messageId, replyBody, contentType = 'text' } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, messageId, replyBody, contentType = 'text' } = params;
         if (!chatChannelId || !messageId || !replyBody) {
-            throw new Error('Chat/Channel ID, Message ID, and Reply Body are required')
+            throw new Error('Chat/Channel ID, Message ID, and Reply Body are required');
         }
         try {
             const body = {
@@ -1112,27 +1073,26 @@ class ReplyToMessageTool extends BaseTeamsTool {
                     contentType,
                     content: replyBody
                 }
-            }
-            let endpoint
+            };
+            let endpoint;
             if (teamId) {
                 // Channel message reply
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/replies`
-            } else {
-                // For chat messages, replies are just new messages
-                endpoint = `/chats/${chatChannelId}/messages`
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/replies`;
             }
-            const result = await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    reply: result,
-                    message: 'Reply sent successfully',
-                    context: teamId ? 'channel' : 'chat'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error replying to message: ${error}`, params)
+            else {
+                // For chat messages, replies are just new messages
+                endpoint = `/chats/${chatChannelId}/messages`;
+            }
+            const result = await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                reply: result,
+                message: 'Reply sent successfully',
+                context: teamId ? 'channel' : 'chat'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error replying to message: ${error}`, params);
         }
     }
 }
@@ -1154,38 +1114,37 @@ class SetReactionTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, messageId, reactionType = 'like' } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, messageId, reactionType = 'like' } = params;
         if (!chatChannelId || !messageId) {
-            throw new Error('Chat/Channel ID and Message ID are required')
+            throw new Error('Chat/Channel ID and Message ID are required');
         }
         try {
-            let endpoint
+            let endpoint;
             if (teamId) {
                 // Channel message
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/setReaction`
-            } else {
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/setReaction`;
+            }
+            else {
                 // Chat message
-                endpoint = `/chats/${chatChannelId}/messages/${messageId}/setReaction`
+                endpoint = `/chats/${chatChannelId}/messages/${messageId}/setReaction`;
             }
             const body = {
                 reactionType
-            }
-            await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: `Reaction "${reactionType}" set successfully`,
-                    context: teamId ? 'channel' : 'chat'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error setting reaction: ${error}`, params)
+            };
+            await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                message: `Reaction "${reactionType}" set successfully`,
+                context: teamId ? 'channel' : 'chat'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error setting reaction: ${error}`, params);
         }
     }
 }
@@ -1207,38 +1166,37 @@ class UnsetReactionTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'POST',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { chatChannelId, teamId, messageId, reactionType = 'like' } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { chatChannelId, teamId, messageId, reactionType = 'like' } = params;
         if (!chatChannelId || !messageId) {
-            throw new Error('Chat/Channel ID and Message ID are required')
+            throw new Error('Chat/Channel ID and Message ID are required');
         }
         try {
-            let endpoint
+            let endpoint;
             if (teamId) {
                 // Channel message
-                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/unsetReaction`
-            } else {
+                endpoint = `/teams/${teamId}/channels/${chatChannelId}/messages/${messageId}/unsetReaction`;
+            }
+            else {
                 // Chat message
-                endpoint = `/chats/${chatChannelId}/messages/${messageId}/unsetReaction`
+                endpoint = `/chats/${chatChannelId}/messages/${messageId}/unsetReaction`;
             }
             const body = {
                 reactionType
-            }
-            await this.makeTeamsRequest(endpoint, 'POST', body)
-            return this.formatResponse(
-                {
-                    success: true,
-                    message: `Reaction "${reactionType}" removed successfully`,
-                    context: teamId ? 'channel' : 'chat'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error unsetting reaction: ${error}`, params)
+            };
+            await this.makeTeamsRequest(endpoint, 'POST', body);
+            return this.formatResponse({
+                success: true,
+                message: `Reaction "${reactionType}" removed successfully`,
+                context: teamId ? 'channel' : 'chat'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error unsetting reaction: ${error}`, params);
         }
     }
 }
@@ -1253,155 +1211,153 @@ class GetAllMessagesTool extends BaseTeamsTool {
             baseUrl: BASE_URL,
             method: 'GET',
             headers: {}
-        }
-        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams })
+        };
+        super({ ...toolInput, accessToken: args.accessToken, defaultParams: args.defaultParams });
     }
     async _call(arg) {
-        const params = { ...arg, ...this.defaultParams }
-        const { maxResults = 50 } = params
+        const params = { ...arg, ...this.defaultParams };
+        const { maxResults = 50 } = params;
         try {
             // Get messages from all chats
-            const chatEndpoint = `/me/chats/getAllMessages?$top=${maxResults}`
-            const chatResult = await this.makeTeamsRequest(chatEndpoint)
-            return this.formatResponse(
-                {
-                    success: true,
-                    messages: chatResult.value || [],
-                    count: chatResult.value?.length || 0,
-                    source: 'all_chats_and_channels'
-                },
-                params
-            )
-        } catch (error) {
-            return this.formatResponse(`Error getting all messages: ${error}`, params)
+            const chatEndpoint = `/me/chats/getAllMessages?$top=${maxResults}`;
+            const chatResult = await this.makeTeamsRequest(chatEndpoint);
+            return this.formatResponse({
+                success: true,
+                messages: chatResult.value || [],
+                count: chatResult.value?.length || 0,
+                source: 'all_chats_and_channels'
+            }, params);
+        }
+        catch (error) {
+            return this.formatResponse(`Error getting all messages: ${error}`, params);
         }
     }
 }
 // Main function to create Teams tools
 function createTeamsTools(options) {
-    const tools = []
-    const actions = options.actions || []
-    const accessToken = options.accessToken || ''
-    const defaultParams = options.defaultParams || {}
+    const tools = [];
+    const actions = options.actions || [];
+    const accessToken = options.accessToken || '';
+    const defaultParams = options.defaultParams || {};
     // Channel tools
     if (actions.includes('listChannels')) {
-        const listTool = new ListChannelsTool({ accessToken, defaultParams })
-        tools.push(listTool)
+        const listTool = new ListChannelsTool({ accessToken, defaultParams });
+        tools.push(listTool);
     }
     if (actions.includes('getChannel')) {
-        const getTool = new GetChannelTool({ accessToken, defaultParams })
-        tools.push(getTool)
+        const getTool = new GetChannelTool({ accessToken, defaultParams });
+        tools.push(getTool);
     }
     if (actions.includes('createChannel')) {
-        const createTool = new CreateChannelTool({ accessToken, defaultParams })
-        tools.push(createTool)
+        const createTool = new CreateChannelTool({ accessToken, defaultParams });
+        tools.push(createTool);
     }
     if (actions.includes('updateChannel')) {
-        const updateTool = new UpdateChannelTool({ accessToken, defaultParams })
-        tools.push(updateTool)
+        const updateTool = new UpdateChannelTool({ accessToken, defaultParams });
+        tools.push(updateTool);
     }
     if (actions.includes('deleteChannel')) {
-        const deleteTool = new DeleteChannelTool({ accessToken, defaultParams })
-        tools.push(deleteTool)
+        const deleteTool = new DeleteChannelTool({ accessToken, defaultParams });
+        tools.push(deleteTool);
     }
     if (actions.includes('archiveChannel')) {
-        const archiveTool = new ArchiveChannelTool({ accessToken, defaultParams })
-        tools.push(archiveTool)
+        const archiveTool = new ArchiveChannelTool({ accessToken, defaultParams });
+        tools.push(archiveTool);
     }
     if (actions.includes('unarchiveChannel')) {
-        const unarchiveTool = new UnarchiveChannelTool({ accessToken, defaultParams })
-        tools.push(unarchiveTool)
+        const unarchiveTool = new UnarchiveChannelTool({ accessToken, defaultParams });
+        tools.push(unarchiveTool);
     }
     if (actions.includes('listChannelMembers')) {
-        const listMembersTool = new ListChannelMembersTool({ accessToken, defaultParams })
-        tools.push(listMembersTool)
+        const listMembersTool = new ListChannelMembersTool({ accessToken, defaultParams });
+        tools.push(listMembersTool);
     }
     if (actions.includes('addChannelMember')) {
-        const addMemberTool = new AddChannelMemberTool({ accessToken, defaultParams })
-        tools.push(addMemberTool)
+        const addMemberTool = new AddChannelMemberTool({ accessToken, defaultParams });
+        tools.push(addMemberTool);
     }
     if (actions.includes('removeChannelMember')) {
-        const removeMemberTool = new RemoveChannelMemberTool({ accessToken, defaultParams })
-        tools.push(removeMemberTool)
+        const removeMemberTool = new RemoveChannelMemberTool({ accessToken, defaultParams });
+        tools.push(removeMemberTool);
     }
     // Chat tools
     if (actions.includes('listChats')) {
-        const listTool = new ListChatsTool({ accessToken, defaultParams })
-        tools.push(listTool)
+        const listTool = new ListChatsTool({ accessToken, defaultParams });
+        tools.push(listTool);
     }
     if (actions.includes('getChat')) {
-        const getTool = new GetChatTool({ accessToken, defaultParams })
-        tools.push(getTool)
+        const getTool = new GetChatTool({ accessToken, defaultParams });
+        tools.push(getTool);
     }
     if (actions.includes('createChat')) {
-        const createTool = new CreateChatTool({ accessToken, defaultParams })
-        tools.push(createTool)
+        const createTool = new CreateChatTool({ accessToken, defaultParams });
+        tools.push(createTool);
     }
     if (actions.includes('updateChat')) {
-        const updateTool = new UpdateChatTool({ accessToken, defaultParams })
-        tools.push(updateTool)
+        const updateTool = new UpdateChatTool({ accessToken, defaultParams });
+        tools.push(updateTool);
     }
     if (actions.includes('deleteChat')) {
-        const deleteTool = new DeleteChatTool({ accessToken, defaultParams })
-        tools.push(deleteTool)
+        const deleteTool = new DeleteChatTool({ accessToken, defaultParams });
+        tools.push(deleteTool);
     }
     if (actions.includes('listChatMembers')) {
-        const listMembersTool = new ListChatMembersTool({ accessToken, defaultParams })
-        tools.push(listMembersTool)
+        const listMembersTool = new ListChatMembersTool({ accessToken, defaultParams });
+        tools.push(listMembersTool);
     }
     if (actions.includes('addChatMember')) {
-        const addMemberTool = new AddChatMemberTool({ accessToken, defaultParams })
-        tools.push(addMemberTool)
+        const addMemberTool = new AddChatMemberTool({ accessToken, defaultParams });
+        tools.push(addMemberTool);
     }
     if (actions.includes('removeChatMember')) {
-        const removeMemberTool = new RemoveChatMemberTool({ accessToken, defaultParams })
-        tools.push(removeMemberTool)
+        const removeMemberTool = new RemoveChatMemberTool({ accessToken, defaultParams });
+        tools.push(removeMemberTool);
     }
     if (actions.includes('pinMessage')) {
-        const pinTool = new PinMessageTool({ accessToken, defaultParams })
-        tools.push(pinTool)
+        const pinTool = new PinMessageTool({ accessToken, defaultParams });
+        tools.push(pinTool);
     }
     if (actions.includes('unpinMessage')) {
-        const unpinTool = new UnpinMessageTool({ accessToken, defaultParams })
-        tools.push(unpinTool)
+        const unpinTool = new UnpinMessageTool({ accessToken, defaultParams });
+        tools.push(unpinTool);
     }
     // Chat message tools
     if (actions.includes('listMessages')) {
-        const listTool = new ListMessagesTool({ accessToken, defaultParams })
-        tools.push(listTool)
+        const listTool = new ListMessagesTool({ accessToken, defaultParams });
+        tools.push(listTool);
     }
     if (actions.includes('getMessage')) {
-        const getTool = new GetMessageTool({ accessToken, defaultParams })
-        tools.push(getTool)
+        const getTool = new GetMessageTool({ accessToken, defaultParams });
+        tools.push(getTool);
     }
     if (actions.includes('sendMessage')) {
-        const sendTool = new SendMessageTool({ accessToken, defaultParams })
-        tools.push(sendTool)
+        const sendTool = new SendMessageTool({ accessToken, defaultParams });
+        tools.push(sendTool);
     }
     if (actions.includes('updateMessage')) {
-        const updateTool = new UpdateMessageTool({ accessToken, defaultParams })
-        tools.push(updateTool)
+        const updateTool = new UpdateMessageTool({ accessToken, defaultParams });
+        tools.push(updateTool);
     }
     if (actions.includes('deleteMessage')) {
-        const deleteTool = new DeleteMessageTool({ accessToken, defaultParams })
-        tools.push(deleteTool)
+        const deleteTool = new DeleteMessageTool({ accessToken, defaultParams });
+        tools.push(deleteTool);
     }
     if (actions.includes('replyToMessage')) {
-        const replyTool = new ReplyToMessageTool({ accessToken, defaultParams })
-        tools.push(replyTool)
+        const replyTool = new ReplyToMessageTool({ accessToken, defaultParams });
+        tools.push(replyTool);
     }
     if (actions.includes('setReaction')) {
-        const reactionTool = new SetReactionTool({ accessToken, defaultParams })
-        tools.push(reactionTool)
+        const reactionTool = new SetReactionTool({ accessToken, defaultParams });
+        tools.push(reactionTool);
     }
     if (actions.includes('unsetReaction')) {
-        const unsetReactionTool = new UnsetReactionTool({ accessToken, defaultParams })
-        tools.push(unsetReactionTool)
+        const unsetReactionTool = new UnsetReactionTool({ accessToken, defaultParams });
+        tools.push(unsetReactionTool);
     }
     if (actions.includes('getAllMessages')) {
-        const getAllTool = new GetAllMessagesTool({ accessToken, defaultParams })
-        tools.push(getAllTool)
+        const getAllTool = new GetAllMessagesTool({ accessToken, defaultParams });
+        tools.push(getAllTool);
     }
-    return tools
+    return tools;
 }
 //# sourceMappingURL=core.js.map

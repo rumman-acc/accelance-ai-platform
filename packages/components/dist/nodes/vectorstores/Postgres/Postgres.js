@@ -1,56 +1,56 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const documents_1 = require('@langchain/core/documents')
-const utils_1 = require('../../../src/utils')
-const indexing_1 = require('../../../src/indexing')
-const VectorStoreUtils_1 = require('../VectorStoreUtils')
-const vectorstores_1 = require('@langchain/core/vectorstores')
-const TypeORM_1 = require('./driver/TypeORM')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const documents_1 = require("@langchain/core/documents");
+const utils_1 = require("../../../src/utils");
+const indexing_1 = require("../../../src/indexing");
+const VectorStoreUtils_1 = require("../VectorStoreUtils");
+const vectorstores_1 = require("@langchain/core/vectorstores");
+const TypeORM_1 = require("./driver/TypeORM");
 // import { PGVectorDriver } from './driver/PGVector'
-const utils_2 = require('./utils')
-const serverCredentialsExists = !!process.env.POSTGRES_VECTORSTORE_USER && !!process.env.POSTGRES_VECTORSTORE_PASSWORD
+const utils_2 = require("./utils");
+const serverCredentialsExists = !!process.env.POSTGRES_VECTORSTORE_USER && !!process.env.POSTGRES_VECTORSTORE_PASSWORD;
 // added temporarily to fix the base class return for VectorStore when postgres node is using TypeORM
 function getVectorStoreBaseClasses() {
     // Try getting base classes through the utility function
-    const baseClasses = (0, utils_1.getBaseClasses)(vectorstores_1.VectorStore)
+    const baseClasses = (0, utils_1.getBaseClasses)(vectorstores_1.VectorStore);
     // If we got results, return them
     if (baseClasses && baseClasses.length > 0) {
-        return baseClasses
+        return baseClasses;
     }
     // If VectorStore is recognized as a class but getBaseClasses returned nothing,
     // return the known inheritance chain
     if (vectorstores_1.VectorStore instanceof Function) {
-        return ['VectorStore']
+        return ['VectorStore'];
     }
     // Fallback to minimum required class
-    return ['VectorStore']
+    return ['VectorStore'];
 }
 class Postgres_VectorStores {
     constructor() {
         //@ts-ignore
         this.vectorStoreMethods = {
             async upsert(nodeData, options) {
-                const tableName = (0, utils_2.getTableName)(nodeData)
-                const docs = nodeData.inputs?.document
-                const recordManager = nodeData.inputs?.recordManager
-                const isFileUploadEnabled = nodeData.inputs?.fileUpload
-                const _batchSize = nodeData.inputs?.batchSize
-                const vectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
-                const flattenDocs = docs && docs.length ? (0, lodash_1.flatten)(docs) : []
-                const finalDocs = []
+                const tableName = (0, utils_2.getTableName)(nodeData);
+                const docs = nodeData.inputs?.document;
+                const recordManager = nodeData.inputs?.recordManager;
+                const isFileUploadEnabled = nodeData.inputs?.fileUpload;
+                const _batchSize = nodeData.inputs?.batchSize;
+                const vectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options);
+                const flattenDocs = docs && docs.length ? (0, lodash_1.flatten)(docs) : [];
+                const finalDocs = [];
                 for (let i = 0; i < flattenDocs.length; i += 1) {
                     if (flattenDocs[i] && flattenDocs[i].pageContent) {
                         if (isFileUploadEnabled && options.chatId) {
-                            flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [utils_1.FLOWISE_CHATID]: options.chatId }
+                            flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [utils_1.FLOWISE_CHATID]: options.chatId };
                         }
-                        finalDocs.push(new documents_1.Document(flattenDocs[i]))
+                        finalDocs.push(new documents_1.Document(flattenDocs[i]));
                     }
                 }
                 try {
                     if (recordManager) {
-                        const vectorStore = await vectorStoreDriver.instanciate()
-                        await recordManager.createSchema()
+                        const vectorStore = await vectorStoreDriver.instanciate();
+                        await recordManager.createSchema();
                         const res = await (0, indexing_1.index)({
                             docsSource: finalDocs,
                             recordManager,
@@ -60,64 +60,69 @@ class Postgres_VectorStores {
                                 sourceIdKey: recordManager?.sourceIdKey ?? 'source',
                                 vectorStoreName: tableName
                             }
-                        })
-                        return res
-                    } else {
-                        if (_batchSize) {
-                            const batchSize = parseInt(_batchSize, 10)
-                            for (let i = 0; i < finalDocs.length; i += batchSize) {
-                                const batch = finalDocs.slice(i, i + batchSize)
-                                await vectorStoreDriver.fromDocuments(batch)
-                            }
-                        } else {
-                            await vectorStoreDriver.fromDocuments(finalDocs)
-                        }
-                        return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                        });
+                        return res;
                     }
-                } catch (e) {
-                    throw new Error(e)
+                    else {
+                        if (_batchSize) {
+                            const batchSize = parseInt(_batchSize, 10);
+                            for (let i = 0; i < finalDocs.length; i += batchSize) {
+                                const batch = finalDocs.slice(i, i + batchSize);
+                                await vectorStoreDriver.fromDocuments(batch);
+                            }
+                        }
+                        else {
+                            await vectorStoreDriver.fromDocuments(finalDocs);
+                        }
+                        return { numAdded: finalDocs.length, addedDocs: finalDocs };
+                    }
+                }
+                catch (e) {
+                    throw new Error(e);
                 }
             },
             async delete(nodeData, ids, options) {
-                const vectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
-                const tableName = (0, utils_2.getTableName)(nodeData)
-                const recordManager = nodeData.inputs?.recordManager
-                const vectorStore = await vectorStoreDriver.instanciate()
+                const vectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options);
+                const tableName = (0, utils_2.getTableName)(nodeData);
+                const recordManager = nodeData.inputs?.recordManager;
+                const vectorStore = await vectorStoreDriver.instanciate();
                 try {
                     if (recordManager) {
-                        const vectorStoreName = tableName
-                        await recordManager.createSchema()
-                        recordManager.namespace = recordManager.namespace + '_' + vectorStoreName
-                        const filterKeys = {}
+                        const vectorStoreName = tableName;
+                        await recordManager.createSchema();
+                        recordManager.namespace = recordManager.namespace + '_' + vectorStoreName;
+                        const filterKeys = {};
                         if (options.docId) {
-                            filterKeys.docId = options.docId
+                            filterKeys.docId = options.docId;
                         }
-                        const keys = await recordManager.listKeys(filterKeys)
-                        await vectorStore.delete({ ids: keys })
-                        await recordManager.deleteKeys(keys)
-                    } else {
-                        await vectorStore.delete({ ids })
+                        const keys = await recordManager.listKeys(filterKeys);
+                        await vectorStore.delete({ ids: keys });
+                        await recordManager.deleteKeys(keys);
                     }
-                } catch (e) {
-                    throw new Error(e)
+                    else {
+                        await vectorStore.delete({ ids });
+                    }
+                }
+                catch (e) {
+                    throw new Error(e);
                 }
             }
-        }
-        this.label = 'Postgres'
-        this.name = 'postgres'
-        this.version = 7.1
-        this.type = 'Postgres'
-        this.icon = 'postgres.svg'
-        this.category = 'Vector Stores'
-        this.description = 'Upsert embedded data and perform similarity search upon query using pgvector on Postgres'
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        };
+        this.label = 'Postgres';
+        this.name = 'postgres';
+        this.version = 7.1;
+        this.type = 'Postgres';
+        this.icon = 'postgres.svg';
+        this.category = 'Vector Stores';
+        this.description = 'Upsert embedded data and perform similarity search upon query using pgvector on Postgres';
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['PostgresApi'],
             optional: serverCredentialsExists
-        }
+        };
         this.inputs = [
             {
                 label: 'Document',
@@ -242,8 +247,7 @@ class Postgres_VectorStores {
                 label: 'Additional Configuration',
                 name: 'additionalConfig',
                 type: 'json',
-                description:
-                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
+                description: 'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             },
@@ -273,7 +277,7 @@ class Postgres_VectorStores {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Postgres Retriever',
@@ -289,37 +293,40 @@ class Postgres_VectorStores {
                     ...getVectorStoreBaseClasses() // added temporarily for using TypeORM
                 ]
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const vectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
-        const output = nodeData.outputs?.output
-        const topK = nodeData.inputs?.topK
-        const k = topK ? parseFloat(topK) : 4
-        const _pgMetadataFilter = nodeData.inputs?.pgMetadataFilter
-        const isFileUploadEnabled = nodeData.inputs?.fileUpload
-        let pgMetadataFilter
+        const vectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options);
+        const output = nodeData.outputs?.output;
+        const topK = nodeData.inputs?.topK;
+        const k = topK ? parseFloat(topK) : 4;
+        const _pgMetadataFilter = nodeData.inputs?.pgMetadataFilter;
+        const isFileUploadEnabled = nodeData.inputs?.fileUpload;
+        let pgMetadataFilter;
         if (_pgMetadataFilter) {
-            pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : (0, utils_1.parseJsonBody)(_pgMetadataFilter)
+            pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : (0, utils_1.parseJsonBody)(_pgMetadataFilter);
         }
         if (isFileUploadEnabled && options.chatId) {
             pgMetadataFilter = {
                 ...(pgMetadataFilter || {}),
                 [utils_1.FLOWISE_CHATID]: options.chatId
-            }
+            };
         }
-        const vectorStore = await vectorStoreDriver.instanciate(pgMetadataFilter)
+        const vectorStore = await vectorStoreDriver.instanciate(pgMetadataFilter);
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
-        } else if (output === 'vectorStore') {
-            vectorStore.k = k
-            if (pgMetadataFilter) {
-                vectorStore.filter = pgMetadataFilter
-            }
-            return vectorStore
+            const retriever = vectorStore.asRetriever(k);
+            return retriever;
         }
-        return vectorStore
+        else if (output === 'vectorStore') {
+            ;
+            vectorStore.k = k;
+            if (pgMetadataFilter) {
+                ;
+                vectorStore.filter = pgMetadataFilter;
+            }
+            return vectorStore;
+        }
+        return vectorStore;
     }
     static getDriverFromConfig(nodeData, options) {
         /*switch (nodeData.inputs?.driver) {
@@ -330,8 +337,8 @@ class Postgres_VectorStores {
             default:
                 return new TypeORMDriver(nodeData, options)
         }*/
-        return new TypeORM_1.TypeORMDriver(nodeData, options)
+        return new TypeORM_1.TypeORMDriver(nodeData, options);
     }
 }
-module.exports = { nodeClass: Postgres_VectorStores }
+module.exports = { nodeClass: Postgres_VectorStores };
 //# sourceMappingURL=Postgres.js.map

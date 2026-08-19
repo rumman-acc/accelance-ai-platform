@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class TeradataTD2Credential {
     constructor() {
-        this.label = 'Teradata TD2 Auth'
-        this.name = 'teradataTD2Auth'
-        this.version = 1.0
+        this.label = 'Teradata TD2 Auth';
+        this.name = 'teradataTD2Auth';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Teradata TD2 Auth Username',
@@ -16,8 +16,8 @@ class TeradataTD2Credential {
                 name: 'tdPassword',
                 type: 'password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: TeradataTD2Credential }
+module.exports = { credClass: TeradataTD2Credential };
 //# sourceMappingURL=TeradataTD2.credential.js.map

@@ -1,34 +1,37 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.MeilisearchRetriever = void 0
-const retrievers_1 = require('@langchain/core/retrievers')
-const documents_1 = require('@langchain/core/documents')
-const meilisearch_1 = require('meilisearch')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MeilisearchRetriever = void 0;
+const retrievers_1 = require("@langchain/core/retrievers");
+const documents_1 = require("@langchain/core/documents");
+const meilisearch_1 = require("meilisearch");
 class MeilisearchRetriever extends retrievers_1.BaseRetriever {
     constructor(host, meilisearchSearchApiKey, indexUid, K, semanticRatio, embeddings, searchFilter, fields) {
-        super(fields)
-        this.lc_namespace = ['langchain', 'retrievers']
-        this.meilisearchSearchApiKey = meilisearchSearchApiKey
-        this.host = host
-        this.indexUid = indexUid
-        this.embeddings = embeddings
-        this.searchFilter = searchFilter
+        super(fields);
+        this.lc_namespace = ['langchain', 'retrievers'];
+        this.meilisearchSearchApiKey = meilisearchSearchApiKey;
+        this.host = host;
+        this.indexUid = indexUid;
+        this.embeddings = embeddings;
+        this.searchFilter = searchFilter;
         if (semanticRatio == '') {
-            this.semanticRatio = '0.75'
-        } else {
-            let semanticRatio_Float = parseFloat(semanticRatio)
+            this.semanticRatio = '0.75';
+        }
+        else {
+            let semanticRatio_Float = parseFloat(semanticRatio);
             if (semanticRatio_Float > 1.0) {
-                this.semanticRatio = '1.0'
-            } else if (semanticRatio_Float < 0.0) {
-                this.semanticRatio = '0.0'
-            } else {
-                this.semanticRatio = semanticRatio
+                this.semanticRatio = '1.0';
+            }
+            else if (semanticRatio_Float < 0.0) {
+                this.semanticRatio = '0.0';
+            }
+            else {
+                this.semanticRatio = semanticRatio;
             }
         }
         if (K == '') {
-            K = '4'
+            K = '4';
         }
-        this.K = K
+        this.K = K;
     }
     async _getRelevantDocuments(query) {
         // Pass `runManager?.getChild()` when invoking internal runnables to enable tracing
@@ -36,9 +39,9 @@ class MeilisearchRetriever extends retrievers_1.BaseRetriever {
         const client = new meilisearch_1.Meilisearch({
             host: this.host,
             apiKey: this.meilisearchSearchApiKey
-        })
-        const index = await client.index(this.indexUid)
-        const questionEmbedding = await this.embeddings.embedQuery(query)
+        });
+        const index = await client.index(this.indexUid);
+        const questionEmbedding = await this.embeddings.embedQuery(query);
         // Perform the search
         const searchResults = await index.search(query, {
             filter: this.searchFilter,
@@ -49,30 +52,28 @@ class MeilisearchRetriever extends retrievers_1.BaseRetriever {
                 semanticRatio: parseFloat(this.semanticRatio),
                 embedder: 'ollama'
             }
-        })
-        const hits = searchResults.hits
+        });
+        const hits = searchResults.hits;
         let documents = [
             new documents_1.Document({
                 pageContent: 'mock page',
                 metadata: {}
             })
-        ]
+        ];
         try {
-            documents = hits.map(
-                (hit) =>
-                    new documents_1.Document({
-                        pageContent: hit.pageContent,
-                        metadata: {
-                            objectID: hit.objectID,
-                            ...hit.metadata
-                        }
-                    })
-            )
-        } catch (e) {
-            console.error('Error occurred while adding documents:', e)
+            documents = hits.map((hit) => new documents_1.Document({
+                pageContent: hit.pageContent,
+                metadata: {
+                    objectID: hit.objectID,
+                    ...hit.metadata
+                }
+            }));
         }
-        return documents
+        catch (e) {
+            console.error('Error occurred while adding documents:', e);
+        }
+        return documents;
     }
 }
-exports.MeilisearchRetriever = MeilisearchRetriever
+exports.MeilisearchRetriever = MeilisearchRetriever;
 //# sourceMappingURL=core.js.map

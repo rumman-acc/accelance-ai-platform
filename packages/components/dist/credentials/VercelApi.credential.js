@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class VercelApi {
     constructor() {
-        this.label = 'Vercel API'
-        this.name = 'vercelApi'
-        this.version = 1.0
+        this.label = 'Vercel API';
+        this.name = 'vercelApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://vercel.com/account/tokens">Vercel Account Settings → Tokens</a> on how to create an API token'
+            'Refer to <a target="_blank" href="https://vercel.com/account/tokens">Vercel Account Settings → Tokens</a> on how to create an API token';
         this.inputs = [
             {
                 label: 'API Token',
@@ -22,8 +22,8 @@ class VercelApi {
                 description: 'leave blank for a personal account',
                 optional: true
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: VercelApi }
+module.exports = { credClass: VercelApi };
 //# sourceMappingURL=VercelApi.credential.js.map

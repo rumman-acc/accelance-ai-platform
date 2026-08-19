@@ -1,17 +1,17 @@
-import { ICommonObject, INodeData } from './Interface'
+import { ICommonObject, INodeData } from './Interface';
 export declare const AWS_REGIONS: {
-    label: string
-    name: string
-}[]
-export declare const DEFAULT_AWS_REGION = 'us-east-1'
+    label: string;
+    name: string;
+}[];
+export declare const DEFAULT_AWS_REGION = "us-east-1";
 export interface AWSCredentials {
-    accessKeyId: string
-    secretAccessKey: string
-    sessionToken?: string
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken?: string;
 }
 export interface AWSCredentialConfig {
-    credentials?: AWSCredentials
-    region?: string
+    credentials?: AWSCredentials;
+    region?: string;
 }
 /**
  * Get AWS credential configuration from node data, supporting both static credentials
@@ -37,7 +37,7 @@ export interface AWSCredentialConfig {
  * @throws {Error} If STS AssumeRole fails (e.g., access denied, invalid Role ARN, wrong
  *   External ID) — The full error is logged server-side.
  */
-export declare function getAWSCredentialConfig(nodeData: INodeData, options: ICommonObject, region?: string): Promise<AWSCredentialConfig>
+export declare function getAWSCredentialConfig(nodeData: INodeData, options: ICommonObject, region?: string): Promise<AWSCredentialConfig>;
 /**
  * Get AWS credentials from node data (backward-compatible wrapper).
  *
@@ -57,4 +57,4 @@ export declare function getAWSCredentialConfig(nodeData: INodeData, options: ICo
  * @returns {Promise<AWSCredentials | undefined>} Resolved credentials (static, from STS AssumeRole, or undefined)
  * @throws {Error} When STS AssumeRole fails (propagated from {@link getAWSCredentialConfig})
  */
-export declare function getAWSCredentials(nodeData: INodeData, options: ICommonObject): Promise<AWSCredentials | undefined>
+export declare function getAWSCredentials(nodeData: INodeData, options: ICommonObject): Promise<AWSCredentials | undefined>;

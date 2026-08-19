@@ -1,21 +1,22 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-exports._isBaseDocumentLoader = exports._HashedDocument = exports.BaseDocumentLoader = void 0
-exports._batch = _batch
-exports._deduplicateInOrder = _deduplicateInOrder
-exports._getSourceIdAssigner = _getSourceIdAssigner
-exports.index = index
-const uuid_1 = require('uuid')
-const base_1 = require('@langchain/community/indexes/base')
-const hash_1 = require('@langchain/core/utils/hash')
-const documents_1 = require('@langchain/core/documents')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports._isBaseDocumentLoader = exports._HashedDocument = exports.BaseDocumentLoader = void 0;
+exports._batch = _batch;
+exports._deduplicateInOrder = _deduplicateInOrder;
+exports._getSourceIdAssigner = _getSourceIdAssigner;
+exports.index = index;
+const uuid_1 = require("uuid");
+const base_1 = require("@langchain/community/indexes/base");
+const hash_1 = require("@langchain/core/utils/hash");
+const documents_1 = require("@langchain/core/documents");
 /**
  * Abstract class that provides a default implementation for the
  * loadAndSplit() method from the DocumentLoader interface. The load()
  * method is left abstract and needs to be implemented by subclasses.
  */
-class BaseDocumentLoader {}
-exports.BaseDocumentLoader = BaseDocumentLoader
+class BaseDocumentLoader {
+}
+exports.BaseDocumentLoader = BaseDocumentLoader;
 /**
  * HashedDocument is a Document with hashes calculated.
  * Hashes are calculated based on page content and metadata.
@@ -23,105 +24,107 @@ exports.BaseDocumentLoader = BaseDocumentLoader
  */
 class _HashedDocument {
     constructor(fields) {
-        this.uid = fields.uid
-        this.pageContent = fields.pageContent
-        this.metadata = fields.metadata
+        this.uid = fields.uid;
+        this.pageContent = fields.pageContent;
+        this.metadata = fields.metadata;
     }
     calculateHashes() {
-        const forbiddenKeys = ['hash_', 'content_hash', 'metadata_hash']
+        const forbiddenKeys = ['hash_', 'content_hash', 'metadata_hash'];
         for (const key of forbiddenKeys) {
             if (key in this.metadata) {
-                throw new Error(
-                    `Metadata cannot contain key ${key} as it is reserved for internal use. Restricted keys: [${forbiddenKeys.join(', ')}]`
-                )
+                throw new Error(`Metadata cannot contain key ${key} as it is reserved for internal use. Restricted keys: [${forbiddenKeys.join(', ')}]`);
             }
         }
-        const contentHash = this._hashStringToUUID(this.pageContent)
+        const contentHash = this._hashStringToUUID(this.pageContent);
         try {
-            const metadataHash = this._hashNestedDictToUUID(this.metadata)
-            this.contentHash = contentHash
-            this.metadataHash = metadataHash
-        } catch (e) {
-            throw new Error(`Failed to hash metadata: ${e}. Please use a dict that can be serialized using json.`)
+            const metadataHash = this._hashNestedDictToUUID(this.metadata);
+            this.contentHash = contentHash;
+            this.metadataHash = metadataHash;
         }
-        this.hash_ = this._hashStringToUUID(this.contentHash + this.metadataHash)
+        catch (e) {
+            throw new Error(`Failed to hash metadata: ${e}. Please use a dict that can be serialized using json.`);
+        }
+        this.hash_ = this._hashStringToUUID(this.contentHash + this.metadataHash);
         if (!this.uid) {
-            this.uid = this.hash_
+            this.uid = this.hash_;
         }
     }
     toDocument() {
         return new documents_1.Document({
             pageContent: this.pageContent,
             metadata: this.metadata
-        })
+        });
     }
     static fromDocument(document, uid) {
         const doc = new this({
             pageContent: document.pageContent,
             metadata: document.metadata,
             uid: uid || document.uid
-        })
-        doc.calculateHashes()
-        return doc
+        });
+        doc.calculateHashes();
+        return doc;
     }
     _hashStringToUUID(inputString) {
-        const hash_value = (0, hash_1.sha256)(inputString)
-        return (0, uuid_1.v5)(hash_value, base_1.UUIDV5_NAMESPACE)
+        const hash_value = (0, hash_1.sha256)(inputString);
+        return (0, uuid_1.v5)(hash_value, base_1.UUIDV5_NAMESPACE);
     }
     _hashNestedDictToUUID(data) {
-        const serialized_data = JSON.stringify(data, Object.keys(data).sort())
-        const hash_value = (0, hash_1.sha256)(serialized_data)
-        return (0, uuid_1.v5)(hash_value, base_1.UUIDV5_NAMESPACE)
+        const serialized_data = JSON.stringify(data, Object.keys(data).sort());
+        const hash_value = (0, hash_1.sha256)(serialized_data);
+        return (0, uuid_1.v5)(hash_value, base_1.UUIDV5_NAMESPACE);
     }
 }
-exports._HashedDocument = _HashedDocument
+exports._HashedDocument = _HashedDocument;
 function _batch(size, iterable) {
-    const batches = []
-    let currentBatch = []
+    const batches = [];
+    let currentBatch = [];
     iterable.forEach((item) => {
-        currentBatch.push(item)
+        currentBatch.push(item);
         if (currentBatch.length >= size) {
-            batches.push(currentBatch)
-            currentBatch = []
+            batches.push(currentBatch);
+            currentBatch = [];
         }
-    })
+    });
     if (currentBatch.length > 0) {
-        batches.push(currentBatch)
+        batches.push(currentBatch);
     }
-    return batches
+    return batches;
 }
 function _deduplicateInOrder(hashedDocuments) {
-    const seen = new Set()
-    const deduplicated = []
+    const seen = new Set();
+    const deduplicated = [];
     for (const hashedDoc of hashedDocuments) {
         if (!hashedDoc.hash_) {
-            throw new Error('Hashed document does not have a hash')
+            throw new Error('Hashed document does not have a hash');
         }
         if (!seen.has(hashedDoc.hash_)) {
-            seen.add(hashedDoc.hash_)
-            deduplicated.push(hashedDoc)
+            seen.add(hashedDoc.hash_);
+            deduplicated.push(hashedDoc);
         }
     }
-    return deduplicated
+    return deduplicated;
 }
 function _getSourceIdAssigner(sourceIdKey) {
     if (sourceIdKey === null) {
-        return (_doc) => null
-    } else if (typeof sourceIdKey === 'string') {
-        return (doc) => doc.metadata[sourceIdKey]
-    } else if (typeof sourceIdKey === 'function') {
-        return sourceIdKey
-    } else {
-        throw new Error(`sourceIdKey should be null, a string or a function, got ${typeof sourceIdKey}`)
+        return (_doc) => null;
+    }
+    else if (typeof sourceIdKey === 'string') {
+        return (doc) => doc.metadata[sourceIdKey];
+    }
+    else if (typeof sourceIdKey === 'function') {
+        return sourceIdKey;
+    }
+    else {
+        throw new Error(`sourceIdKey should be null, a string or a function, got ${typeof sourceIdKey}`);
     }
 }
 const _isBaseDocumentLoader = (arg) => {
     if ('load' in arg && typeof arg.load === 'function' && 'loadAndSplit' in arg && typeof arg.loadAndSplit === 'function') {
-        return true
+        return true;
     }
-    return false
-}
-exports._isBaseDocumentLoader = _isBaseDocumentLoader
+    return false;
+};
+exports._isBaseDocumentLoader = _isBaseDocumentLoader;
 /**
  * Index data from the doc source into the vector store.
  *
@@ -142,100 +145,100 @@ exports._isBaseDocumentLoader = _isBaseDocumentLoader
  * @returns {Promise<IndexingResult>}
  */
 async function index(args) {
-    const { docsSource, recordManager, vectorStore, options } = args
-    const { batchSize = 100, cleanup, sourceIdKey, cleanupBatchSize = 1000, forceUpdate = false, vectorStoreName } = options ?? {}
+    const { docsSource, recordManager, vectorStore, options } = args;
+    const { batchSize = 100, cleanup, sourceIdKey, cleanupBatchSize = 1000, forceUpdate = false, vectorStoreName } = options ?? {};
     if (cleanup === 'incremental' && !sourceIdKey) {
-        throw new Error("sourceIdKey is required when cleanup mode is incremental. Please provide through 'options.sourceIdKey'.")
+        throw new Error("sourceIdKey is required when cleanup mode is incremental. Please provide through 'options.sourceIdKey'.");
     }
     if (vectorStoreName) {
-        recordManager.namespace = recordManager.namespace + '_' + vectorStoreName
+        ;
+        recordManager.namespace = recordManager.namespace + '_' + vectorStoreName;
     }
-    const docs = (0, exports._isBaseDocumentLoader)(docsSource) ? await docsSource.load() : docsSource
-    const sourceIdAssigner = _getSourceIdAssigner(sourceIdKey ?? null)
-    const indexStartDt = await recordManager.getTime()
-    let numAdded = 0
-    let addedDocs = []
-    let numDeleted = 0
-    let numUpdated = 0
-    let numSkipped = 0
-    let totalKeys = 0
-    const batches = _batch(batchSize ?? 100, docs)
+    const docs = (0, exports._isBaseDocumentLoader)(docsSource) ? await docsSource.load() : docsSource;
+    const sourceIdAssigner = _getSourceIdAssigner(sourceIdKey ?? null);
+    const indexStartDt = await recordManager.getTime();
+    let numAdded = 0;
+    let addedDocs = [];
+    let numDeleted = 0;
+    let numUpdated = 0;
+    let numSkipped = 0;
+    let totalKeys = 0;
+    const batches = _batch(batchSize ?? 100, docs);
     for (const batch of batches) {
-        const hashedDocs = _deduplicateInOrder(batch.map((doc) => _HashedDocument.fromDocument(doc)))
-        const sourceIds = hashedDocs.map((doc) => sourceIdAssigner(doc))
+        const hashedDocs = _deduplicateInOrder(batch.map((doc) => _HashedDocument.fromDocument(doc)));
+        const sourceIds = hashedDocs.map((doc) => sourceIdAssigner(doc));
         if (cleanup === 'incremental') {
             hashedDocs.forEach((_hashedDoc, index) => {
-                const source = sourceIds[index]
+                const source = sourceIds[index];
                 if (source === null) {
-                    throw new Error('sourceIdKey must be provided when cleanup is incremental')
+                    throw new Error('sourceIdKey must be provided when cleanup is incremental');
                 }
-            })
+            });
         }
-        const batchExists = await recordManager.exists(hashedDocs.map((doc) => doc.uid))
-        const uids = []
-        const docsToIndex = []
-        const docsToUpdate = []
-        const seenDocs = new Set()
+        const batchExists = await recordManager.exists(hashedDocs.map((doc) => doc.uid));
+        const uids = [];
+        const docsToIndex = [];
+        const docsToUpdate = [];
+        const seenDocs = new Set();
         hashedDocs.forEach((hashedDoc, i) => {
-            const docExists = batchExists[i]
+            const docExists = batchExists[i];
             if (docExists) {
                 if (forceUpdate) {
-                    seenDocs.add(hashedDoc.uid)
-                } else {
-                    docsToUpdate.push({ uid: hashedDoc.uid, docId: hashedDoc.metadata.docId })
-                    return
+                    seenDocs.add(hashedDoc.uid);
+                }
+                else {
+                    docsToUpdate.push({ uid: hashedDoc.uid, docId: hashedDoc.metadata.docId });
+                    return;
                 }
             }
-            uids.push(hashedDoc.uid)
-            docsToIndex.push(hashedDoc.toDocument())
-        })
+            uids.push(hashedDoc.uid);
+            docsToIndex.push(hashedDoc.toDocument());
+        });
         if (docsToUpdate.length > 0) {
-            await recordManager.update(docsToUpdate, { timeAtLeast: indexStartDt })
-            numSkipped += docsToUpdate.length
+            await recordManager.update(docsToUpdate, { timeAtLeast: indexStartDt });
+            numSkipped += docsToUpdate.length;
         }
         if (docsToIndex.length > 0) {
-            await vectorStore.addDocuments(docsToIndex, { ids: uids })
+            await vectorStore.addDocuments(docsToIndex, { ids: uids });
             const newDocs = docsToIndex.map((docs) => ({
                 pageContent: docs.pageContent,
                 metadata: docs.metadata
-            }))
-            addedDocs.push(...newDocs)
-            numAdded += docsToIndex.length - seenDocs.size
-            numUpdated += seenDocs.size
+            }));
+            addedDocs.push(...newDocs);
+            numAdded += docsToIndex.length - seenDocs.size;
+            numUpdated += seenDocs.size;
         }
-        await recordManager.update(
-            hashedDocs.map((doc) => ({ uid: doc.uid, docId: doc.metadata.docId })),
-            { timeAtLeast: indexStartDt, groupIds: sourceIds }
-        )
+        await recordManager.update(hashedDocs.map((doc) => ({ uid: doc.uid, docId: doc.metadata.docId })), { timeAtLeast: indexStartDt, groupIds: sourceIds });
         if (cleanup === 'incremental') {
             sourceIds.forEach((sourceId) => {
-                if (!sourceId) throw new Error('Source id cannot be null')
-            })
+                if (!sourceId)
+                    throw new Error('Source id cannot be null');
+            });
             const uidsToDelete = await recordManager.listKeys({
                 before: indexStartDt,
                 groupIds: sourceIds
-            })
-            await vectorStore.delete({ ids: uidsToDelete })
-            await recordManager.deleteKeys(uidsToDelete)
-            numDeleted += uidsToDelete.length
+            });
+            await vectorStore.delete({ ids: uidsToDelete });
+            await recordManager.deleteKeys(uidsToDelete);
+            numDeleted += uidsToDelete.length;
         }
     }
     if (cleanup === 'full') {
         let uidsToDelete = await recordManager.listKeys({
             before: indexStartDt,
             limit: cleanupBatchSize
-        })
+        });
         while (uidsToDelete.length > 0) {
-            await vectorStore.delete({ ids: uidsToDelete })
-            await recordManager.deleteKeys(uidsToDelete)
-            numDeleted += uidsToDelete.length
+            await vectorStore.delete({ ids: uidsToDelete });
+            await recordManager.deleteKeys(uidsToDelete);
+            numDeleted += uidsToDelete.length;
             uidsToDelete = await recordManager.listKeys({
                 before: indexStartDt,
                 limit: cleanupBatchSize
-            })
+            });
         }
     }
-    totalKeys = (await recordManager.listKeys({})).length
+    totalKeys = (await recordManager.listKeys({})).length;
     return {
         numAdded,
         numDeleted,
@@ -243,6 +246,6 @@ async function index(args) {
         numSkipped,
         totalKeys,
         addedDocs
-    }
+    };
 }
 //# sourceMappingURL=indexing.js.map

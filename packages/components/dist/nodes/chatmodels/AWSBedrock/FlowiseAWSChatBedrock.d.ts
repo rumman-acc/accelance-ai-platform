@@ -23,32 +23,28 @@
  *
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
  */
-import { IVisionChatModal, IMultiModalOption } from '../../../src'
-import { ChatBedrockConverse as LCBedrockChat, ChatBedrockConverseInput } from '@langchain/aws'
-import type { BaseMessage } from '@langchain/core/messages'
-import type { ChatResult } from '@langchain/core/outputs'
-import type { CallbackManagerForLLMRun } from '@langchain/core/callbacks/manager'
+import { IVisionChatModal, IMultiModalOption } from '../../../src';
+import { ChatBedrockConverse as LCBedrockChat, ChatBedrockConverseInput } from '@langchain/aws';
+import type { BaseMessage } from '@langchain/core/messages';
+import type { ChatResult } from '@langchain/core/outputs';
+import type { CallbackManagerForLLMRun } from '@langchain/core/callbacks/manager';
 export declare class BedrockChat extends LCBedrockChat implements IVisionChatModal {
-    configuredModel: string
-    configuredMaxToken?: number
-    multiModalOption: IMultiModalOption
-    id: string
-    stopSeqUnsupported: Set<string>
-    constructor(id: string, fields: ChatBedrockConverseInput, stopSeqUnsupported?: Set<string>)
+    configuredModel: string;
+    configuredMaxToken?: number;
+    multiModalOption: IMultiModalOption;
+    id: string;
+    stopSeqUnsupported: Set<string>;
+    constructor(id: string, fields: ChatBedrockConverseInput, stopSeqUnsupported?: Set<string>);
     /**
      * Strips stopSequences for models that don't support it.
      * Models are identified by exact ID from models.json (`stop_sequences: false`),
      * not by provider prefix, to avoid silently stripping from future models that
      * may add support.
      */
-    invocationParams(options?: this['ParsedCallOptions']): Partial<import('@aws-sdk/client-bedrock-runtime').ConverseCommandInput>
-    private isTemperatureDeprecatedError
-    private disableTemperature
-    _generate(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult>
-    _streamResponseChunks(
-        messages: BaseMessage[],
-        options: this['ParsedCallOptions'],
-        runManager?: CallbackManagerForLLMRun
-    ): AsyncGenerator<import('@langchain/core/outputs').ChatGenerationChunk, void, unknown>
-    setMultiModalOption(multiModalOption: IMultiModalOption): void
+    invocationParams(options?: this['ParsedCallOptions']): Partial<import("@aws-sdk/client-bedrock-runtime").ConverseCommandInput>;
+    private isTemperatureDeprecatedError;
+    private disableTemperature;
+    _generate(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult>;
+    _streamResponseChunks(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): AsyncGenerator<import("@langchain/core/outputs").ChatGenerationChunk, void, unknown>;
+    setMultiModalOption(multiModalOption: IMultiModalOption): void;
 }

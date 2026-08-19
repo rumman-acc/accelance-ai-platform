@@ -1,40 +1,38 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const lodash_1 = require('lodash')
-const utils_1 = require('../../../src/utils')
-const src_1 = require('../../../src')
-const Unstructured_1 = require('./Unstructured')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
+const utils_1 = require("../../../src/utils");
+const src_1 = require("../../../src");
+const Unstructured_1 = require("./Unstructured");
 class UnstructuredFile_DocumentLoaders {
     constructor() {
-        this.label = 'Unstructured File Loader'
-        this.name = 'unstructuredFileLoader'
-        this.version = 4.0
-        this.type = 'Document'
-        this.icon = 'unstructured-file.svg'
-        this.category = 'Document Loaders'
-        this.description = 'Use Unstructured.io to load data from a file path'
-        this.baseClasses = [this.type]
+        this.label = 'Unstructured File Loader';
+        this.name = 'unstructuredFileLoader';
+        this.version = 4.0;
+        this.type = 'Document';
+        this.icon = 'unstructured-file.svg';
+        this.category = 'Document Loaders';
+        this.description = 'Use Unstructured.io to load data from a file path';
+        this.baseClasses = [this.type];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['unstructuredApi'],
             optional: true
-        }
+        };
         this.inputs = [
             {
                 label: 'Files Upload',
                 name: 'fileObject',
                 type: 'file',
                 description: 'Files to be processed. Multiple files can be uploaded.',
-                fileType:
-                    '.txt, .text, .pdf, .docx, .doc, .jpg, .jpeg, .eml, .html, .htm, .md, .pptx, .ppt, .msg, .rtf, .xlsx, .xls, .odt, .epub'
+                fileType: '.txt, .text, .pdf, .docx, .doc, .jpg, .jpeg, .eml, .html, .htm, .md, .pptx, .ppt, .msg, .rtf, .xlsx, .xls, .odt, .epub'
             },
             {
                 label: 'Unstructured API URL',
                 name: 'unstructuredAPIUrl',
-                description:
-                    'Unstructured API URL. Read <a target="_blank" href="https://docs.unstructured.io/api-reference/api-services/saas-api-development-guide">more</a> on how to get started',
+                description: 'Unstructured API URL. Read <a target="_blank" href="https://docs.unstructured.io/api-reference/api-services/saas-api-development-guide">more</a> on how to get started',
                 type: 'string',
                 placeholder: process.env.UNSTRUCTURED_API_URL || 'http://localhost:8000/general/v0/general',
                 optional: !!process.env.UNSTRUCTURED_API_URL
@@ -179,14 +177,12 @@ class UnstructuredFile_DocumentLoaders {
                     {
                         label: 'chipper',
                         name: 'chipper',
-                        description:
-                            'Exlusive to Unstructured hosted API. The Chipper model is Unstructured in-house image-to-text model based on transformer-based Visual Document Understanding (VDU) models.'
+                        description: 'Exlusive to Unstructured hosted API. The Chipper model is Unstructured in-house image-to-text model based on transformer-based Visual Document Understanding (VDU) models.'
                     },
                     {
                         label: 'detectron2_onnx',
                         name: 'detectron2_onnx',
-                        description:
-                            'A Computer Vision model by Facebook AI that provides object detection and segmentation algorithms with ONNX Runtime. It is the fastest model with the hi_res strategy.'
+                        description: 'A Computer Vision model by Facebook AI that provides object detection and segmentation algorithms with ONNX Runtime. It is the fastest model with the hi_res strategy.'
                     },
                     {
                         label: 'yolox',
@@ -205,8 +201,7 @@ class UnstructuredFile_DocumentLoaders {
             {
                 label: 'Chunking Strategy',
                 name: 'chunkingStrategy',
-                description:
-                    'Use one of the supported strategies to chunk the returned elements. When omitted, no chunking is performed and any other chunking parameters provided are ignored. Default: by_title',
+                description: 'Use one of the supported strategies to chunk the returned elements. When omitted, no chunking is performed and any other chunking parameters provided are ignored. Default: by_title',
                 type: 'options',
                 options: [
                     {
@@ -308,8 +303,7 @@ class UnstructuredFile_DocumentLoaders {
                 label: 'Source ID Key',
                 name: 'sourceIdKey',
                 type: 'string',
-                description:
-                    'Key used to get the true source of document, to be compared against the record. Document metadata must contain the Source ID Key.',
+                description: 'Key used to get the true source of document, to be compared against the record. Document metadata must contain the Source ID Key.',
                 default: 'source',
                 placeholder: 'source',
                 optional: true,
@@ -327,8 +321,7 @@ class UnstructuredFile_DocumentLoaders {
             {
                 label: 'XML Keep Tags',
                 name: 'xmlKeepTags',
-                description:
-                    'If True, will retain the XML tags in the output. Otherwise it will simply extract the text from within the tags. Only applies to partition_xml.',
+                description: 'If True, will retain the XML tags in the output. Otherwise it will simply extract the text from within the tags. Only applies to partition_xml.',
                 type: 'boolean',
                 optional: true,
                 additionalParams: true
@@ -360,8 +353,7 @@ class UnstructuredFile_DocumentLoaders {
             {
                 label: 'Combine Under N Chars',
                 name: 'combineUnderNChars',
-                description:
-                    "If chunking strategy is set, combine elements until a section reaches a length of n chars. Default: value of max_characters. Can't exceed value of max_characters.",
+                description: "If chunking strategy is set, combine elements until a section reaches a length of n chars. Default: value of max_characters. Can't exceed value of max_characters.",
                 type: 'number',
                 optional: true,
                 additionalParams: true
@@ -369,8 +361,7 @@ class UnstructuredFile_DocumentLoaders {
             {
                 label: 'New After N Chars',
                 name: 'newAfterNChars',
-                description:
-                    "If chunking strategy is set, cut off new sections after reaching a length of n chars (soft max). value of max_characters. Can't exceed value of max_characters.",
+                description: "If chunking strategy is set, cut off new sections after reaching a length of n chars (soft max). value of max_characters. Can't exceed value of max_characters.",
                 type: 'number',
                 optional: true,
                 additionalParams: true
@@ -378,8 +369,7 @@ class UnstructuredFile_DocumentLoaders {
             {
                 label: 'Max Characters',
                 name: 'maxCharacters',
-                description:
-                    'If chunking strategy is set, cut off new sections after reaching a length of n chars (hard max). Default: 500',
+                description: 'If chunking strategy is set, cut off new sections after reaching a length of n chars (hard max). Default: 500',
                 type: 'number',
                 optional: true,
                 additionalParams: true,
@@ -398,13 +388,12 @@ class UnstructuredFile_DocumentLoaders {
                 name: 'omitMetadataKeys',
                 type: 'string',
                 rows: 4,
-                description:
-                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
+                description: 'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
                 placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Document',
@@ -418,41 +407,42 @@ class UnstructuredFile_DocumentLoaders {
                 description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl
-        const strategy = nodeData.inputs?.strategy
-        const encoding = nodeData.inputs?.encoding
-        const coordinates = nodeData.inputs?.coordinates
-        const skipInferTableTypes = nodeData.inputs?.skipInferTableTypes ? JSON.parse(nodeData.inputs?.skipInferTableTypes) : []
-        const hiResModelName = nodeData.inputs?.hiResModelName
-        const includePageBreaks = nodeData.inputs?.includePageBreaks
-        const chunkingStrategy = nodeData.inputs?.chunkingStrategy
-        const metadata = nodeData.inputs?.metadata
-        const sourceIdKey = nodeData.inputs?.sourceIdKey || 'source'
-        const ocrLanguages = nodeData.inputs?.ocrLanguages ? JSON.parse(nodeData.inputs?.ocrLanguages) : []
-        const xmlKeepTags = nodeData.inputs?.xmlKeepTags
-        const multiPageSections = nodeData.inputs?.multiPageSections
-        const combineUnderNChars = nodeData.inputs?.combineUnderNChars
-        const newAfterNChars = nodeData.inputs?.newAfterNChars
-        const maxCharacters = nodeData.inputs?.maxCharacters
-        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys
-        const output = nodeData.outputs?.output
-        let omitMetadataKeys = []
+        const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl;
+        const strategy = nodeData.inputs?.strategy;
+        const encoding = nodeData.inputs?.encoding;
+        const coordinates = nodeData.inputs?.coordinates;
+        const skipInferTableTypes = nodeData.inputs?.skipInferTableTypes
+            ? JSON.parse(nodeData.inputs?.skipInferTableTypes)
+            : [];
+        const hiResModelName = nodeData.inputs?.hiResModelName;
+        const includePageBreaks = nodeData.inputs?.includePageBreaks;
+        const chunkingStrategy = nodeData.inputs?.chunkingStrategy;
+        const metadata = nodeData.inputs?.metadata;
+        const sourceIdKey = nodeData.inputs?.sourceIdKey || 'source';
+        const ocrLanguages = nodeData.inputs?.ocrLanguages ? JSON.parse(nodeData.inputs?.ocrLanguages) : [];
+        const xmlKeepTags = nodeData.inputs?.xmlKeepTags;
+        const multiPageSections = nodeData.inputs?.multiPageSections;
+        const combineUnderNChars = nodeData.inputs?.combineUnderNChars;
+        const newAfterNChars = nodeData.inputs?.newAfterNChars;
+        const maxCharacters = nodeData.inputs?.maxCharacters;
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys;
+        const output = nodeData.outputs?.output;
+        let omitMetadataKeys = [];
         if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim());
         }
         // give priority to upload with upsert then to fileObject (upload from UI component)
-        const fileBase64 =
-            nodeData.inputs?.pdfFile ||
+        const fileBase64 = nodeData.inputs?.pdfFile ||
             nodeData.inputs?.txtFile ||
             nodeData.inputs?.yamlFile ||
             nodeData.inputs?.docxFile ||
             nodeData.inputs?.jsonlinesFile ||
             nodeData.inputs?.csvFile ||
             nodeData.inputs?.jsonFile ||
-            nodeData.inputs?.fileObject
+            nodeData.inputs?.fileObject;
         const obj = {
             apiUrl: unstructuredAPIUrl,
             strategy,
@@ -465,100 +455,101 @@ class UnstructuredFile_DocumentLoaders {
             ocrLanguages,
             xmlKeepTags,
             multiPageSections
-        }
+        };
         if (combineUnderNChars) {
-            obj.combineUnderNChars = parseInt(combineUnderNChars, 10)
+            obj.combineUnderNChars = parseInt(combineUnderNChars, 10);
         }
         if (newAfterNChars) {
-            obj.newAfterNChars = parseInt(newAfterNChars, 10)
+            obj.newAfterNChars = parseInt(newAfterNChars, 10);
         }
         if (maxCharacters) {
-            obj.maxCharacters = parseInt(maxCharacters, 10)
+            obj.maxCharacters = parseInt(maxCharacters, 10);
         }
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const unstructuredAPIKey = (0, utils_1.getCredentialParam)('unstructuredAPIKey', credentialData, nodeData)
-        if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
-        let docs = []
-        let files = []
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const unstructuredAPIKey = (0, utils_1.getCredentialParam)('unstructuredAPIKey', credentialData, nodeData);
+        if (unstructuredAPIKey)
+            obj.apiKey = unstructuredAPIKey;
+        let docs = [];
+        let files = [];
         if (fileBase64) {
-            const loader = new Unstructured_1.UnstructuredLoader(obj)
+            const loader = new Unstructured_1.UnstructuredLoader(obj);
             //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
             if (fileBase64.startsWith('FILE-STORAGE::')) {
-                const fileName = fileBase64.replace('FILE-STORAGE::', '')
+                const fileName = fileBase64.replace('FILE-STORAGE::', '');
                 if (fileName.startsWith('[') && fileName.endsWith(']')) {
-                    files = JSON.parse(fileName)
-                } else {
-                    files = [fileName]
+                    files = JSON.parse(fileName);
                 }
-                const orgId = options.orgId
-                const chatflowid = options.chatflowid
+                else {
+                    files = [fileName];
+                }
+                const orgId = options.orgId;
+                const chatflowid = options.chatflowid;
                 for (const file of files) {
-                    if (!file) continue
-                    const fileData = await (0, src_1.getFileFromStorage)(file, orgId, chatflowid)
-                    const loaderDocs = await loader.loadAndSplitBuffer(fileData, file)
-                    docs.push(...loaderDocs)
-                }
-            } else {
-                if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
-                    files = JSON.parse(fileBase64)
-                } else {
-                    files = [fileBase64]
-                }
-                for (const file of files) {
-                    if (!file) continue
-                    const splitDataURI = file.split(',')
-                    const filename = splitDataURI.pop()?.split(':')[1] ?? ''
-                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                    const loaderDocs = await loader.loadAndSplitBuffer(bf, filename)
-                    docs.push(...loaderDocs)
+                    if (!file)
+                        continue;
+                    const fileData = await (0, src_1.getFileFromStorage)(file, orgId, chatflowid);
+                    const loaderDocs = await loader.loadAndSplitBuffer(fileData, file);
+                    docs.push(...loaderDocs);
                 }
             }
-        } else {
-            throw new Error('File upload is required')
+            else {
+                if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+                    files = JSON.parse(fileBase64);
+                }
+                else {
+                    files = [fileBase64];
+                }
+                for (const file of files) {
+                    if (!file)
+                        continue;
+                    const splitDataURI = file.split(',');
+                    const filename = splitDataURI.pop()?.split(':')[1] ?? '';
+                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64');
+                    const loaderDocs = await loader.loadAndSplitBuffer(bf, filename);
+                    docs.push(...loaderDocs);
+                }
+            }
+        }
+        else {
+            throw new Error('File upload is required');
         }
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata);
             docs = docs.map((doc) => ({
                 ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {
-                              ...parsedMetadata
-                          }
-                        : (0, lodash_1.omit)(
-                              {
-                                  ...doc.metadata,
-                                  ...parsedMetadata,
-                                  [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                              },
-                              omitMetadataKeys
-                          )
-            }))
-        } else {
+                metadata: _omitMetadataKeys === '*'
+                    ? {
+                        ...parsedMetadata
+                    }
+                    : (0, lodash_1.omit)({
+                        ...doc.metadata,
+                        ...parsedMetadata,
+                        [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                    }, omitMetadataKeys)
+            }));
+        }
+        else {
             docs = docs.map((doc) => ({
                 ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {}
-                        : (0, lodash_1.omit)(
-                              {
-                                  ...doc.metadata,
-                                  [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                              },
-                              omitMetadataKeys
-                          )
-            }))
+                metadata: _omitMetadataKeys === '*'
+                    ? {}
+                    : (0, lodash_1.omit)({
+                        ...doc.metadata,
+                        [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                    }, omitMetadataKeys)
+            }));
         }
         if (output === 'document') {
-            return docs
-        } else {
-            let finaltext = ''
+            return docs;
+        }
+        else {
+            let finaltext = '';
             for (const doc of docs) {
-                finaltext += `${doc.pageContent}\n`
+                finaltext += `${doc.pageContent}\n`;
             }
-            return (0, utils_1.handleEscapeCharacters)(finaltext, false)
+            return (0, utils_1.handleEscapeCharacters)(finaltext, false);
         }
     }
 }
-module.exports = { nodeClass: UnstructuredFile_DocumentLoaders }
+module.exports = { nodeClass: UnstructuredFile_DocumentLoaders };
 //# sourceMappingURL=UnstructuredFile.js.map

@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class AzureCognitiveServices {
     constructor() {
-        this.label = 'Azure Cognitive Services'
-        this.name = 'azureCognitiveServices'
-        this.version = 1.0
+        this.label = 'Azure Cognitive Services';
+        this.name = 'azureCognitiveServices';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Azure Subscription Key',
@@ -27,8 +27,8 @@ class AzureCognitiveServices {
                 placeholder: '2024-05-15-preview',
                 default: '2024-05-15-preview'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: AzureCognitiveServices }
+module.exports = { credClass: AzureCognitiveServices };
 //# sourceMappingURL=AzureCognitiveServices.credential.js.map

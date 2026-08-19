@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class IBMWatsonxCredential {
     constructor() {
-        this.label = 'IBM Watsonx'
-        this.name = 'ibmWatsonx'
-        this.version = 1.0
+        this.label = 'IBM Watsonx';
+        this.name = 'ibmWatsonx';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Version',
@@ -56,8 +56,8 @@ class IBMWatsonxCredential {
                 placeholder: '<YOUR-BEARER-TOKEN>',
                 optional: true
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: IBMWatsonxCredential }
+module.exports = { credClass: IBMWatsonxCredential };
 //# sourceMappingURL=IBMWatsonx.credential.js.map

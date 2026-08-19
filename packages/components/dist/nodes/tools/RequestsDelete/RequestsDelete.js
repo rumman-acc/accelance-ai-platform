@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 const codeExample = `{
     "id": {
         "type": "string",
@@ -14,17 +14,17 @@ const codeExample = `{
         "in": "query",
         "description": "Force delete the item. ?force=true"
     }
-}`
+}`;
 class RequestsDelete_Tools {
     constructor() {
-        this.label = 'Requests Delete'
-        this.name = 'requestsDelete'
-        this.version = 1.0
-        this.type = 'RequestsDelete'
-        this.icon = 'del.png'
-        this.category = 'Tools'
-        this.description = 'Execute HTTP DELETE requests'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.RequestsDeleteTool), 'Tool']
+        this.label = 'Requests Delete';
+        this.name = 'requestsDelete';
+        this.version = 1.0;
+        this.type = 'RequestsDelete';
+        this.icon = 'del.png';
+        this.category = 'Tools';
+        this.description = 'Execute HTTP DELETE requests';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(core_1.RequestsDeleteTool), 'Tool'];
         this.inputs = [
             {
                 label: 'URL',
@@ -96,32 +96,35 @@ class RequestsDelete_Tools {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const headers = nodeData.inputs?.headers || nodeData.inputs?.requestsDeleteHeaders
-        const url = nodeData.inputs?.url || nodeData.inputs?.requestsDeleteUrl
-        const description = nodeData.inputs?.description || nodeData.inputs?.requestsDeleteDescription
-        const name = nodeData.inputs?.name || nodeData.inputs?.requestsDeleteName
-        const queryParamsSchema = nodeData.inputs?.queryParamsSchema || nodeData.inputs?.requestsDeleteQueryParamsSchema
-        const maxOutputLength = nodeData.inputs?.requestsDeleteMaxOutputLength
-        const obj = {}
-        if (url) obj.url = (0, utils_1.stripHTMLFromToolInput)(url)
-        if (description) obj.description = description
+        const headers = nodeData.inputs?.headers || nodeData.inputs?.requestsDeleteHeaders;
+        const url = nodeData.inputs?.url || nodeData.inputs?.requestsDeleteUrl;
+        const description = nodeData.inputs?.description || nodeData.inputs?.requestsDeleteDescription;
+        const name = nodeData.inputs?.name || nodeData.inputs?.requestsDeleteName;
+        const queryParamsSchema = nodeData.inputs?.queryParamsSchema || nodeData.inputs?.requestsDeleteQueryParamsSchema;
+        const maxOutputLength = nodeData.inputs?.requestsDeleteMaxOutputLength;
+        const obj = {};
+        if (url)
+            obj.url = (0, utils_1.stripHTMLFromToolInput)(url);
+        if (description)
+            obj.description = description;
         if (name)
             obj.name = name
                 .toLowerCase()
                 .replace(/ /g, '_')
-                .replace(/[^a-z0-9_-]/g, '')
-        if (queryParamsSchema) obj.queryParamsSchema = queryParamsSchema
-        if (maxOutputLength) obj.maxOutputLength = parseInt(maxOutputLength, 10)
+                .replace(/[^a-z0-9_-]/g, '');
+        if (queryParamsSchema)
+            obj.queryParamsSchema = queryParamsSchema;
+        if (maxOutputLength)
+            obj.maxOutputLength = parseInt(maxOutputLength, 10);
         if (headers) {
-            const parsedHeaders =
-                typeof headers === 'object' ? headers : (0, utils_1.parseJsonBody)((0, utils_1.stripHTMLFromToolInput)(headers))
-            obj.headers = parsedHeaders
+            const parsedHeaders = typeof headers === 'object' ? headers : (0, utils_1.parseJsonBody)((0, utils_1.stripHTMLFromToolInput)(headers));
+            obj.headers = parsedHeaders;
         }
-        return new core_1.RequestsDeleteTool(obj)
+        return new core_1.RequestsDeleteTool(obj);
     }
 }
-module.exports = { nodeClass: RequestsDelete_Tools }
+module.exports = { nodeClass: RequestsDelete_Tools };
 //# sourceMappingURL=RequestsDelete.js.map

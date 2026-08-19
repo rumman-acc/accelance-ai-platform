@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class GoogleCalendar_Tools {
     constructor() {
-        this.label = 'Google Calendar'
-        this.name = 'googleCalendarTool'
-        this.version = 1.0
-        this.type = 'GoogleCalendar'
-        this.icon = 'google-calendar.svg'
-        this.category = 'Tools'
-        this.description = 'Perform Google Calendar operations such as managing events, calendars, and checking availability'
-        this.baseClasses = ['Tool']
+        this.label = 'Google Calendar';
+        this.name = 'googleCalendarTool';
+        this.version = 1.0;
+        this.type = 'GoogleCalendar';
+        this.icon = 'google-calendar.svg';
+        this.category = 'Tools';
+        this.description = 'Perform Google Calendar operations such as managing events, calendars, and checking availability';
+        this.baseClasses = ['Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['googleCalendarOAuth2']
-        }
+        };
         this.inputs = [
             {
                 label: 'Type',
@@ -539,76 +539,113 @@ class GoogleCalendar_Tools {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const calendarType = nodeData.inputs?.calendarType
-        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options)
-        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData)
+        const calendarType = nodeData.inputs?.calendarType;
+        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options);
+        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData);
         if (!accessToken) {
-            throw new Error('No access token found in credential')
+            throw new Error('No access token found in credential');
         }
         // Get all actions based on type
-        let actions = []
+        let actions = [];
         if (calendarType === 'event') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.eventActions)
-        } else if (calendarType === 'calendar') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.calendarActions)
-        } else if (calendarType === 'freebusy') {
-            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.freebusyActions)
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.eventActions);
         }
-        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
+        else if (calendarType === 'calendar') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.calendarActions);
+        }
+        else if (calendarType === 'freebusy') {
+            actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.freebusyActions);
+        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData);
         const tools = (0, core_1.createGoogleCalendarTools)({
             accessToken,
             actions,
             defaultParams
-        })
-        return tools
+        });
+        return tools;
     }
     transformNodeInputsToToolArgs(nodeData) {
         // Collect default parameters from inputs
-        const defaultParams = {}
+        const defaultParams = {};
         // Event parameters
-        if (nodeData.inputs?.calendarId) defaultParams.calendarId = nodeData.inputs.calendarId
-        if (nodeData.inputs?.eventId) defaultParams.eventId = nodeData.inputs.eventId
-        if (nodeData.inputs?.summary) defaultParams.summary = nodeData.inputs.summary
-        if (nodeData.inputs?.description) defaultParams.description = nodeData.inputs.description
-        if (nodeData.inputs?.location) defaultParams.location = nodeData.inputs.location
-        if (nodeData.inputs?.startDateTime) defaultParams.startDateTime = nodeData.inputs.startDateTime
-        if (nodeData.inputs?.endDateTime) defaultParams.endDateTime = nodeData.inputs.endDateTime
-        if (nodeData.inputs?.timeZone) defaultParams.timeZone = nodeData.inputs.timeZone
-        if (nodeData.inputs?.allDay !== undefined) defaultParams.allDay = nodeData.inputs.allDay
-        if (nodeData.inputs?.startDate) defaultParams.startDate = nodeData.inputs.startDate
-        if (nodeData.inputs?.endDate) defaultParams.endDate = nodeData.inputs.endDate
-        if (nodeData.inputs?.attendees) defaultParams.attendees = nodeData.inputs.attendees
-        if (nodeData.inputs?.sendUpdates) defaultParams.sendUpdates = nodeData.inputs.sendUpdates
-        if (nodeData.inputs?.recurrence) defaultParams.recurrence = nodeData.inputs.recurrence
-        if (nodeData.inputs?.reminderMinutes) defaultParams.reminderMinutes = nodeData.inputs.reminderMinutes
-        if (nodeData.inputs?.visibility) defaultParams.visibility = nodeData.inputs.visibility
-        if (nodeData.inputs?.quickAddText) defaultParams.quickAddText = nodeData.inputs.quickAddText
-        if (nodeData.inputs?.timeMin) defaultParams.timeMin = nodeData.inputs.timeMin
-        if (nodeData.inputs?.timeMax) defaultParams.timeMax = nodeData.inputs.timeMax
-        if (nodeData.inputs?.maxResults) defaultParams.maxResults = nodeData.inputs.maxResults
-        if (nodeData.inputs?.singleEvents !== undefined) defaultParams.singleEvents = nodeData.inputs.singleEvents
-        if (nodeData.inputs?.orderBy) defaultParams.orderBy = nodeData.inputs.orderBy
-        if (nodeData.inputs?.query) defaultParams.query = nodeData.inputs.query
+        if (nodeData.inputs?.calendarId)
+            defaultParams.calendarId = nodeData.inputs.calendarId;
+        if (nodeData.inputs?.eventId)
+            defaultParams.eventId = nodeData.inputs.eventId;
+        if (nodeData.inputs?.summary)
+            defaultParams.summary = nodeData.inputs.summary;
+        if (nodeData.inputs?.description)
+            defaultParams.description = nodeData.inputs.description;
+        if (nodeData.inputs?.location)
+            defaultParams.location = nodeData.inputs.location;
+        if (nodeData.inputs?.startDateTime)
+            defaultParams.startDateTime = nodeData.inputs.startDateTime;
+        if (nodeData.inputs?.endDateTime)
+            defaultParams.endDateTime = nodeData.inputs.endDateTime;
+        if (nodeData.inputs?.timeZone)
+            defaultParams.timeZone = nodeData.inputs.timeZone;
+        if (nodeData.inputs?.allDay !== undefined)
+            defaultParams.allDay = nodeData.inputs.allDay;
+        if (nodeData.inputs?.startDate)
+            defaultParams.startDate = nodeData.inputs.startDate;
+        if (nodeData.inputs?.endDate)
+            defaultParams.endDate = nodeData.inputs.endDate;
+        if (nodeData.inputs?.attendees)
+            defaultParams.attendees = nodeData.inputs.attendees;
+        if (nodeData.inputs?.sendUpdates)
+            defaultParams.sendUpdates = nodeData.inputs.sendUpdates;
+        if (nodeData.inputs?.recurrence)
+            defaultParams.recurrence = nodeData.inputs.recurrence;
+        if (nodeData.inputs?.reminderMinutes)
+            defaultParams.reminderMinutes = nodeData.inputs.reminderMinutes;
+        if (nodeData.inputs?.visibility)
+            defaultParams.visibility = nodeData.inputs.visibility;
+        if (nodeData.inputs?.quickAddText)
+            defaultParams.quickAddText = nodeData.inputs.quickAddText;
+        if (nodeData.inputs?.timeMin)
+            defaultParams.timeMin = nodeData.inputs.timeMin;
+        if (nodeData.inputs?.timeMax)
+            defaultParams.timeMax = nodeData.inputs.timeMax;
+        if (nodeData.inputs?.maxResults)
+            defaultParams.maxResults = nodeData.inputs.maxResults;
+        if (nodeData.inputs?.singleEvents !== undefined)
+            defaultParams.singleEvents = nodeData.inputs.singleEvents;
+        if (nodeData.inputs?.orderBy)
+            defaultParams.orderBy = nodeData.inputs.orderBy;
+        if (nodeData.inputs?.query)
+            defaultParams.query = nodeData.inputs.query;
         // Calendar parameters
-        if (nodeData.inputs?.calendarIdForCalendar) defaultParams.calendarIdForCalendar = nodeData.inputs.calendarIdForCalendar
-        if (nodeData.inputs?.calendarSummary) defaultParams.calendarSummary = nodeData.inputs.calendarSummary
-        if (nodeData.inputs?.calendarDescription) defaultParams.calendarDescription = nodeData.inputs.calendarDescription
-        if (nodeData.inputs?.calendarLocation) defaultParams.calendarLocation = nodeData.inputs.calendarLocation
-        if (nodeData.inputs?.calendarTimeZone) defaultParams.calendarTimeZone = nodeData.inputs.calendarTimeZone
-        if (nodeData.inputs?.showHidden !== undefined) defaultParams.showHidden = nodeData.inputs.showHidden
-        if (nodeData.inputs?.minAccessRole) defaultParams.minAccessRole = nodeData.inputs.minAccessRole
+        if (nodeData.inputs?.calendarIdForCalendar)
+            defaultParams.calendarIdForCalendar = nodeData.inputs.calendarIdForCalendar;
+        if (nodeData.inputs?.calendarSummary)
+            defaultParams.calendarSummary = nodeData.inputs.calendarSummary;
+        if (nodeData.inputs?.calendarDescription)
+            defaultParams.calendarDescription = nodeData.inputs.calendarDescription;
+        if (nodeData.inputs?.calendarLocation)
+            defaultParams.calendarLocation = nodeData.inputs.calendarLocation;
+        if (nodeData.inputs?.calendarTimeZone)
+            defaultParams.calendarTimeZone = nodeData.inputs.calendarTimeZone;
+        if (nodeData.inputs?.showHidden !== undefined)
+            defaultParams.showHidden = nodeData.inputs.showHidden;
+        if (nodeData.inputs?.minAccessRole)
+            defaultParams.minAccessRole = nodeData.inputs.minAccessRole;
         // Freebusy parameters
-        if (nodeData.inputs?.freebusyTimeMin) defaultParams.freebusyTimeMin = nodeData.inputs.freebusyTimeMin
-        if (nodeData.inputs?.freebusyTimeMax) defaultParams.freebusyTimeMax = nodeData.inputs.freebusyTimeMax
-        if (nodeData.inputs?.calendarIds) defaultParams.calendarIds = nodeData.inputs.calendarIds
-        if (nodeData.inputs?.groupExpansionMax) defaultParams.groupExpansionMax = nodeData.inputs.groupExpansionMax
-        if (nodeData.inputs?.calendarExpansionMax) defaultParams.calendarExpansionMax = nodeData.inputs.calendarExpansionMax
-        return defaultParams
+        if (nodeData.inputs?.freebusyTimeMin)
+            defaultParams.freebusyTimeMin = nodeData.inputs.freebusyTimeMin;
+        if (nodeData.inputs?.freebusyTimeMax)
+            defaultParams.freebusyTimeMax = nodeData.inputs.freebusyTimeMax;
+        if (nodeData.inputs?.calendarIds)
+            defaultParams.calendarIds = nodeData.inputs.calendarIds;
+        if (nodeData.inputs?.groupExpansionMax)
+            defaultParams.groupExpansionMax = nodeData.inputs.groupExpansionMax;
+        if (nodeData.inputs?.calendarExpansionMax)
+            defaultParams.calendarExpansionMax = nodeData.inputs.calendarExpansionMax;
+        return defaultParams;
     }
 }
-module.exports = { nodeClass: GoogleCalendar_Tools }
+module.exports = { nodeClass: GoogleCalendar_Tools };
 //# sourceMappingURL=GoogleCalendar.js.map

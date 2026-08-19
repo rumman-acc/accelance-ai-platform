@@ -1,11 +1,11 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class CloudflareApi {
     constructor() {
-        this.label = 'Cloudflare API'
-        this.name = 'cloudflareApi'
-        this.version = 1.0
-        this.description = 'Use your Cloudflare Account ID and API Token'
+        this.label = 'Cloudflare API';
+        this.name = 'cloudflareApi';
+        this.version = 1.0;
+        this.description = 'Use your Cloudflare Account ID and API Token';
         this.inputs = [
             {
                 label: 'Cloudflare Account ID',
@@ -17,8 +17,8 @@ class CloudflareApi {
                 name: 'cloudflareApiToken',
                 type: 'password'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: CloudflareApi }
+module.exports = { credClass: CloudflareApi };
 //# sourceMappingURL=CloudflareApi.credential.js.map

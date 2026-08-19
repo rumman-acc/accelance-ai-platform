@@ -1,23 +1,23 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class Hubspot_Tools {
     constructor() {
-        this.label = 'HubSpot'
-        this.name = 'hubspotTool'
-        this.version = 1.0
-        this.type = 'HubSpot'
-        this.icon = 'hubspot.svg'
-        this.category = 'Tools'
-        this.description = 'Manage HubSpot CRM contacts and deals'
-        this.baseClasses = [this.type, 'Tool']
+        this.label = 'HubSpot';
+        this.name = 'hubspotTool';
+        this.version = 1.0;
+        this.type = 'HubSpot';
+        this.icon = 'hubspot.svg';
+        this.category = 'Tools';
+        this.description = 'Manage HubSpot CRM contacts and deals';
+        this.baseClasses = [this.type, 'Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['hubspotApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Actions',
@@ -50,21 +50,21 @@ class Hubspot_Tools {
                     }
                 ]
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const privateAppToken = (0, utils_1.getCredentialParam)('privateAppToken', credentialData, nodeData)
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const privateAppToken = (0, utils_1.getCredentialParam)('privateAppToken', credentialData, nodeData);
         if (!privateAppToken) {
-            throw new Error('No HubSpot Private App Access Token provided')
+            throw new Error('No HubSpot Private App Access Token provided');
         }
-        const actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.actions)
+        const actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.actions);
         const tools = (0, core_1.createHubspotTools)({
             actions,
             privateAppToken
-        })
-        return tools
+        });
+        return tools;
     }
 }
-module.exports = { nodeClass: Hubspot_Tools }
+module.exports = { nodeClass: Hubspot_Tools };
 //# sourceMappingURL=Hubspot.js.map

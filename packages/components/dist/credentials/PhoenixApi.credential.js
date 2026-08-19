@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class PhoenixApi {
     constructor() {
-        this.label = 'Phoenix API'
-        this.name = 'phoenixApi'
-        this.version = 1.0
+        this.label = 'Phoenix API';
+        this.name = 'phoenixApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://docs.arize.com/phoenix">official guide</a> on how to get API keys on Phoenix.'
+            'Refer to <a target="_blank" href="https://docs.arize.com/phoenix">official guide</a> on how to get API keys on Phoenix.';
         this.inputs = [
             {
                 label: 'API Key',
@@ -20,8 +20,8 @@ class PhoenixApi {
                 type: 'string',
                 default: 'https://app.phoenix.arize.com'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: PhoenixApi }
+module.exports = { credClass: PhoenixApi };
 //# sourceMappingURL=PhoenixApi.credential.js.map

@@ -1,71 +1,56 @@
-'use strict'
-var __createBinding =
-    (this && this.__createBinding) ||
-    (Object.create
-        ? function (o, m, k, k2) {
-              if (k2 === undefined) k2 = k
-              var desc = Object.getOwnPropertyDescriptor(m, k)
-              if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-                  desc = {
-                      enumerable: true,
-                      get: function () {
-                          return m[k]
-                      }
-                  }
-              }
-              Object.defineProperty(o, k2, desc)
-          }
-        : function (o, m, k, k2) {
-              if (k2 === undefined) k2 = k
-              o[k2] = m[k]
-          })
-var __setModuleDefault =
-    (this && this.__setModuleDefault) ||
-    (Object.create
-        ? function (o, v) {
-              Object.defineProperty(o, 'default', { enumerable: true, value: v })
-          }
-        : function (o, v) {
-              o['default'] = v
-          })
-var __importStar =
-    (this && this.__importStar) ||
-    function (mod) {
-        if (mod && mod.__esModule) return mod
-        var result = {}
-        if (mod != null)
-            for (var k in mod) if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
-        __setModuleDefault(result, mod)
-        return result
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
-Object.defineProperty(exports, '__esModule', { value: true })
-exports.Chroma = void 0
-const uuid = __importStar(require('uuid'))
-const vectorstores_1 = require('@langchain/core/vectorstores')
-const documents_1 = require('@langchain/core/documents')
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Chroma = void 0;
+const uuid = __importStar(require("uuid"));
+const vectorstores_1 = require("@langchain/core/vectorstores");
+const documents_1 = require("@langchain/core/documents");
 class Chroma extends vectorstores_1.VectorStore {
     _vectorstoreType() {
-        return 'chroma'
+        return 'chroma';
     }
     constructor(embeddings, args) {
-        super(embeddings, args)
-        this.numDimensions = args.numDimensions
-        this.embeddings = embeddings
-        this.collectionName = ensureCollectionName(args.collectionName)
-        this.collectionMetadata = args.collectionMetadata
-        this.clientParams = args.clientParams || {}
+        super(embeddings, args);
+        this.numDimensions = args.numDimensions;
+        this.embeddings = embeddings;
+        this.collectionName = ensureCollectionName(args.collectionName);
+        this.collectionMetadata = args.collectionMetadata;
+        this.clientParams = args.clientParams || {};
         if ('index' in args) {
-            this.index = args.index
-        } else if ('url' in args) {
-            this.url = args.url || 'http://localhost:8000'
+            this.index = args.index;
+        }
+        else if ('url' in args) {
+            this.url = args.url || 'http://localhost:8000';
         }
         if (args.chromaCloudAPIKey) {
             this.clientParams.headers = {
                 ...(this.clientParams?.headers || {}),
                 'x-chroma-token': args.chromaCloudAPIKey
-            }
+            };
         }
-        this.filter = args.filter
+        this.filter = args.filter;
     }
     /**
      * Adds documents to the Chroma database. The documents are first
@@ -76,8 +61,8 @@ class Chroma extends vectorstores_1.VectorStore {
      * @returns A promise that resolves when the documents have been added to the database.
      */
     async addDocuments(documents, options) {
-        const texts = documents.map(({ pageContent }) => pageContent)
-        return this.addVectors(await this.embeddings.embedDocuments(texts), documents, options)
+        const texts = documents.map(({ pageContent }) => pageContent);
+        return this.addVectors(await this.embeddings.embedDocuments(texts), documents, options);
     }
     /**
      * Ensures that a collection exists in the Chroma database. If the
@@ -90,19 +75,20 @@ class Chroma extends vectorstores_1.VectorStore {
                 this.index = new (await Chroma.imports()).ChromaClient({
                     path: this.url,
                     ...(this.clientParams ?? {})
-                })
+                });
             }
             try {
                 this.collection = await this.index.getOrCreateCollection({
                     name: this.collectionName,
                     embeddingFunction: null,
                     ...(this.collectionMetadata && { metadata: this.collectionMetadata })
-                })
-            } catch (err) {
-                throw new Error(`Chroma getOrCreateCollection error: ${err}`)
+                });
+            }
+            catch (err) {
+                throw new Error(`Chroma getOrCreateCollection error: ${err}`);
             }
         }
-        return this.collection
+        return this.collection;
     }
     /**
      * Adds vectors to the Chroma database. The vectors are associated with
@@ -114,41 +100,44 @@ class Chroma extends vectorstores_1.VectorStore {
      */
     async addVectors(vectors, documents, options) {
         if (vectors.length === 0) {
-            return []
+            return [];
         }
         if (this.numDimensions === undefined) {
-            this.numDimensions = vectors[0].length
+            this.numDimensions = vectors[0].length;
         }
         if (vectors.length !== documents.length) {
-            throw new Error(`Vectors and metadatas must have the same length`)
+            throw new Error(`Vectors and metadatas must have the same length`);
         }
         if (vectors[0].length !== this.numDimensions) {
-            throw new Error(`Vectors must have the same length as the number of dimensions (${this.numDimensions})`)
+            throw new Error(`Vectors must have the same length as the number of dimensions (${this.numDimensions})`);
         }
-        const documentIds = options?.ids ?? Array.from({ length: vectors.length }, () => uuid.v1())
-        const collection = await this.ensureCollection()
+        const documentIds = options?.ids ?? Array.from({ length: vectors.length }, () => uuid.v1());
+        const collection = await this.ensureCollection();
         const mappedMetadatas = documents.map(({ metadata }) => {
-            let locFrom
-            let locTo
+            let locFrom;
+            let locTo;
             if (metadata?.loc) {
-                if (metadata.loc.lines?.from !== undefined) locFrom = metadata.loc.lines.from
-                if (metadata.loc.lines?.to !== undefined) locTo = metadata.loc.lines.to
+                if (metadata.loc.lines?.from !== undefined)
+                    locFrom = metadata.loc.lines.from;
+                if (metadata.loc.lines?.to !== undefined)
+                    locTo = metadata.loc.lines.to;
             }
             const newMetadata = {
                 ...metadata,
                 ...(locFrom !== undefined && { locFrom }),
                 ...(locTo !== undefined && { locTo })
-            }
-            if (newMetadata.loc) delete newMetadata.loc
-            return sanitizeMetadata(newMetadata)
-        })
+            };
+            if (newMetadata.loc)
+                delete newMetadata.loc;
+            return sanitizeMetadata(newMetadata);
+        });
         await collection.upsert({
             ids: documentIds,
             embeddings: vectors,
             metadatas: mappedMetadatas,
             documents: documents.map(({ pageContent }) => pageContent)
-        })
-        return documentIds
+        });
+        return documentIds;
     }
     /**
      * Deletes documents from the Chroma database. The documents to be deleted
@@ -157,15 +146,17 @@ class Chroma extends vectorstores_1.VectorStore {
      * @returns A promise that resolves when the specified documents have been deleted from the database.
      */
     async delete(params) {
-        const collection = await this.ensureCollection()
+        const collection = await this.ensureCollection();
         if (Array.isArray(params.ids)) {
-            await collection.delete({ ids: params.ids })
-        } else if (params.filter) {
+            await collection.delete({ ids: params.ids });
+        }
+        else if (params.filter) {
             await collection.delete({
                 where: { ...params.filter }
-            })
-        } else {
-            throw new Error(`You must provide one of "ids or "filter".`)
+            });
+        }
+        else {
+            throw new Error(`You must provide one of "ids or "filter".`);
         }
     }
     /**
@@ -179,34 +170,34 @@ class Chroma extends vectorstores_1.VectorStore {
      */
     async similaritySearchVectorWithScore(query, k, filter) {
         if (filter && this.filter) {
-            throw new Error('cannot provide both `filter` and `this.filter`')
+            throw new Error('cannot provide both `filter` and `this.filter`');
         }
-        const _filter = filter ?? this.filter
-        const where = _filter === undefined ? undefined : { ..._filter }
-        const collection = await this.ensureCollection()
+        const _filter = filter ?? this.filter;
+        const where = _filter === undefined ? undefined : { ..._filter };
+        const collection = await this.ensureCollection();
         // similaritySearchVectorWithScore supports one query vector at a time
         // chroma supports multiple query vectors at a time
         const result = await collection.query({
             queryEmbeddings: [query],
             nResults: k,
             where
-        })
-        const { ids, distances, documents, metadatas } = result
+        });
+        const { ids, distances, documents, metadatas } = result;
         if (!ids || !distances || !documents || !metadatas) {
-            return []
+            return [];
         }
         // get the result data from the first and only query vector
-        const [firstIds] = ids
-        const [firstDistances] = distances
-        const [firstDocuments] = documents
-        const [firstMetadatas] = metadatas
+        const [firstIds] = ids;
+        const [firstDistances] = distances;
+        const [firstDocuments] = documents;
+        const [firstMetadatas] = metadatas;
         if (firstDistances.some((item) => item === null)) {
-            return []
+            return [];
         }
-        const cleanDistances = firstDistances.filter((item) => item !== null)
-        const results = []
+        const cleanDistances = firstDistances.filter((item) => item !== null);
+        const results = [];
         for (let i = 0; i < firstIds.length; i += 1) {
-            let metadata = firstMetadatas?.[i] ?? {}
+            let metadata = firstMetadatas?.[i] ?? {};
             if (metadata.locFrom && metadata.locTo) {
                 metadata = {
                     ...metadata,
@@ -216,9 +207,9 @@ class Chroma extends vectorstores_1.VectorStore {
                             to: metadata.locTo
                         }
                     }
-                }
-                delete metadata.locFrom
-                delete metadata.locTo
+                };
+                delete metadata.locFrom;
+                delete metadata.locTo;
             }
             results.push([
                 new documents_1.Document({
@@ -227,9 +218,9 @@ class Chroma extends vectorstores_1.VectorStore {
                     id: firstIds[i]
                 }),
                 cleanDistances[i]
-            ])
+            ]);
         }
-        return results
+        return results;
     }
     /**
      * Creates a new `Chroma` instance from an array of text strings. The text
@@ -242,16 +233,16 @@ class Chroma extends vectorstores_1.VectorStore {
      * @returns A promise that resolves with a new `Chroma` instance.
      */
     static async fromTexts(texts, metadatas, embeddings, dbConfig) {
-        const docs = []
+        const docs = [];
         for (let i = 0; i < texts.length; i += 1) {
-            const metadata = Array.isArray(metadatas) ? metadatas[i] : metadatas
+            const metadata = Array.isArray(metadatas) ? metadatas[i] : metadatas;
             const newDoc = new documents_1.Document({
                 pageContent: texts[i],
                 metadata
-            })
-            docs.push(newDoc)
+            });
+            docs.push(newDoc);
         }
-        return this.fromDocuments(docs, embeddings, dbConfig)
+        return this.fromDocuments(docs, embeddings, dbConfig);
     }
     /**
      * Creates a new `Chroma` instance from an array of `Document` instances.
@@ -262,9 +253,9 @@ class Chroma extends vectorstores_1.VectorStore {
      * @returns A promise that resolves with a new `Chroma` instance.
      */
     static async fromDocuments(docs, embeddings, dbConfig) {
-        const instance = new this(embeddings, dbConfig)
-        await instance.addDocuments(docs)
-        return instance
+        const instance = new this(embeddings, dbConfig);
+        await instance.addDocuments(docs);
+        return instance;
     }
     /**
      * Creates a new `Chroma` instance from an existing collection in the
@@ -274,29 +265,30 @@ class Chroma extends vectorstores_1.VectorStore {
      * @returns A promise that resolves with a new `Chroma` instance.
      */
     static async fromExistingCollection(embeddings, dbConfig) {
-        const instance = new this(embeddings, dbConfig)
-        await instance.ensureCollection()
-        return instance
+        const instance = new this(embeddings, dbConfig);
+        await instance.ensureCollection();
+        return instance;
     }
     /** @ignore */
     static async imports() {
         try {
-            const { ChromaClient } = await Promise.resolve().then(() => __importStar(require('chromadb')))
-            return { ChromaClient }
-        } catch {
-            throw new Error('Please install chromadb as a dependency with, e.g. `npm install -S chromadb`')
+            const { ChromaClient } = await Promise.resolve().then(() => __importStar(require('chromadb')));
+            return { ChromaClient };
+        }
+        catch {
+            throw new Error('Please install chromadb as a dependency with, e.g. `npm install -S chromadb`');
         }
     }
 }
-exports.Chroma = Chroma
+exports.Chroma = Chroma;
 /**
  * Generates a unique collection name if none is provided.
  */
 function ensureCollectionName(collectionName) {
     if (!collectionName) {
-        return `langchain-${uuid.v4()}`
+        return `langchain-${uuid.v4()}`;
     }
-    return collectionName
+    return collectionName;
 }
 /**
  * Sanitizes metadata to only include Chroma-compatible primitive values.
@@ -304,21 +296,23 @@ function ensureCollectionName(collectionName) {
  * Arrays and objects are JSON stringified to preserve the data.
  */
 function sanitizeMetadata(metadata) {
-    const sanitized = {}
+    const sanitized = {};
     for (const [key, value] of Object.entries(metadata)) {
         if (value === null || typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
-            sanitized[key] = value
-        } else if (value !== undefined) {
+            sanitized[key] = value;
+        }
+        else if (value !== undefined) {
             try {
-                const stringified = JSON.stringify(value)
+                const stringified = JSON.stringify(value);
                 if (stringified !== undefined) {
-                    sanitized[key] = stringified
+                    sanitized[key] = stringified;
                 }
-            } catch {
+            }
+            catch {
                 // Skip values that cannot be stringified (e.g. circular references)
             }
         }
     }
-    return sanitized
+    return sanitized;
 }
 //# sourceMappingURL=core.js.map

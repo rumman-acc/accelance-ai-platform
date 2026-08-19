@@ -1,10 +1,10 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class OpenSearchUrl {
     constructor() {
-        this.label = 'OpenSearch'
-        this.name = 'openSearchUrl'
-        this.version = 2.0
+        this.label = 'OpenSearch';
+        this.name = 'openSearchUrl';
+        this.version = 2.0;
         this.inputs = [
             {
                 label: 'OpenSearch Url',
@@ -25,8 +25,8 @@ class OpenSearchUrl {
                 placeholder: '<OPENSEARCH_PASSWORD>',
                 optional: true
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: OpenSearchUrl }
+module.exports = { credClass: OpenSearchUrl };
 //# sourceMappingURL=OpenSearchUrl.credential.js.map

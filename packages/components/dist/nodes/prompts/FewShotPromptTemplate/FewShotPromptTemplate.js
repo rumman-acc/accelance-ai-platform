@@ -1,17 +1,17 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const prompts_1 = require('@langchain/core/prompts')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const prompts_1 = require("@langchain/core/prompts");
 class FewShotPromptTemplate_Prompts {
     constructor() {
-        this.label = 'Few Shot Prompt Template'
-        this.name = 'fewShotPromptTemplate'
-        this.version = 1.0
-        this.type = 'FewShotPromptTemplate'
-        this.icon = 'prompt.svg'
-        this.category = 'Prompts'
-        this.description = 'Prompt template you can build with examples'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(prompts_1.FewShotPromptTemplate)]
+        this.label = 'Few Shot Prompt Template';
+        this.name = 'fewShotPromptTemplate';
+        this.version = 1.0;
+        this.type = 'FewShotPromptTemplate';
+        this.icon = 'prompt.svg';
+        this.category = 'Prompts';
+        this.description = 'Prompt template you can build with examples';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(prompts_1.FewShotPromptTemplate)];
         this.inputs = [
             {
                 label: 'Examples',
@@ -64,22 +64,23 @@ class FewShotPromptTemplate_Prompts {
                 ],
                 default: `f-string`
             }
-        ]
+        ];
     }
     async init(nodeData) {
-        const examplesStr = nodeData.inputs?.examples
-        const prefix = nodeData.inputs?.prefix
-        const suffix = nodeData.inputs?.suffix
-        const exampleSeparator = nodeData.inputs?.exampleSeparator
-        const templateFormat = nodeData.inputs?.templateFormat
-        const examplePrompt = nodeData.inputs?.examplePrompt
-        const inputVariables = [...new Set([...(0, utils_1.getInputVariables)(suffix), ...(0, utils_1.getInputVariables)(prefix)])]
-        let examples = []
+        const examplesStr = nodeData.inputs?.examples;
+        const prefix = nodeData.inputs?.prefix;
+        const suffix = nodeData.inputs?.suffix;
+        const exampleSeparator = nodeData.inputs?.exampleSeparator;
+        const templateFormat = nodeData.inputs?.templateFormat;
+        const examplePrompt = nodeData.inputs?.examplePrompt;
+        const inputVariables = [...new Set([...(0, utils_1.getInputVariables)(suffix), ...(0, utils_1.getInputVariables)(prefix)])];
+        let examples = [];
         if (examplesStr) {
             try {
-                examples = typeof examplesStr === 'object' ? examplesStr : JSON.parse(examplesStr)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the FewShotPromptTemplate's examples: " + exception)
+                examples = typeof examplesStr === 'object' ? examplesStr : JSON.parse(examplesStr);
+            }
+            catch (exception) {
+                throw new Error("Invalid JSON in the FewShotPromptTemplate's examples: " + exception);
             }
         }
         try {
@@ -91,13 +92,14 @@ class FewShotPromptTemplate_Prompts {
                 inputVariables,
                 exampleSeparator,
                 templateFormat
-            }
-            const prompt = new prompts_1.FewShotPromptTemplate(obj)
-            return prompt
-        } catch (e) {
-            throw new Error(e)
+            };
+            const prompt = new prompts_1.FewShotPromptTemplate(obj);
+            return prompt;
+        }
+        catch (e) {
+            throw new Error(e);
         }
     }
 }
-module.exports = { nodeClass: FewShotPromptTemplate_Prompts }
+module.exports = { nodeClass: FewShotPromptTemplate_Prompts };
 //# sourceMappingURL=FewShotPromptTemplate.js.map

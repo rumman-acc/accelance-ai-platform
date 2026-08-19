@@ -1,30 +1,30 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const cohere_1 = require('@langchain/cohere')
-const utils_1 = require('../../../src/utils')
-const modelLoader_1 = require('../../../src/modelLoader')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const cohere_1 = require("@langchain/cohere");
+const utils_1 = require("../../../src/utils");
+const modelLoader_1 = require("../../../src/modelLoader");
 class CohereEmbedding_Embeddings {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             async listModels() {
-                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.EMBEDDING, 'cohereEmbeddings')
+                return await (0, modelLoader_1.getModels)(modelLoader_1.MODEL_TYPE.EMBEDDING, 'cohereEmbeddings');
             }
-        }
-        this.label = 'Cohere Embedding'
-        this.name = 'cohereEmbeddings'
-        this.version = 3.0
-        this.type = 'CohereEmbeddings'
-        this.icon = 'Cohere.svg'
-        this.category = 'Embeddings'
-        this.description = 'Cohere API to generate embeddings for a given text'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(cohere_1.CohereEmbeddings)]
+        };
+        this.label = 'Cohere Embedding';
+        this.name = 'cohereEmbeddings';
+        this.version = 3.0;
+        this.type = 'CohereEmbeddings';
+        this.icon = 'Cohere.svg';
+        this.category = 'Embeddings';
+        this.description = 'Cohere API to generate embeddings for a given text';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(cohere_1.CohereEmbeddings)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['cohereApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Model Name',
@@ -37,8 +37,7 @@ class CohereEmbedding_Embeddings {
                 label: 'Type',
                 name: 'inputType',
                 type: 'options',
-                description:
-                    'Specifies the type of input passed to the model. Required for embedding models v3 and higher. <a target="_blank" href="https://docs.cohere.com/reference/embed">Official Docs</a>',
+                description: 'Specifies the type of input passed to the model. Required for embedding models v3 and higher. <a target="_blank" href="https://docs.cohere.com/reference/embed">Official Docs</a>',
                 options: [
                     {
                         label: 'search_document',
@@ -64,21 +63,23 @@ class CohereEmbedding_Embeddings {
                 default: 'search_query',
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        const modelName = nodeData.inputs?.modelName
-        const inputType = nodeData.inputs?.inputType
-        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        const cohereApiKey = (0, utils_1.getCredentialParam)('cohereApiKey', credentialData, nodeData)
+        const modelName = nodeData.inputs?.modelName;
+        const inputType = nodeData.inputs?.inputType;
+        const credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        const cohereApiKey = (0, utils_1.getCredentialParam)('cohereApiKey', credentialData, nodeData);
         const obj = {
             apiKey: cohereApiKey
-        }
-        if (modelName) obj.model = modelName
-        if (inputType) obj.inputType = inputType
-        const model = new cohere_1.CohereEmbeddings(obj)
-        return model
+        };
+        if (modelName)
+            obj.model = modelName;
+        if (inputType)
+            obj.inputType = inputType;
+        const model = new cohere_1.CohereEmbeddings(obj);
+        return model;
     }
 }
-module.exports = { nodeClass: CohereEmbedding_Embeddings }
+module.exports = { nodeClass: CohereEmbedding_Embeddings };
 //# sourceMappingURL=CohereEmbedding.js.map

@@ -1,14 +1,14 @@
-import { ICommonObject } from './Interface'
+import { ICommonObject } from './Interface';
 export interface IToolPolicyContext {
-    workspaceId: string
-    chatflowId: string
-    toolNodeName: string
+    workspaceId: string;
+    chatflowId: string;
+    toolNodeName: string;
     /** Undefined for unauthenticated/API-key/public-chatbot-triggered runs -- there is no
      * principal to check credential grants against; only the allowlist below still applies. */
-    userId?: string
-    credentialId?: string
+    userId?: string;
+    credentialId?: string;
 }
-export type IToolCallDecision = 'allowed' | 'denied'
+export type IToolCallDecision = 'allowed' | 'denied';
 /**
  * Checks the AgentToolPolicy allowlist (most-specific-match-wins, defaults to allow when no row
  * exists), then -- only when there's both a principal and a credential -- CredentialAccess
@@ -18,13 +18,10 @@ export type IToolCallDecision = 'allowed' | 'denied'
  * ever reaches the database through the appDataSource/databaseEntities already threaded into
  * every node's options bag (the same pattern getCredentialData uses).
  */
-export declare const evaluateToolCall: (
-    context: IToolPolicyContext,
-    options: ICommonObject
-) => Promise<{
-    decision: IToolCallDecision
-    reason?: string
-}>
+export declare const evaluateToolCall: (context: IToolPolicyContext, options: ICommonObject) => Promise<{
+    decision: IToolCallDecision;
+    reason?: string;
+}>;
 /**
  * Wraps a LangChain Tool instance (or array of them) so every invocation of `_call` first runs
  * evaluateToolCall(). Mutates the instance's `_call` rather than replacing the object, since
@@ -33,4 +30,4 @@ export declare const evaluateToolCall: (
  * layer means a denial surfaces as a normal tool-error observation through the existing
  * machinery, not a special case the LLM has to be taught about.
  */
-export declare const wrapToolWithPolicy: <T>(tool: T, context: IToolPolicyContext, options: ICommonObject) => T
+export declare const wrapToolWithPolicy: <T>(tool: T, context: IToolPolicyContext, options: ICommonObject) => T;

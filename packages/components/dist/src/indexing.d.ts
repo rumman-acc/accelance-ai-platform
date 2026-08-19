@@ -1,25 +1,20 @@
-import { VectorStore } from '@langchain/core/vectorstores'
-import { RecordManagerInterface } from '@langchain/community/indexes/base'
-import { Document, DocumentInterface } from '@langchain/core/documents'
-import { IndexingResult } from './Interface'
-type Metadata = Record<string, unknown>
+import { VectorStore } from '@langchain/core/vectorstores';
+import { RecordManagerInterface } from '@langchain/community/indexes/base';
+import { Document, DocumentInterface } from '@langchain/core/documents';
+import { IndexingResult } from './Interface';
+type Metadata = Record<string, unknown>;
 export interface ExtendedRecordManagerInterface extends RecordManagerInterface {
-    update(
-        keys:
-            | Array<{
-                  uid: string
-                  docId: string
-              }>
-            | string[],
-        updateOptions?: Record<string, any>
-    ): Promise<void>
+    update(keys: Array<{
+        uid: string;
+        docId: string;
+    }> | string[], updateOptions?: Record<string, any>): Promise<void>;
 }
-type StringOrDocFunc = string | ((doc: DocumentInterface) => string)
+type StringOrDocFunc = string | ((doc: DocumentInterface) => string);
 /**
  * Interface that defines the methods for loading and splitting documents.
  */
 export interface DocumentLoader {
-    load(): Promise<Document[]>
+    load(): Promise<Document[]>;
 }
 /**
  * Abstract class that provides a default implementation for the
@@ -31,22 +26,22 @@ export declare abstract class BaseDocumentLoader implements DocumentLoader {
      * Loads the documents.
      * @returns A Promise that resolves with an array of Document instances.
      */
-    abstract load(): Promise<Document[]>
+    abstract load(): Promise<Document[]>;
 }
 export interface HashedDocumentInterface extends DocumentInterface {
-    uid: string
-    hash_?: string
-    contentHash?: string
-    metadataHash?: string
-    pageContent: string
-    metadata: Metadata
-    calculateHashes(): void
-    toDocument(): DocumentInterface
+    uid: string;
+    hash_?: string;
+    contentHash?: string;
+    metadataHash?: string;
+    pageContent: string;
+    metadata: Metadata;
+    calculateHashes(): void;
+    toDocument(): DocumentInterface;
 }
 interface HashedDocumentArgs {
-    pageContent: string
-    metadata: Metadata
-    uid: string
+    pageContent: string;
+    metadata: Metadata;
+    uid: string;
 }
 /**
  * HashedDocument is a Document with hashes calculated.
@@ -54,25 +49,25 @@ interface HashedDocumentArgs {
  * It is used for indexing.
  */
 export declare class _HashedDocument implements HashedDocumentInterface {
-    uid: string
-    hash_?: string
-    contentHash?: string
-    metadataHash?: string
-    pageContent: string
-    metadata: Metadata
-    constructor(fields: HashedDocumentArgs)
-    calculateHashes(): void
-    toDocument(): DocumentInterface
-    static fromDocument(document: DocumentInterface, uid?: string): _HashedDocument
-    private _hashStringToUUID
-    private _hashNestedDictToUUID
+    uid: string;
+    hash_?: string;
+    contentHash?: string;
+    metadataHash?: string;
+    pageContent: string;
+    metadata: Metadata;
+    constructor(fields: HashedDocumentArgs);
+    calculateHashes(): void;
+    toDocument(): DocumentInterface;
+    static fromDocument(document: DocumentInterface, uid?: string): _HashedDocument;
+    private _hashStringToUUID;
+    private _hashNestedDictToUUID;
 }
-export type CleanupMode = 'full' | 'incremental'
+export type CleanupMode = 'full' | 'incremental';
 export type IndexOptions = {
     /**
      * The number of documents to index in one batch.
      */
-    batchSize?: number
+    batchSize?: number;
     /**
      * The cleanup mode to use. Can be "full", "incremental" or undefined.
      * - **Incremental**: Cleans up all documents that haven't been updated AND
@@ -86,34 +81,34 @@ export type IndexOptions = {
      *   This means that users may see duplicated content during indexing.
      * - **undefined**: Do not delete any documents.
      */
-    cleanup?: CleanupMode
+    cleanup?: CleanupMode;
     /**
      * Optional key that helps identify the original source of the document.
      * Must either be a string representing the key of the source in the metadata
      * or a function that takes a document and returns a string representing the source.
      * **Required when cleanup is incremental**.
      */
-    sourceIdKey?: StringOrDocFunc
+    sourceIdKey?: StringOrDocFunc;
     /**
      * Batch size to use when cleaning up documents.
      */
-    cleanupBatchSize?: number
+    cleanupBatchSize?: number;
     /**
      * Force update documents even if they are present in the
      * record manager. Useful if you are re-indexing with updated embeddings.
      */
-    forceUpdate?: boolean
-    vectorStoreName?: string
-}
-export declare function _batch<T>(size: number, iterable: T[]): T[][]
-export declare function _deduplicateInOrder(hashedDocuments: HashedDocumentInterface[]): HashedDocumentInterface[]
-export declare function _getSourceIdAssigner(sourceIdKey: StringOrDocFunc | null): (doc: DocumentInterface) => string | null
-export declare const _isBaseDocumentLoader: (arg: any) => arg is BaseDocumentLoader
+    forceUpdate?: boolean;
+    vectorStoreName?: string;
+};
+export declare function _batch<T>(size: number, iterable: T[]): T[][];
+export declare function _deduplicateInOrder(hashedDocuments: HashedDocumentInterface[]): HashedDocumentInterface[];
+export declare function _getSourceIdAssigner(sourceIdKey: StringOrDocFunc | null): (doc: DocumentInterface) => string | null;
+export declare const _isBaseDocumentLoader: (arg: any) => arg is BaseDocumentLoader;
 interface IndexArgs {
-    docsSource: BaseDocumentLoader | DocumentInterface[]
-    recordManager: ExtendedRecordManagerInterface
-    vectorStore: VectorStore
-    options?: IndexOptions
+    docsSource: BaseDocumentLoader | DocumentInterface[];
+    recordManager: ExtendedRecordManagerInterface;
+    vectorStore: VectorStore;
+    options?: IndexOptions;
 }
 /**
  * Index data from the doc source into the vector store.
@@ -134,5 +129,5 @@ interface IndexArgs {
  * @param {IndexOptions | undefined} args.options Options for indexing.
  * @returns {Promise<IndexingResult>}
  */
-export declare function index(args: IndexArgs): Promise<IndexingResult>
-export {}
+export declare function index(args: IndexArgs): Promise<IndexingResult>;
+export {};

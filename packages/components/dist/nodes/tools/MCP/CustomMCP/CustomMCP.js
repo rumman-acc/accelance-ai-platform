@@ -1,17 +1,15 @@
-'use strict'
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod }
-    }
-Object.defineProperty(exports, '__esModule', { value: true })
-const object_hash_1 = __importDefault(require('object-hash'))
-const utils_1 = require('../../../../src/utils')
-const core_1 = require('../core')
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const object_hash_1 = __importDefault(require("object-hash"));
+const utils_1 = require("../../../../src/utils");
+const core_1 = require("../core");
 const mcpServerConfig = `{
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
-}`
+}`;
 const howToUseCode = `
 You can use variables in the MCP Server Config with double curly braces \`{{ }}\` and prefix \`$vars.<variableName>\`. 
 
@@ -40,39 +38,40 @@ For example, when using SSE, you can use the variable "var1" in the headers:
     }
 }
 \`\`\`
-`
+`;
 class Custom_MCP {
     constructor() {
         //@ts-ignore
         this.loadMethods = {
             listActions: async (nodeData, options) => {
                 try {
-                    const toolset = await this.getTools(nodeData, options)
-                    toolset.sort((a, b) => a.name.localeCompare(b.name))
+                    const toolset = await this.getTools(nodeData, options);
+                    toolset.sort((a, b) => a.name.localeCompare(b.name));
                     return toolset.map(({ name, ...rest }) => ({
                         label: name.toUpperCase(),
                         name: name,
                         description: rest.description || name
-                    }))
-                } catch (error) {
+                    }));
+                }
+                catch (error) {
                     return [
                         {
                             label: 'No Available Actions',
                             name: 'error',
                             description: 'No available actions, please check your API key and refresh'
                         }
-                    ]
+                    ];
                 }
             }
-        }
-        this.label = 'Custom MCP'
-        this.name = 'customMCP'
-        this.version = 1.1
-        this.type = 'Custom MCP Tool'
-        this.icon = 'customMCP.png'
-        this.category = 'Tools (MCP)'
-        this.description = 'Custom MCP Config'
-        this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search'
+        };
+        this.label = 'Custom MCP';
+        this.name = 'customMCP';
+        this.version = 1.1;
+        this.type = 'Custom MCP Tool';
+        this.icon = 'customMCP.png';
+        this.category = 'Tools (MCP)';
+        this.description = 'Custom MCP Config';
+        this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search';
         this.inputs = [
             {
                 label: 'MCP Server Config',
@@ -84,10 +83,9 @@ class Custom_MCP {
                     value: howToUseCode
                 },
                 placeholder: mcpServerConfig,
-                warning:
-                    process.env.CUSTOM_MCP_PROTOCOL === 'sse'
-                        ? 'Only Remote MCP with url is supported. Read more <a href="https://docs.flowiseai.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
-                        : undefined
+                warning: process.env.CUSTOM_MCP_PROTOCOL === 'sse'
+                    ? 'Only Remote MCP with url is supported. Read more <a href="https://docs.flowiseai.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
+                    : undefined
             },
             {
                 label: 'Available Actions',
@@ -96,145 +94,159 @@ class Custom_MCP {
                 loadMethod: 'listActions',
                 refresh: true
             }
-        ]
-        this.baseClasses = ['Tool']
+        ];
+        this.baseClasses = ['Tool'];
     }
     async init(nodeData, _, options) {
-        const tools = await this.getTools(nodeData, options)
-        const _mcpActions = nodeData.inputs?.mcpActions
-        let mcpActions = []
+        const tools = await this.getTools(nodeData, options);
+        const _mcpActions = nodeData.inputs?.mcpActions;
+        let mcpActions = [];
         if (_mcpActions) {
             try {
-                mcpActions = typeof _mcpActions === 'string' ? JSON.parse(_mcpActions) : _mcpActions
-            } catch (error) {
-                console.error('Error parsing mcp actions:', error)
+                mcpActions = typeof _mcpActions === 'string' ? JSON.parse(_mcpActions) : _mcpActions;
+            }
+            catch (error) {
+                console.error('Error parsing mcp actions:', error);
             }
         }
-        return tools.filter((tool) => mcpActions.includes(tool.name))
+        return tools.filter((tool) => mcpActions.includes(tool.name));
     }
     async getTools(nodeData, options) {
-        const mcpServerConfig = nodeData.inputs?.mcpServerConfig
+        const mcpServerConfig = nodeData.inputs?.mcpServerConfig;
         if (!mcpServerConfig) {
-            throw new Error('MCP Server Config is required')
+            throw new Error('MCP Server Config is required');
         }
-        let sandbox = {}
-        const workspaceId = options?.searchOptions?.workspaceId?._value || options?.workspaceId
+        let sandbox = {};
+        const workspaceId = options?.searchOptions?.workspaceId?._value || options?.workspaceId;
         if (mcpServerConfig.includes('$vars')) {
-            const appDataSource = options.appDataSource
-            const databaseEntities = options.databaseEntities
+            const appDataSource = options.appDataSource;
+            const databaseEntities = options.databaseEntities;
             // If options.workspaceId is not set, create a new options object with the workspaceId for getVars.
-            const optionsWithWorkspaceId = options.workspaceId ? options : { ...options, workspaceId }
-            const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, optionsWithWorkspaceId)
-            sandbox['$vars'] = (0, utils_1.prepareSandboxVars)(variables)
+            const optionsWithWorkspaceId = options.workspaceId ? options : { ...options, workspaceId };
+            const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, optionsWithWorkspaceId);
+            sandbox['$vars'] = (0, utils_1.prepareSandboxVars)(variables);
         }
-        let canonicalConfig
+        let canonicalConfig;
         try {
-            canonicalConfig = JSON.parse(mcpServerConfig)
-        } catch (e) {
-            canonicalConfig = mcpServerConfig
+            canonicalConfig = JSON.parse(mcpServerConfig);
         }
-        const cacheKey = (0, object_hash_1.default)({ workspaceId, canonicalConfig, sandbox })
+        catch (e) {
+            canonicalConfig = mcpServerConfig;
+        }
+        const cacheKey = (0, object_hash_1.default)({ workspaceId, canonicalConfig, sandbox });
         if (options.cachePool) {
-            const cachedResult = await options.cachePool.getMCPCache(cacheKey)
+            const cachedResult = await options.cachePool.getMCPCache(cacheKey);
             if (cachedResult) {
-                return cachedResult.tools
+                return cachedResult.tools;
             }
         }
         try {
-            let serverParams
+            let serverParams;
             if (typeof mcpServerConfig === 'object') {
-                serverParams = substituteVariablesInObject(mcpServerConfig, sandbox)
-            } else if (typeof mcpServerConfig === 'string') {
-                const substitutedString = substituteVariablesInString(mcpServerConfig, sandbox)
-                const serverParamsString = convertToValidJSONString(substitutedString)
-                serverParams = JSON.parse(serverParamsString)
+                serverParams = substituteVariablesInObject(mcpServerConfig, sandbox);
+            }
+            else if (typeof mcpServerConfig === 'string') {
+                const substitutedString = substituteVariablesInString(mcpServerConfig, sandbox);
+                const serverParamsString = convertToValidJSONString(substitutedString);
+                serverParams = JSON.parse(serverParamsString);
             }
             if (process.env.CUSTOM_MCP_SECURITY_CHECK !== 'false') {
                 try {
-                    ;(0, core_1.validateMCPServerConfig)(serverParams)
-                } catch (error) {
-                    throw new Error(`Security validation failed: ${error.message}`)
+                    (0, core_1.validateMCPServerConfig)(serverParams);
+                }
+                catch (error) {
+                    throw new Error(`Security validation failed: ${error.message}`);
                 }
             }
             // Compatible with stdio and SSE
-            let toolkit
-            if (process.env.CUSTOM_MCP_PROTOCOL === 'stdio' && serverParams.command) toolkit = new core_1.MCPToolkit(serverParams, 'stdio')
-            else toolkit = new core_1.MCPToolkit(serverParams, 'sse')
-            await toolkit.initialize()
-            const tools = toolkit.tools ?? []
+            let toolkit;
+            if (process.env.CUSTOM_MCP_PROTOCOL === 'stdio' && serverParams.command)
+                toolkit = new core_1.MCPToolkit(serverParams, 'stdio');
+            else
+                toolkit = new core_1.MCPToolkit(serverParams, 'sse');
+            await toolkit.initialize();
+            const tools = toolkit.tools ?? [];
             if (options.cachePool) {
-                await options.cachePool.addMCPCache(cacheKey, { toolkit, tools })
+                await options.cachePool.addMCPCache(cacheKey, { toolkit, tools });
             }
-            return tools
-        } catch (error) {
-            throw new Error(`Invalid MCP Server Config: ${error}`)
+            return tools;
+        }
+        catch (error) {
+            throw new Error(`Invalid MCP Server Config: ${error}`);
         }
     }
 }
 function substituteVariablesInObject(obj, sandbox) {
     if (typeof obj === 'string') {
         // Replace variables in string values
-        return substituteVariablesInString(obj, sandbox)
-    } else if (Array.isArray(obj)) {
+        return substituteVariablesInString(obj, sandbox);
+    }
+    else if (Array.isArray(obj)) {
         // Recursively process arrays
-        return obj.map((item) => substituteVariablesInObject(item, sandbox))
-    } else if (obj !== null && typeof obj === 'object') {
+        return obj.map((item) => substituteVariablesInObject(item, sandbox));
+    }
+    else if (obj !== null && typeof obj === 'object') {
         // Recursively process object properties
-        const result = {}
+        const result = {};
         for (const [key, value] of Object.entries(obj)) {
-            result[key] = substituteVariablesInObject(value, sandbox)
+            result[key] = substituteVariablesInObject(value, sandbox);
         }
-        return result
+        return result;
     }
     // Return primitive values as-is
-    return obj
+    return obj;
 }
 function substituteVariablesInString(str, sandbox) {
     // Use regex to find {{$variableName.property}} patterns and replace with sandbox values
     return str.replace(/\{\{\$([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\}\}/g, (match, variablePath) => {
         try {
             // Split the path into parts (e.g., "vars.testvar1" -> ["vars", "testvar1"])
-            const pathParts = variablePath.split('.')
+            const pathParts = variablePath.split('.');
             // Start with the sandbox object
-            let current = sandbox
+            let current = sandbox;
             // Navigate through the path
             for (const part of pathParts) {
                 // For the first part, check if it exists with $ prefix
                 if (current === sandbox) {
-                    const sandboxKey = `$${part}`
+                    const sandboxKey = `$${part}`;
                     if (Object.keys(current).includes(sandboxKey)) {
-                        current = current[sandboxKey]
-                    } else {
-                        // If the key doesn't exist, return the original match
-                        return match
+                        current = current[sandboxKey];
                     }
-                } else {
+                    else {
+                        // If the key doesn't exist, return the original match
+                        return match;
+                    }
+                }
+                else {
                     // For subsequent parts, access directly
                     if (current && typeof current === 'object' && part in current) {
-                        current = current[part]
-                    } else {
+                        current = current[part];
+                    }
+                    else {
                         // If the property doesn't exist, return the original match
-                        return match
+                        return match;
                     }
                 }
             }
             // Return the resolved value, converting to string if necessary
-            return typeof current === 'string' ? current : JSON.stringify(current)
-        } catch (error) {
-            // If any error occurs during resolution, return the original match
-            console.warn(`Error resolving variable ${match}:`, error)
-            return match
+            return typeof current === 'string' ? current : JSON.stringify(current);
         }
-    })
+        catch (error) {
+            // If any error occurs during resolution, return the original match
+            console.warn(`Error resolving variable ${match}:`, error);
+            return match;
+        }
+    });
 }
 function convertToValidJSONString(inputString) {
     try {
-        const jsObject = (0, utils_1.parseJsonBody)(inputString)
-        return JSON.stringify(jsObject, null, 2)
-    } catch (error) {
-        console.error('Error converting to JSON:', error)
-        return ''
+        const jsObject = (0, utils_1.parseJsonBody)(inputString);
+        return JSON.stringify(jsObject, null, 2);
+    }
+    catch (error) {
+        console.error('Error converting to JSON:', error);
+        return '';
     }
 }
-module.exports = { nodeClass: Custom_MCP }
+module.exports = { nodeClass: Custom_MCP };
 //# sourceMappingURL=CustomMCP.js.map

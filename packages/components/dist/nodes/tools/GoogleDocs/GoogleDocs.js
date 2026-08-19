@@ -1,24 +1,24 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const core_1 = require('./core')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const core_1 = require("./core");
 class GoogleDocs_Tools {
     constructor() {
-        this.label = 'Google Docs'
-        this.name = 'googleDocsTool'
-        this.version = 1.0
-        this.type = 'GoogleDocs'
-        this.icon = 'google-docs.svg'
-        this.category = 'Tools'
+        this.label = 'Google Docs';
+        this.name = 'googleDocsTool';
+        this.version = 1.0;
+        this.type = 'GoogleDocs';
+        this.icon = 'google-docs.svg';
+        this.category = 'Tools';
         this.description =
-            'Perform Google Docs operations such as creating, reading, updating, and deleting documents, as well as text manipulation'
-        this.baseClasses = ['Tool']
+            'Perform Google Docs operations such as creating, reading, updating, and deleting documents, as well as text manipulation';
+        this.baseClasses = ['Tool'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['googleDocsOAuth2']
-        }
+        };
         this.inputs = [
             // Document Actions
             {
@@ -201,43 +201,54 @@ class GoogleDocs_Tools {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options)
-        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options)
-        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData)
+        let credentialData = await (0, utils_1.getCredentialData)(nodeData.credential ?? '', options);
+        credentialData = await (0, utils_1.refreshOAuth2Token)(nodeData.credential ?? '', credentialData, options);
+        const accessToken = (0, utils_1.getCredentialParam)('access_token', credentialData, nodeData);
         if (!accessToken) {
-            throw new Error('No access token found in credential')
+            throw new Error('No access token found in credential');
         }
         // Get all actions
-        const actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.actions)
-        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
+        const actions = (0, utils_1.convertMultiOptionsToStringArray)(nodeData.inputs?.actions);
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData);
         const tools = (0, core_1.createGoogleDocsTools)({
             accessToken,
             actions,
             defaultParams
-        })
-        return tools
+        });
+        return tools;
     }
     transformNodeInputsToToolArgs(nodeData) {
-        const nodeInputs = {}
+        const nodeInputs = {};
         // Document parameters
-        if (nodeData.inputs?.documentId) nodeInputs.documentId = nodeData.inputs.documentId
-        if (nodeData.inputs?.title) nodeInputs.title = nodeData.inputs.title
+        if (nodeData.inputs?.documentId)
+            nodeInputs.documentId = nodeData.inputs.documentId;
+        if (nodeData.inputs?.title)
+            nodeInputs.title = nodeData.inputs.title;
         // Text parameters
-        if (nodeData.inputs?.text) nodeInputs.text = nodeData.inputs.text
-        if (nodeData.inputs?.index) nodeInputs.index = nodeData.inputs.index
-        if (nodeData.inputs?.replaceText) nodeInputs.replaceText = nodeData.inputs.replaceText
-        if (nodeData.inputs?.newText) nodeInputs.newText = nodeData.inputs.newText
-        if (nodeData.inputs?.matchCase !== undefined) nodeInputs.matchCase = nodeData.inputs.matchCase
-        if (nodeData.inputs?.includeTabsContent !== undefined) nodeInputs.includeTabsContent = nodeData.inputs.includeTabsContent
+        if (nodeData.inputs?.text)
+            nodeInputs.text = nodeData.inputs.text;
+        if (nodeData.inputs?.index)
+            nodeInputs.index = nodeData.inputs.index;
+        if (nodeData.inputs?.replaceText)
+            nodeInputs.replaceText = nodeData.inputs.replaceText;
+        if (nodeData.inputs?.newText)
+            nodeInputs.newText = nodeData.inputs.newText;
+        if (nodeData.inputs?.matchCase !== undefined)
+            nodeInputs.matchCase = nodeData.inputs.matchCase;
+        if (nodeData.inputs?.includeTabsContent !== undefined)
+            nodeInputs.includeTabsContent = nodeData.inputs.includeTabsContent;
         // Media parameters
-        if (nodeData.inputs?.imageUrl) nodeInputs.imageUrl = nodeData.inputs.imageUrl
-        if (nodeData.inputs?.rows) nodeInputs.rows = nodeData.inputs.rows
-        if (nodeData.inputs?.columns) nodeInputs.columns = nodeData.inputs.columns
-        return nodeInputs
+        if (nodeData.inputs?.imageUrl)
+            nodeInputs.imageUrl = nodeData.inputs.imageUrl;
+        if (nodeData.inputs?.rows)
+            nodeInputs.rows = nodeData.inputs.rows;
+        if (nodeData.inputs?.columns)
+            nodeInputs.columns = nodeData.inputs.columns;
+        return nodeInputs;
     }
 }
-module.exports = { nodeClass: GoogleDocs_Tools }
+module.exports = { nodeClass: GoogleDocs_Tools };
 //# sourceMappingURL=GoogleDocs.js.map

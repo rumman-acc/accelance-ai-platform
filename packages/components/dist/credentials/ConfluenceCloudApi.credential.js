@@ -1,12 +1,12 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class ConfluenceCloudApi {
     constructor() {
-        this.label = 'Confluence Cloud API'
-        this.name = 'confluenceCloudApi'
-        this.version = 1.0
+        this.label = 'Confluence Cloud API';
+        this.name = 'confluenceCloudApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://support.atlassian.com/confluence-cloud/docs/manage-oauth-access-tokens/">official guide</a> on how to get Access Token or <a target="_blank" href="https://id.atlassian.com/manage-profile/security/api-tokens">API Token</a> on Confluence'
+            'Refer to <a target="_blank" href="https://support.atlassian.com/confluence-cloud/docs/manage-oauth-access-tokens/">official guide</a> on how to get Access Token or <a target="_blank" href="https://id.atlassian.com/manage-profile/security/api-tokens">API Token</a> on Confluence';
         this.inputs = [
             {
                 label: 'Access Token',
@@ -20,8 +20,8 @@ class ConfluenceCloudApi {
                 type: 'string',
                 placeholder: '<CONFLUENCE_USERNAME>'
             }
-        ]
+        ];
     }
 }
-module.exports = { credClass: ConfluenceCloudApi }
+module.exports = { credClass: ConfluenceCloudApi };
 //# sourceMappingURL=ConfluenceCloudApi.credential.js.map

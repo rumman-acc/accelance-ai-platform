@@ -1,7 +1,7 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-const utils_1 = require('../../../src/utils')
-const prompts_1 = require('@langchain/core/prompts')
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../src/utils");
+const prompts_1 = require("@langchain/core/prompts");
 const defaultFunc = `const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');
 
 return [
@@ -25,18 +25,18 @@ return [
         content: "The answer is 172.558.",
     }),
     new AIMessage("The answer is 172.558."),
-]`
-const TAB_IDENTIFIER = 'selectedMessagesTab'
+]`;
+const TAB_IDENTIFIER = 'selectedMessagesTab';
 class ChatPromptTemplate_Prompts {
     constructor() {
-        this.label = 'Chat Prompt Template'
-        this.name = 'chatPromptTemplate'
-        this.version = 2.0
-        this.type = 'ChatPromptTemplate'
-        this.icon = 'prompt.svg'
-        this.category = 'Prompts'
-        this.description = 'Schema to represent a chat prompt'
-        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(prompts_1.ChatPromptTemplate)]
+        this.label = 'Chat Prompt Template';
+        this.name = 'chatPromptTemplate';
+        this.version = 2.0;
+        this.type = 'ChatPromptTemplate';
+        this.icon = 'prompt.svg';
+        this.category = 'Prompts';
+        this.description = 'Schema to represent a chat prompt';
+        this.baseClasses = [this.type, ...(0, utils_1.getBaseClasses)(prompts_1.ChatPromptTemplate)];
         this.inputs = [
             {
                 label: 'System Message',
@@ -82,64 +82,64 @@ class ChatPromptTemplate_Prompts {
                     }
                 ]
             }
-        ]
+        ];
     }
     async init(nodeData, _, options) {
-        let systemMessagePrompt = nodeData.inputs?.systemMessagePrompt
-        let humanMessagePrompt = nodeData.inputs?.humanMessagePrompt
-        const promptValuesStr = nodeData.inputs?.promptValues
-        const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`]
-        const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'messageHistoryCode'
-        const messageHistoryCode = nodeData.inputs?.messageHistoryCode
-        const messageHistory = nodeData.inputs?.messageHistory
-        systemMessagePrompt = (0, utils_1.transformBracesWithColon)(systemMessagePrompt)
-        humanMessagePrompt = (0, utils_1.transformBracesWithColon)(humanMessagePrompt)
+        let systemMessagePrompt = nodeData.inputs?.systemMessagePrompt;
+        let humanMessagePrompt = nodeData.inputs?.humanMessagePrompt;
+        const promptValuesStr = nodeData.inputs?.promptValues;
+        const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`];
+        const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'messageHistoryCode';
+        const messageHistoryCode = nodeData.inputs?.messageHistoryCode;
+        const messageHistory = nodeData.inputs?.messageHistory;
+        systemMessagePrompt = (0, utils_1.transformBracesWithColon)(systemMessagePrompt);
+        humanMessagePrompt = (0, utils_1.transformBracesWithColon)(humanMessagePrompt);
         let prompt = prompts_1.ChatPromptTemplate.fromMessages([
             prompts_1.SystemMessagePromptTemplate.fromTemplate(systemMessagePrompt),
             prompts_1.HumanMessagePromptTemplate.fromTemplate(humanMessagePrompt)
-        ])
-        if (
-            (messageHistory && messageHistory === 'messageHistoryCode' && messageHistoryCode) ||
-            (selectedTab === 'messageHistoryCode' && messageHistoryCode)
-        ) {
-            const appDataSource = options.appDataSource
-            const databaseEntities = options.databaseEntities
-            const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options)
+        ]);
+        if ((messageHistory && messageHistory === 'messageHistoryCode' && messageHistoryCode) ||
+            (selectedTab === 'messageHistoryCode' && messageHistoryCode)) {
+            const appDataSource = options.appDataSource;
+            const databaseEntities = options.databaseEntities;
+            const variables = await (0, utils_1.getVars)(appDataSource, databaseEntities, nodeData, options);
             const flow = {
                 chatflowId: options.chatflowid,
                 sessionId: options.sessionId,
                 chatId: options.chatId
-            }
-            const sandbox = (0, utils_1.createCodeExecutionSandbox)('', variables, flow)
+            };
+            const sandbox = (0, utils_1.createCodeExecutionSandbox)('', variables, flow);
             try {
                 const response = await (0, utils_1.executeJavaScriptCode)(messageHistoryCode, sandbox, {
                     libraries: ['axios', '@langchain/core']
-                })
-                const parsedResponse = JSON.parse(response)
+                });
+                const parsedResponse = JSON.parse(response);
                 if (!Array.isArray(parsedResponse)) {
-                    throw new Error('Returned message history must be an array')
+                    throw new Error('Returned message history must be an array');
                 }
                 prompt = prompts_1.ChatPromptTemplate.fromMessages([
                     prompts_1.SystemMessagePromptTemplate.fromTemplate(systemMessagePrompt),
                     ...parsedResponse,
                     prompts_1.HumanMessagePromptTemplate.fromTemplate(humanMessagePrompt)
-                ])
-            } catch (e) {
-                throw new Error(e)
+                ]);
+            }
+            catch (e) {
+                throw new Error(e);
             }
         }
-        let promptValues = {}
+        let promptValues = {};
         if (promptValuesStr) {
             try {
-                promptValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the ChatPromptTemplate's promptValues: " + exception)
+                promptValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr);
+            }
+            catch (exception) {
+                throw new Error("Invalid JSON in the ChatPromptTemplate's promptValues: " + exception);
             }
         }
         // @ts-ignore
-        prompt.promptValues = promptValues
-        return prompt
+        prompt.promptValues = promptValues;
+        return prompt;
     }
 }
-module.exports = { nodeClass: ChatPromptTemplate_Prompts }
+module.exports = { nodeClass: ChatPromptTemplate_Prompts };
 //# sourceMappingURL=ChatPromptTemplate.js.map
