@@ -1,1 +1,0 @@
-import{i as r,r as a}from"./createSvgIcon-BkEiEMO_.js";import{j as t}from"./code-editor-cLD96s78.js";var e={},o=r;Object.defineProperty(e,"__esModule",{value:!0});var u=e.default=void 0,d=o(a()),i=t,l=(0,d.default)((0,i.jsx)("path",{d:"M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"}),"KeyboardArrowDown");u=e.default=l;export{u as d};

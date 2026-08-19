@@ -1,5 +1,0 @@
-import { INodeData } from '../../src';
-import { VectorStore } from '@langchain/core/vectorstores';
-export declare const resolveVectorStoreOrRetriever: (nodeData: INodeData, vectorStore: VectorStore, metadataFilter?: string | object | undefined) => VectorStore | import("@langchain/core/vectorstores").VectorStoreRetriever<VectorStore> | undefined;
-export declare const addMMRInputParams: (inputs: any[]) => void;
-export declare const howToUseFileUpload = "\n**File Upload**\n\nThis allows file upload on the chat. Uploaded files will be upserted on the fly to the vector store.\n\n**Note:**\n- You can only turn on file upload for one vector store at a time.\n- At least one Document Loader node should be connected to the document input.\n- Document Loader should be file types like PDF, DOCX, TXT, etc.\n\n**How it works**\n- Uploaded files will have the metadata updated with the chatId.\n- This will allow the file to be associated with the chatId.\n- When querying, metadata will be filtered by chatId to retrieve files associated with the chatId.\n";
