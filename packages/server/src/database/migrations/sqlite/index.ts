@@ -60,6 +60,7 @@ import { AddGuardrailFlowAttachmentEntity1792000000003 } from './1792000000003-A
 import { AddGuardrailVerdictEntity1793000000003 } from './1793000000003-AddGuardrailVerdictEntity'
 import { SeedGuardrailDefinitions1794000000003 } from './1794000000003-SeedGuardrailDefinitions'
 import { BackfillGuardrailFlowAttachments1795000000003 } from './1795000000003-BackfillGuardrailFlowAttachments'
+import { AddGuardrailDefinitionKeyUniqueConstraint1796000000003 } from './1796000000003-AddGuardrailDefinitionKeyUniqueConstraint'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
@@ -148,5 +149,6 @@ export const sqliteMigrations = [
     AddGuardrailFlowAttachmentEntity1792000000003,
     AddGuardrailVerdictEntity1793000000003,
     SeedGuardrailDefinitions1794000000003,
-    BackfillGuardrailFlowAttachments1795000000003
+    BackfillGuardrailFlowAttachments1795000000003,
+    AddGuardrailDefinitionKeyUniqueConstraint1796000000003
 ]

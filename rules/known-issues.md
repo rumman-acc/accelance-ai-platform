@@ -210,7 +210,23 @@ Per explicit user request, increased both durations: `IDLE_TIMEOUT_MS` in `Sessi
 
 ---
 
-## #016 — `utils/index.ts`'s `databaseEntities` map was missing `GuardrailPolicy`/`GuardrailCatalogItem`, silently disabling Prompt-Injection Defense and Egress Filtering on AgentFlow V2 Tool nodes
+## #016 — Brand-new classic canvas (`/canvas`, no chatflowId) crashed to a fully blank page
+
+**Found 2026-08-18.** **Symptom:** Opening a fresh, unsaved classic agent/chatflow canvas (`/canvas`) rendered a completely blank white page — no header, no toolbar, no React Flow grid, nothing. Reproduced 100% of the time on a brand-new canvas; existing/loaded chatflows were unaffected. Production console only showed a minified, unreadable stack trace pointing into an unrelated `data-grid-*.js` vendor chunk, which was a red herring.
+
+**Root cause:** introduced by an in-progress Content Moderation auto-insert-on-new-agent feature (`packages/ui/src/views/canvas/index.jsx`) — a `useEffect` put `nodes.length` directly inside its dependency array. `nodes` comes from `useNodesState()` called with no initial value, so on the very first render `nodes` is `undefined` — and dependency-array expressions are evaluated synchronously during render, before any effect body runs and before `setNodes` has ever been called. Reading `.length` off `undefined` at that point threw `TypeError: Cannot read properties of undefined (reading 'length')`, which had no error boundary above it, so React unmounted the entire component tree, leaving a blank page. Confirmed via a `vite` dev server (unminified stack traces).
+
+**Fix:** guarded both usages — the early-return condition used `(nodes && nodes.length > 0)` and the dependency array used `nodes?.length` instead of `nodes.length`, so first render never dereferenced `undefined`.
+
+**Note (added 2026-08-19):** the feature this bug lived in was itself removed shortly after — a workspace-wide auto-insert toggle didn't fit the Guardrails v2 rearchitecture (see `rules/epics-feature-status.md` §9). Neither the feature nor this fix ever reached a commit before an unrelated working-tree revert wiped that session's uncommitted state, described in that same rearchitecture's Phase 1 write-up. **Neither the bug nor the feature exists in the current codebase** — logged here for the prevention lesson and for narrative continuity across sessions, not because there's current code to point to.
+
+**Prevention:** never put a plain (non-optional-chained) property access on a piece of `useState`/`useNodesState` state inside a `useEffect` dependency array unless that state is guaranteed to have a non-undefined initial value — dependency arrays are evaluated during render, not after it.
+
+---
+
+## #017 — `utils/index.ts`'s `databaseEntities` map was missing `GuardrailPolicy`/`GuardrailCatalogItem`, silently disabling Prompt-Injection Defense and Egress Filtering on AgentFlow V2 Tool nodes
+
+**Found 2026-08-19.**
 
 **Symptom:** found while auditing `packages/components/src/toolPolicy.ts` for the Guardrails v2 rearchitecture (Phase 0 audit). `evaluateGuardrailPolicy()` — the function backing `checkEgressFiltering`/`applyPromptInjectionWrapping`, reached only from `packages/components/nodes/agentflow/Tool/Tool.ts` — reads `options.databaseEntities['GuardrailPolicy']` and `['GuardrailCatalogItem']`. Both keys were absent from the `databaseEntities` object exported by `packages/server/src/utils/index.ts` (the object `buildAgentflow.ts` threads into every node's `options`), which listed `AgentToolPolicy`, `ToolCallAudit`, and eleven other entities but never these two.
 

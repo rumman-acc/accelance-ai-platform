@@ -74,6 +74,7 @@ import { AddGuardrailFlowAttachmentEntity1792000000000 } from './1792000000000-A
 import { AddGuardrailVerdictEntity1793000000000 } from './1793000000000-AddGuardrailVerdictEntity'
 import { SeedGuardrailDefinitions1794000000000 } from './1794000000000-SeedGuardrailDefinitions'
 import { BackfillGuardrailFlowAttachments1795000000000 } from './1795000000000-BackfillGuardrailFlowAttachments'
+import { AddGuardrailDefinitionKeyUniqueConstraint1796000000000 } from './1796000000000-AddGuardrailDefinitionKeyUniqueConstraint'
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/postgres/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/postgres/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/postgres/1746862866554-ExecutionLinkWorkspaceId'
@@ -156,5 +157,6 @@ export const postgresMigrations = [
     AddGuardrailFlowAttachmentEntity1792000000000,
     AddGuardrailVerdictEntity1793000000000,
     SeedGuardrailDefinitions1794000000000,
-    BackfillGuardrailFlowAttachments1795000000000
+    BackfillGuardrailFlowAttachments1795000000000,
+    AddGuardrailDefinitionKeyUniqueConstraint1796000000000
 ]

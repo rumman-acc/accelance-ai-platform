@@ -564,7 +564,7 @@ are unchanged and still fully functional.
 real block/allow decision is **still made by the OLD `GuardrailPolicy`-backed `evaluate()`
 path, unchanged** — the new `GuardrailFlowAttachment`-backed path only records a
 `GuardrailVerdict` for later diffing, never blocks anything itself. One exception required
-explicit handling: fixing `known-issues.md` #016 (a `databaseEntities` plumbing bug that had
+explicit handling: fixing `known-issues.md` #017 (a `databaseEntities` plumbing bug that had
 silently disabled Prompt-Injection Defense and Egress Filtering on AgentFlow V2 Tool nodes)
 makes their old path functional *for the first time* — since that path was never actually
 live, simply fixing the bug would itself have turned on real enforcement for the one real

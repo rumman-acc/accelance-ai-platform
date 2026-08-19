@@ -63,6 +63,7 @@ import { AddGuardrailFlowAttachmentEntity1792000000001 } from './1792000000001-A
 import { AddGuardrailVerdictEntity1793000000001 } from './1793000000001-AddGuardrailVerdictEntity'
 import { SeedGuardrailDefinitions1794000000001 } from './1794000000001-SeedGuardrailDefinitions'
 import { BackfillGuardrailFlowAttachments1795000000001 } from './1795000000001-BackfillGuardrailFlowAttachments'
+import { AddGuardrailDefinitionKeyUniqueConstraint1796000000001 } from './1796000000001-AddGuardrailDefinitionKeyUniqueConstraint'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -152,5 +153,6 @@ export const mysqlMigrations = [
     AddGuardrailFlowAttachmentEntity1792000000001,
     AddGuardrailVerdictEntity1793000000001,
     SeedGuardrailDefinitions1794000000001,
-    BackfillGuardrailFlowAttachments1795000000001
+    BackfillGuardrailFlowAttachments1795000000001,
+    AddGuardrailDefinitionKeyUniqueConstraint1796000000001
 ]
