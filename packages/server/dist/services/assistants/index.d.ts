@@ -1,0 +1,20 @@
+import { ICommonObject } from 'accelance-components';
+import { DeleteResult, QueryRunner } from 'typeorm';
+import { Assistant } from '../../database/entities/Assistant';
+import { AssistantType } from '../../Interface';
+declare function getAssistantsCountByOrganization(type: AssistantType, organizationId: string): Promise<number>;
+declare const _default: {
+    createAssistant: (requestBody: any, orgId: string, workspaceId: string) => Promise<Assistant>;
+    deleteAssistant: (assistantId: string, isDeleteBoth: any, workspaceId: string) => Promise<DeleteResult>;
+    getAllAssistants: (workspaceId: string, type?: AssistantType) => Promise<Assistant[]>;
+    getAllAssistantsCount: (workspaceId: string, type?: AssistantType) => Promise<number>;
+    getAssistantById: (assistantId: string, workspaceId: string) => Promise<Assistant>;
+    updateAssistant: (assistantId: string, requestBody: any, workspaceId: string) => Promise<Assistant>;
+    importAssistants: (newAssistants: Partial<Assistant>[], orgId: string, _: string, subscriptionId: string, queryRunner?: QueryRunner) => Promise<any>;
+    getChatModels: () => Promise<any>;
+    getDocumentStores: (activeWorkspaceId: string) => Promise<any>;
+    getTools: () => Promise<any>;
+    generateAssistantInstruction: (task: string, selectedChatModel: ICommonObject) => Promise<ICommonObject>;
+    getAssistantsCountByOrganization: typeof getAssistantsCountByOrganization;
+};
+export default _default;

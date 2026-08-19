@@ -7,3 +7,7 @@ pnpm-lock.yaml
 Dockerfile
 Dockerfile.*
 **/Dockerfile
+
+# Generated build output — never hand-edited, reformatting is pointless and slow
+packages/*/dist/**
+packages/ui/build/**

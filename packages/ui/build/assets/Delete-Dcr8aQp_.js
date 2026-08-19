@@ -1,0 +1,1 @@
+import{i as r,r as t}from"./createSvgIcon-BkEiEMO_.js";import{j as a}from"./code-editor-cLD96s78.js";var e={},u=r;Object.defineProperty(e,"__esModule",{value:!0});var o=e.default=void 0,l=u(t()),i=a,v=(0,l.default)((0,i.jsx)("path",{d:"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"}),"Delete");o=e.default=v;export{o as d};

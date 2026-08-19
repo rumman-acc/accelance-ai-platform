@@ -15,9 +15,6 @@
 ## pnpm
 .pnpm-store/
 
-## build
-**/dist
-**/build
 
 ## temp
 **/tmp

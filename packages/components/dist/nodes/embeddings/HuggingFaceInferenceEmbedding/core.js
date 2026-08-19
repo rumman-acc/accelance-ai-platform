@@ -1,0 +1,38 @@
+'use strict'
+Object.defineProperty(exports, '__esModule', { value: true })
+exports.HuggingFaceInferenceEmbeddings = void 0
+const inference_1 = require('@huggingface/inference')
+const embeddings_1 = require('@langchain/core/embeddings')
+const utils_1 = require('../../../src/utils')
+class HuggingFaceInferenceEmbeddings extends embeddings_1.Embeddings {
+    constructor(fields) {
+        super(fields ?? {})
+        this.model = fields?.model ?? 'sentence-transformers/distilbert-base-nli-mean-tokens'
+        this.apiKey = fields?.apiKey ?? (0, utils_1.getEnvironmentVariable)('HUGGINGFACEHUB_API_KEY')
+        this.endpoint = fields?.endpoint ?? ''
+        const hf = new inference_1.HfInference(this.apiKey)
+        // v4 uses Inference Providers by default; only override if custom endpoint provided
+        this.client = this.endpoint ? hf.endpoint(this.endpoint) : hf
+    }
+    async _embed(texts) {
+        // replace newlines, which can negatively affect performance.
+        const clean = texts.map((text) => text.replace(/\n/g, ' '))
+        const obj = {
+            inputs: clean
+        }
+        if (!this.endpoint) {
+            obj.model = this.model
+        }
+        const res = await this.caller.callWithOptions({}, this.client.featureExtraction.bind(this.client), obj)
+        return res
+    }
+    async embedQuery(document) {
+        const res = await this._embed([document])
+        return res[0]
+    }
+    async embedDocuments(documents) {
+        return this._embed(documents)
+    }
+}
+exports.HuggingFaceInferenceEmbeddings = HuggingFaceInferenceEmbeddings
+//# sourceMappingURL=core.js.map

@@ -1,0 +1,1 @@
+import{j as r}from"./code-editor-cLD96s78.js";import{k as e,O as p,E as a}from"./data-grid-gH2S7mw4.js";const d=({open:o})=>r.jsx("div",{children:r.jsx(e,{sx:{color:"#fff",zIndex:s=>s.zIndex.drawer+1},open:o,children:r.jsx(p,{color:"inherit"})})});d.propTypes={open:a.bool};export{d as B};
