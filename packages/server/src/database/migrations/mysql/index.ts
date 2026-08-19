@@ -58,6 +58,11 @@ import { AddAuditLogEntity1787000000001 } from './1787000000001-AddAuditLogEntit
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
+import { AddGuardrailDefinitionEntity1791000000001 } from './1791000000001-AddGuardrailDefinitionEntity'
+import { AddGuardrailFlowAttachmentEntity1792000000001 } from './1792000000001-AddGuardrailFlowAttachmentEntity'
+import { AddGuardrailVerdictEntity1793000000001 } from './1793000000001-AddGuardrailVerdictEntity'
+import { SeedGuardrailDefinitions1794000000001 } from './1794000000001-SeedGuardrailDefinitions'
+import { BackfillGuardrailFlowAttachments1795000000001 } from './1795000000001-BackfillGuardrailFlowAttachments'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -142,5 +147,10 @@ export const mysqlMigrations = [
     AddAuditLogEntity1787000000001,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
-    AddScheduleEntities1772000000000
+    AddScheduleEntities1772000000000,
+    AddGuardrailDefinitionEntity1791000000001,
+    AddGuardrailFlowAttachmentEntity1792000000001,
+    AddGuardrailVerdictEntity1793000000001,
+    SeedGuardrailDefinitions1794000000001,
+    BackfillGuardrailFlowAttachments1795000000001
 ]

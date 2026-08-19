@@ -55,6 +55,11 @@ import { AddCustomMcpServerStdioTransport1790000000000 } from './1790000000000-A
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
+import { AddGuardrailDefinitionEntity1791000000003 } from './1791000000003-AddGuardrailDefinitionEntity'
+import { AddGuardrailFlowAttachmentEntity1792000000003 } from './1792000000003-AddGuardrailFlowAttachmentEntity'
+import { AddGuardrailVerdictEntity1793000000003 } from './1793000000003-AddGuardrailVerdictEntity'
+import { SeedGuardrailDefinitions1794000000003 } from './1794000000003-SeedGuardrailDefinitions'
+import { BackfillGuardrailFlowAttachments1795000000003 } from './1795000000003-BackfillGuardrailFlowAttachments'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
@@ -138,5 +143,10 @@ export const sqliteMigrations = [
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
     AddScheduleEntities1772000000000,
-    AddCustomMcpServerStdioTransport1790000000000
+    AddCustomMcpServerStdioTransport1790000000000,
+    AddGuardrailDefinitionEntity1791000000003,
+    AddGuardrailFlowAttachmentEntity1792000000003,
+    AddGuardrailVerdictEntity1793000000003,
+    SeedGuardrailDefinitions1794000000003,
+    BackfillGuardrailFlowAttachments1795000000003
 ]

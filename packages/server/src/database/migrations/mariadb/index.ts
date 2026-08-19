@@ -57,6 +57,11 @@ import { GuardrailCatalogBatch3Enforcement1786000000002 } from './1786000000002-
 import { AddAuditLogEntity1787000000002 } from './1787000000002-AddAuditLogEntity'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
+import { AddGuardrailDefinitionEntity1791000000002 } from './1791000000002-AddGuardrailDefinitionEntity'
+import { AddGuardrailFlowAttachmentEntity1792000000002 } from './1792000000002-AddGuardrailFlowAttachmentEntity'
+import { AddGuardrailVerdictEntity1793000000002 } from './1793000000002-AddGuardrailVerdictEntity'
+import { SeedGuardrailDefinitions1794000000002 } from './1794000000002-SeedGuardrailDefinitions'
+import { BackfillGuardrailFlowAttachments1795000000002 } from './1795000000002-BackfillGuardrailFlowAttachments'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mariadb/1720230151482-AddAuthTables'
 import { AddWorkspace1725437498242 } from '../../../enterprise/database/migrations/mariadb/1725437498242-AddWorkspace'
@@ -140,5 +145,10 @@ export const mariadbMigrations = [
     GuardrailCatalogBatch3Enforcement1786000000002,
     AddAuditLogEntity1787000000002,
     AddMcpServerConfigToChatFlow1767000000000,
-    AddScheduleEntities1772000000000
+    AddScheduleEntities1772000000000,
+    AddGuardrailDefinitionEntity1791000000002,
+    AddGuardrailFlowAttachmentEntity1792000000002,
+    AddGuardrailVerdictEntity1793000000002,
+    SeedGuardrailDefinitions1794000000002,
+    BackfillGuardrailFlowAttachments1795000000002
 ]

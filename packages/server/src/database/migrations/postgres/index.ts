@@ -69,6 +69,11 @@ import { AddGuardrailCatalogItemBatch2_1785000000000 } from './1785000000000-Add
 import { GuardrailCatalogBatch3Enforcement1786000000000 } from './1786000000000-GuardrailCatalogBatch3Enforcement'
 import { AddAuditLogEntity1787000000000 } from './1787000000000-AddAuditLogEntity'
 import { AddCustomMcpServerStdioTransport1790000000000 } from './1790000000000-AddCustomMcpServerStdioTransport'
+import { AddGuardrailDefinitionEntity1791000000000 } from './1791000000000-AddGuardrailDefinitionEntity'
+import { AddGuardrailFlowAttachmentEntity1792000000000 } from './1792000000000-AddGuardrailFlowAttachmentEntity'
+import { AddGuardrailVerdictEntity1793000000000 } from './1793000000000-AddGuardrailVerdictEntity'
+import { SeedGuardrailDefinitions1794000000000 } from './1794000000000-SeedGuardrailDefinitions'
+import { BackfillGuardrailFlowAttachments1795000000000 } from './1795000000000-BackfillGuardrailFlowAttachments'
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/postgres/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/postgres/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/postgres/1746862866554-ExecutionLinkWorkspaceId'
@@ -146,5 +151,10 @@ export const postgresMigrations = [
     AddGuardrailCatalogItemBatch2_1785000000000,
     GuardrailCatalogBatch3Enforcement1786000000000,
     AddAuditLogEntity1787000000000,
-    AddCustomMcpServerStdioTransport1790000000000
+    AddCustomMcpServerStdioTransport1790000000000,
+    AddGuardrailDefinitionEntity1791000000000,
+    AddGuardrailFlowAttachmentEntity1792000000000,
+    AddGuardrailVerdictEntity1793000000000,
+    SeedGuardrailDefinitions1794000000000,
+    BackfillGuardrailFlowAttachments1795000000000
 ]
