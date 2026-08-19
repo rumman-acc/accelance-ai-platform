@@ -9,8 +9,9 @@ const WORKSPACE_WIDE = ''
 
 /**
  * Self-contained check (queries GuardrailPolicy directly rather than importing
- * services/guardrails) to avoid a circular import -- guardrailsService.upsertPolicy is one of
- * this module's callers.
+ * services/guardrails) -- audit_log is one of the workspace-scoped exceptions Guardrails v2
+ * left on the old model (see rules/guardrails-v2/phase0-audit.md Finding 4), so this table is
+ * still the real source of truth for it and nothing here needs to change.
  */
 const isAuditLogEnabled = async (workspaceId: string): Promise<boolean> => {
     const appServer = getRunningExpressApp()

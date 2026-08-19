@@ -12,26 +12,14 @@ const requireWorkspaceId = (req: Request): string => {
     return workspaceId
 }
 
+// POST /catalog (custom-catalog authoring) removed per Guardrails v2 §2.2. GET/POST/DELETE
+// /policy are KEPT -- see services/guardrails/index.ts's file comment for why (the per-agent
+// canvas panel and the /compliance page's data_retention_policy toggle both still depend on
+// them for real, currently-working functionality).
+
 const listCatalog = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await guardrailsService.listCatalog(requireWorkspaceId(req))
-        return res.json(apiResponse)
-    } catch (error) {
-        next(error)
-    }
-}
-
-const createCustomCatalogItem = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const workspaceId = requireWorkspaceId(req)
-        const { name, description, defaultConfig } = req.body || {}
-        if (!name || !description) {
-            throw new InternalAccelanceError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: guardrailsController.createCustomCatalogItem - name/description not provided!`
-            )
-        }
-        const apiResponse = await guardrailsService.createCustomCatalogItem(workspaceId, name, description, defaultConfig, req.user?.id)
+        const apiResponse = await guardrailsService.listDefinitions(requireWorkspaceId(req))
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -101,7 +89,6 @@ const getSummary = async (req: Request, res: Response, next: NextFunction) => {
 
 export default {
     listCatalog,
-    createCustomCatalogItem,
     listPolicies,
     upsertPolicy,
     deletePolicy,

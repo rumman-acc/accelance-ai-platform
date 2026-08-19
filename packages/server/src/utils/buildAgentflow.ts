@@ -1929,9 +1929,32 @@ export const executeAgentFlow = async ({
     // layered on top of the existing MAX_ITERATIONS platform-wide ceiling above (which stays as the
     // absolute circuit breaker). Resolved once here, not inside the loop, to avoid a DB round-trip
     // per iteration.
+    //
+    // Guardrails v2 (Phase 1): the decision above is unchanged, still driven by the old
+    // GuardrailPolicy-backed evaluate(). loopGuardrailShadow* below is purely observational --
+    // see preflightGuardrails.ts's recordShadowVerdict for the same reasoning -- and never
+    // affects loopGuardrailMaxSteps or whether the loop actually throws below.
     const loopGuardrail = await guardrailsService.evaluate(workspaceId, chatflowid, 'loop_recursion_detection')
     const loopGuardrailMaxSteps: number =
         loopGuardrail.enabled && typeof loopGuardrail.config?.maxSteps === 'number' ? loopGuardrail.config.maxSteps : Infinity
+    const loopGuardrailShadowStart = Date.now()
+    guardrailsService
+        .resolveGuardrailAttachment(chatflowid, 'loop_recursion_detection')
+        .then((shadow) => {
+            if (!shadow.enabled) return
+            return guardrailsService.recordVerdict({
+                workspaceId,
+                chatflowId: chatflowid,
+                definitionKey: 'loop_recursion_detection',
+                kindKey: shadow.kindKey || 'rate_limit',
+                verdict: 'pass',
+                latencyMs: Date.now() - loopGuardrailShadowStart,
+                observeMode: true
+            })
+        })
+        .catch(() => {
+            // Never let shadow-verdict recording affect the real guardrail decision.
+        })
 
     // Get chat history from ChatMessage table
     const pastChatHistory = (await appDataSource
@@ -2051,6 +2074,18 @@ export const executeAgentFlow = async ({
             throw new Error('Maximum iteration limit reached')
         }
         if (iterations > loopGuardrailMaxSteps) {
+            guardrailsService
+                .recordVerdict({
+                    workspaceId,
+                    chatflowId: chatflowid,
+                    definitionKey: 'loop_recursion_detection',
+                    kindKey: 'rate_limit',
+                    verdict: 'block',
+                    reason: `exceeded configured step budget (${loopGuardrailMaxSteps})`,
+                    latencyMs: 0,
+                    observeMode: true
+                })
+                .catch(() => {})
             throw new Error(
                 `Loop & Recursion Detection: this agent exceeded its configured step budget (${loopGuardrailMaxSteps}). Raise it in the Guardrails settings if this flow legitimately needs more steps.`
             )

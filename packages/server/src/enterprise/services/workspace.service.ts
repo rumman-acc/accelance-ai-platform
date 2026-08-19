@@ -1,7 +1,6 @@
 ﻿import { StatusCodes } from 'http-status-codes'
 import { DataSource, EntityManager, In, IsNull, QueryRunner, UpdateResult } from 'typeorm'
 import { ApiKey } from '../../database/entities/ApiKey'
-import guardrailsService from '../../services/guardrails'
 import { Assistant } from '../../database/entities/Assistant'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
@@ -130,10 +129,9 @@ export class WorkspaceService {
             await queryRunner.release()
         }
 
-        // Policy Templates guardrail: every new workspace starts with the default bundle applied
-        // (currently: PII redaction on). Outside the transaction above -- must never roll back
-        // workspace creation if this fails; applyDefaultPolicyTemplate already fails safe/logs.
-        await guardrailsService.applyDefaultPolicyTemplate(newWorkspace.id)
+        // Policy Templates (the retroactive-apply-a-default-bundle mechanism) is removed per
+        // Guardrails v2 §2.2 -- new workspaces no longer get an auto-applied guardrail bundle.
+        // See rules/guardrails-v2/ and the implementation plan.
 
         return newWorkspace
     }

@@ -61,6 +61,11 @@ import { Variable } from '../database/entities/Variable'
 import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
 import { CustomMcpServer } from '../database/entities/CustomMcpServer'
+import { GuardrailPolicy } from '../database/entities/GuardrailPolicy'
+import { GuardrailCatalogItem } from '../database/entities/GuardrailCatalogItem'
+import { GuardrailDefinition } from '../database/entities/GuardrailDefinition'
+import { GuardrailFlowAttachment } from '../database/entities/GuardrailFlowAttachment'
+import { GuardrailVerdict } from '../database/entities/GuardrailVerdict'
 import { InternalAccelanceError } from '../errors/internalAccelanceError'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -113,7 +118,22 @@ export const databaseEntities: IDatabaseEntity = {
     Variable: Variable,
     DocumentStore: DocumentStore,
     DocumentStoreFileChunk: DocumentStoreFileChunk,
-    CustomMcpServer: CustomMcpServer
+    CustomMcpServer: CustomMcpServer,
+    // GuardrailPolicy/GuardrailCatalogItem were missing here entirely -- packages/components/src/
+    // toolPolicy.ts's evaluateGuardrailPolicy() (used by Prompt-Injection Defense and Egress
+    // Filtering on AgentFlow V2 Tool nodes) reads databaseEntities['GuardrailPolicy'] via this
+    // exact object; with the key absent, getRepository(undefined) threw on every call and was
+    // silently swallowed by that function's own fail-open catch, so both guardrails have done
+    // nothing at runtime regardless of their toggle state until this fix (rules/known-issues.md
+    // #017). IMPORTANT: fixing this plumbing bug alone would turn on real, previously-inert
+    // enforcement for any workspace that already has these toggled on -- see toolPolicy.ts's
+    // checkEgressFiltering/applyPromptInjectionWrapping for the explicit promotion gate that
+    // keeps this fix observational-only until someone reviews shadow-verdict data and promotes.
+    GuardrailPolicy: GuardrailPolicy,
+    GuardrailCatalogItem: GuardrailCatalogItem,
+    GuardrailDefinition: GuardrailDefinition,
+    GuardrailFlowAttachment: GuardrailFlowAttachment,
+    GuardrailVerdict: GuardrailVerdict
 }
 
 /**

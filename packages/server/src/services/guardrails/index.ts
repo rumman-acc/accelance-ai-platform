@@ -1,6 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
-import { GuardrailCatalogItem, GuardrailKind, GuardrailEnforcementStatus } from '../../database/entities/GuardrailCatalogItem'
+import { GuardrailCatalogItem } from '../../database/entities/GuardrailCatalogItem'
 import { GuardrailPolicy } from '../../database/entities/GuardrailPolicy'
+import { GuardrailDefinition } from '../../database/entities/GuardrailDefinition'
+import { GuardrailFlowAttachment } from '../../database/entities/GuardrailFlowAttachment'
+import { GuardrailVerdict } from '../../database/entities/GuardrailVerdict'
 import { AgentToolPolicy } from '../../database/entities/AgentToolPolicy'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
@@ -10,89 +13,175 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 const WORKSPACE_WIDE = ''
 
 /**
- * The one default bundle "Policy Templates" currently applies. Hardcoded rather than
- * user-configurable in this first pass -- a real template picker/editor is a fast-follow, not
- * built here.
+ * Guardrails v2 -- see rules/guardrails-v2/ and the "Guardrails Rearchitecture Phase 0 + Phase 1"
+ * implementation plan for the full rationale. This file now serves two, deliberately separate,
+ * mechanisms side by side:
+ *
+ *  1. `resolveGuardrailAttachment` reads GuardrailFlowAttachment -- the new, chatflow-scoped
+ *     source of truth for the 7 keys backfilled from the old model (pii_redaction,
+ *     topic_action_scoping, spend_token_budgets, prompt_injection_defense, egress_filtering,
+ *     confused_deputy_prevention, loop_recursion_detection). See phase0-audit.md Finding 4.
+ *  2. `evaluate` still reads the OLD GuardrailPolicy table, unchanged, and is the ONLY thing
+ *     that ever decides real enforcement for those 7 keys during Phase 1 -- resolved verdicts
+ *     from (1) are recorded for comparison but never gate a real decision. See
+ *     rules/guardrails-v2/reconciliation.md's "one caveat" section for why this distinction is
+ *     load-bearing specifically for egress_filtering/prompt_injection_defense.
+ *
+ * `listCatalog`, `createCustomCatalogItem`, `applyDefaultPolicyTemplate` and
+ * `DEFAULT_POLICY_TEMPLATE` are removed per build-plan §2.2 -- custom-catalog authoring and
+ * retroactive apply are deleted, not deferred. `listPolicies`/`upsertPolicy`/`deletePolicy`
+ * are KEPT, unchanged, because real functionality still depends on them: the per-agent canvas
+ * panel's override toggle for the 7 backfilled keys (still reads GuardrailPolicy via evaluate()
+ * -- the OLD path is what's actually deciding during the observe window, so its own toggle UI
+ * must keep writing to that same table), and the /compliance page's data_retention_policy
+ * toggle (one of the four real, workspace-scoped exceptions that never leaves this table).
+ * upsertPolicy now rejects 'policy_templates' specifically, since its retroactive-apply
+ * mechanism no longer exists -- toggling it would be an accepted-but-inert no-op.
+ * `GuardrailPolicy`/`GuardrailCatalogItem` themselves are untouched -- see the implementation
+ * plan for why the tables aren't dropped.
  */
-const DEFAULT_POLICY_TEMPLATE: { catalogKey: string; enabled: boolean }[] = [{ catalogKey: 'pii_redaction', enabled: true }]
 
 /**
- * Applies DEFAULT_POLICY_TEMPLATE as workspace-wide defaults. Called (a) unconditionally for every
- * newly created workspace (enterprise/services/workspace.service.ts), so new workspaces start with
- * a safe baseline, and (b) retroactively when an existing workspace turns "Policy Templates" on.
+ * System definitions (workspaceId IS NULL) plus this workspace's own custom definitions,
+ * excluding soft-deleted/superseded rows. Replaces the old listCatalog -- GuardrailDefinition
+ * was seeded with a row for every key that still matters for catalog display, including the
+ * four workspace-scoped exceptions above (as catalog-only entries with no attachment behavior),
+ * so nothing disappears from `/guardrails` by repointing this at the new table.
  */
-const applyDefaultPolicyTemplate = async (workspaceId: string): Promise<void> => {
+const listDefinitions = async (workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const repo = appServer.AppDataSource.getRepository(GuardrailPolicy)
-        for (const { catalogKey, enabled } of DEFAULT_POLICY_TEMPLATE) {
-            const existing = await repo.findOneBy({ workspaceId, chatflowId: WORKSPACE_WIDE, catalogKey })
-            if (existing) {
-                existing.enabled = enabled
-                await repo.save(existing)
-            } else {
-                await repo.save(repo.create({ workspaceId, chatflowId: WORKSPACE_WIDE, catalogKey, enabled }))
-            }
-        }
-    } catch (e) {
-        console.error('Failed to apply default policy template', e)
-    }
-}
-
-/**
- * Standard entries (seeded by migration, workspaceId IS NULL) plus this workspace's own custom
- * entries. Custom entries from other workspaces are never returned -- catalog visibility is
- * workspace-scoped even though standard rows are platform-wide.
- */
-const listCatalog = async (workspaceId: string) => {
-    try {
-        const appServer = getRunningExpressApp()
-        const repo = appServer.AppDataSource.getRepository(GuardrailCatalogItem)
+        const repo = appServer.AppDataSource.getRepository(GuardrailDefinition)
         return await repo
-            .createQueryBuilder('item')
-            .where('item.workspaceId IS NULL')
-            .orWhere('item.workspaceId = :workspaceId', { workspaceId })
-            .orderBy('item.isStandard', 'DESC')
-            .addOrderBy('item.name', 'ASC')
+            .createQueryBuilder('def')
+            .where('def.deletedAt IS NULL')
+            .andWhere('def.supersededByDefinitionId IS NULL')
+            .andWhere('(def.workspaceId IS NULL OR def.workspaceId = :workspaceId)', { workspaceId })
+            .orderBy('def.category', 'ASC')
+            .addOrderBy('def.name', 'ASC')
             .getMany()
     } catch (error) {
         throw new InternalAccelanceError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: guardrailsService.listCatalog - ${getErrorMessage(error)}`
+            `Error: guardrailsService.listDefinitions - ${getErrorMessage(error)}`
         )
     }
 }
 
-const createCustomCatalogItem = async (
-    workspaceId: string,
-    name: string,
-    description: string,
-    defaultConfig: Record<string, unknown> | undefined,
-    createdBy?: string
-) => {
+/**
+ * The new resolver for the 7 backfilled keys. Chatflow-scoped only -- no workspace-wide
+ * fallback needed, since the backfill migration already expanded every enabled workspace-wide
+ * GuardrailPolicy row into one GuardrailFlowAttachment row per chatflow in that workspace.
+ * Fails open (enabled:false) on any error, mirroring evaluateGuardrailPolicy's existing
+ * fail-open contract in packages/components/src/toolPolicy.ts. NEVER used to gate a real
+ * decision in Phase 1 -- purely observational, see the file-level comment above.
+ */
+const resolveGuardrailAttachment = async (
+    chatflowId: string,
+    definitionKey: string
+): Promise<{ enabled: boolean; config?: Record<string, unknown>; kindKey?: string; observeMode?: boolean }> => {
     try {
         const appServer = getRunningExpressApp()
-        const repo = appServer.AppDataSource.getRepository(GuardrailCatalogItem)
-        const key = `custom_${workspaceId}_${Date.now()}`
-        const item = repo.create({
-            key,
-            name,
-            description,
-            kind: GuardrailKind.POLICY,
-            category: 'guardrail',
-            enforcementStatus: GuardrailEnforcementStatus.ENFORCED,
-            defaultConfig: defaultConfig ? JSON.stringify(defaultConfig) : undefined,
-            isStandard: false,
-            workspaceId,
-            createdBy
-        })
-        return await repo.save(item)
-    } catch (error) {
-        throw new InternalAccelanceError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: guardrailsService.createCustomCatalogItem - ${getErrorMessage(error)}`
-        )
+        const repo = appServer.AppDataSource.getRepository(GuardrailFlowAttachment)
+        const row = await repo.findOneBy({ chatflowId, definitionKey })
+        if (!row) return { enabled: false }
+        try {
+            return {
+                enabled: true,
+                config: row.paramsSnapshot ? JSON.parse(row.paramsSnapshot) : undefined,
+                kindKey: row.kindKey,
+                observeMode: row.observeMode
+            }
+        } catch {
+            return { enabled: true, kindKey: row.kindKey, observeMode: row.observeMode }
+        }
+    } catch {
+        return { enabled: false }
     }
+}
+
+/**
+ * Whether a resolved attachment has been explicitly promoted to actually enforce, rather than
+ * just observe. Nothing in this codebase ever sets observeMode to false -- promotion is a
+ * future, separately reviewed action (Phase 2+ UI, or a one-off manual update after reviewing
+ * a real diff of recorded verdicts). This is the single choke-point every real-decision call
+ * site must check before letting a resolved attachment's verdict actually do anything.
+ */
+const isPromoted = (attachment: { enabled: boolean; observeMode?: boolean }): boolean =>
+    attachment.enabled && attachment.observeMode === false
+
+/**
+ * Append-only write, per build-plan §2.1 -- "guardrail verdicts must be recorded per
+ * chatflowId + nodeId + definitionId from Phase 1." Never throws -- a logging failure must
+ * never affect the guardrail decision or the request it's attached to.
+ */
+const recordVerdict = async (params: {
+    workspaceId: string
+    chatflowId: string
+    nodeId?: string
+    definitionKey: string
+    kindKey: string
+    verdict: string
+    reason?: string
+    evidence?: Record<string, unknown>
+    latencyMs: number
+    observeMode: boolean
+}): Promise<void> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(GuardrailVerdict)
+        await repo.save(
+            repo.create({
+                workspaceId: params.workspaceId,
+                chatflowId: params.chatflowId,
+                nodeId: params.nodeId ?? '',
+                definitionKey: params.definitionKey,
+                kindKey: params.kindKey,
+                verdict: params.verdict,
+                reason: params.reason,
+                evidence: params.evidence ? JSON.stringify(params.evidence) : undefined,
+                latencyMs: params.latencyMs,
+                observeMode: params.observeMode
+            })
+        )
+    } catch (e) {
+        console.error('Failed to record guardrail verdict', e)
+    }
+}
+
+/**
+ * Unchanged from before this migration -- still reads GuardrailPolicy directly. Still the ONLY
+ * thing that decides real enforcement for the 7 backfilled keys during Phase 1 -- see the
+ * file-level comment above for why.
+ */
+const evaluate = async (
+    workspaceId: string,
+    chatflowId: string,
+    catalogKey: string
+): Promise<{ enabled: boolean; config?: Record<string, unknown> }> => {
+    const appServer = getRunningExpressApp()
+    const repo = appServer.AppDataSource.getRepository(GuardrailPolicy)
+
+    const chatflowScoped = await repo.findOneBy({ workspaceId, chatflowId, catalogKey })
+    const row = chatflowScoped ?? (await repo.findOneBy({ workspaceId, chatflowId: WORKSPACE_WIDE, catalogKey }))
+    if (!row || !row.enabled) return { enabled: false }
+
+    if (row.config) {
+        try {
+            return { enabled: true, config: JSON.parse(row.config) }
+        } catch {
+            return { enabled: true }
+        }
+    }
+    const catalogItem = await appServer.AppDataSource.getRepository(GuardrailCatalogItem).findOneBy({ key: catalogKey })
+    if (catalogItem?.defaultConfig) {
+        try {
+            return { enabled: true, config: JSON.parse(catalogItem.defaultConfig) }
+        } catch {
+            return { enabled: true }
+        }
+    }
+    return { enabled: true }
 }
 
 const listPolicies = async (workspaceId: string, chatflowId?: string) => {
@@ -124,39 +213,24 @@ const upsertPolicy = async (
     createdBy?: string
 ) => {
     try {
-        const appServer = getRunningExpressApp()
-        const catalogRepo = appServer.AppDataSource.getRepository(GuardrailCatalogItem)
-        const catalogItem = await catalogRepo.findOneBy({ key: catalogKey })
-        if (!catalogItem) {
-            throw new InternalAccelanceError(StatusCodes.NOT_FOUND, `Error: guardrailsService.upsertPolicy - unknown catalog key`)
-        }
-        if (catalogItem.enforcementStatus === 'planned' && enabled) {
+        if (catalogKey === 'policy_templates') {
             throw new InternalAccelanceError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: guardrailsService.upsertPolicy - "${catalogItem.name}" is not yet enforced by the runtime and cannot be enabled`
+                `Error: guardrailsService.upsertPolicy - "Policy Templates" was removed in Guardrails v2 (its retroactive-apply mechanism no longer exists)`
             )
         }
-
+        const appServer = getRunningExpressApp()
         const repo = appServer.AppDataSource.getRepository(GuardrailPolicy)
         const scopedChatflowId = chatflowId || WORKSPACE_WIDE
         const existing = await repo.findOneBy({ workspaceId, chatflowId: scopedChatflowId, catalogKey })
         const configStr = config ? JSON.stringify(config) : undefined
-        let saved: GuardrailPolicy
         if (existing) {
             existing.enabled = enabled
             existing.config = configStr
-            saved = await repo.save(existing)
-        } else {
-            const policy = repo.create({ workspaceId, chatflowId: scopedChatflowId, catalogKey, enabled, config: configStr, createdBy })
-            saved = await repo.save(policy)
+            return await repo.save(existing)
         }
-
-        // Policy Templates: turning this ON for a workspace retroactively applies the default
-        // bundle now, not just "will apply to future new workspaces" (see applyDefaultPolicyTemplate).
-        if (catalogKey === 'policy_templates' && scopedChatflowId === WORKSPACE_WIDE && enabled) {
-            await applyDefaultPolicyTemplate(workspaceId)
-        }
-        return saved
+        const policy = repo.create({ workspaceId, chatflowId: scopedChatflowId, catalogKey, enabled, config: configStr, createdBy })
+        return await repo.save(policy)
     } catch (error) {
         if (error instanceof InternalAccelanceError) throw error
         throw new InternalAccelanceError(
@@ -178,56 +252,35 @@ const deletePolicy = async (id: string, workspaceId: string) => {
     }
 }
 
-/**
- * Most-specific-match-wins effective state for one policy-type catalog entry, mirroring
- * AgentToolPolicyService.evaluate() -- except the "no row found" default is OFF, not permissive,
- * since a disabled guardrail isn't a regression the way a silently-blocked tool call would be.
- */
-const evaluate = async (
-    workspaceId: string,
-    chatflowId: string,
-    catalogKey: string
-): Promise<{ enabled: boolean; config?: Record<string, unknown> }> => {
-    const appServer = getRunningExpressApp()
-    const repo = appServer.AppDataSource.getRepository(GuardrailPolicy)
+// content_moderation and hitl_approval_gates aren't gated by an attachment/policy row at all --
+// their real behavior is detecting whether a matching node is actually present in the chatflow's
+// own flowData, same as before this migration. nodeNames still lives on the OLD
+// GuardrailCatalogItem row for these two keys (untouched by this migration) since
+// GuardrailDefinition never gained an equivalent field -- no code path needed it.
+const NODE_DETECTION_KEYS = ['content_moderation', 'hitl_approval_gates']
 
-    const chatflowScoped = await repo.findOneBy({ workspaceId, chatflowId, catalogKey })
-    const row = chatflowScoped ?? (await repo.findOneBy({ workspaceId, chatflowId: WORKSPACE_WIDE, catalogKey }))
-    if (!row || !row.enabled) return { enabled: false }
-
-    // A policy row with no explicit config override must fall back to the catalog item's
-    // defaultConfig -- without this, "enabled" but unconfigured guardrails (e.g. Topic Scoping
-    // with no deniedTopics override) would be enabled in name only, enforcing nothing.
-    if (row.config) {
-        try {
-            return { enabled: true, config: JSON.parse(row.config) }
-        } catch {
-            return { enabled: true }
-        }
-    }
-    const catalogItem = await appServer.AppDataSource.getRepository(GuardrailCatalogItem).findOneBy({ key: catalogKey })
-    if (catalogItem?.defaultConfig) {
-        try {
-            return { enabled: true, config: JSON.parse(catalogItem.defaultConfig) }
-        } catch {
-            return { enabled: true }
-        }
-    }
-    return { enabled: true }
-}
+const BACKFILLED_KEYS = [
+    'pii_redaction',
+    'topic_action_scoping',
+    'spend_token_budgets',
+    'prompt_injection_defense',
+    'egress_filtering',
+    'confused_deputy_prevention',
+    'loop_recursion_detection'
+]
 
 /**
- * Merged view for the canvas "Guardrails & Compliance" panel: every catalog entry visible to this
- * workspace, its effective enabled/source state (workspace default vs. overridden for this agent),
- * and -- for kind='node' entries -- whether a matching node is actually present in this chatflow's
- * flowData. tool_allowlist is a special case: its state is read from the pre-existing
- * AgentToolPolicy table (which has its own dedicated CRUD at /tool-policy) rather than
- * GuardrailPolicy, so this reads it directly instead of duplicating that table.
+ * Merged view for the canvas "Guardrails & Compliance" panel. tool_allowlist reads
+ * AgentToolPolicy directly (unchanged); NODE_DETECTION_KEYS scan the chatflow's own flowData
+ * (unchanged); the 7 backfilled keys' DISPLAYED state still reflects the OLD GuardrailPolicy
+ * table -- that's what's actually deciding enforcement right now, so the display must agree
+ * with it rather than the new (shadow-only) model; the remaining exceptions
+ * (memory_rag_write_validation, audit_log, data_retention_policy) also read GuardrailPolicy.
  */
 const getSummary = async (workspaceId: string, chatflowId: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const catalog = await listCatalog(workspaceId)
+        const definitions = await listDefinitions(workspaceId)
 
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
         let flowNodeNames: string[] = []
@@ -240,58 +293,59 @@ const getSummary = async (workspaceId: string, chatflowId: string) => {
             }
         }
 
-        const toolPolicyRepo = appServer.AppDataSource.getRepository(AgentToolPolicy)
-        const toolPolicyCount = await toolPolicyRepo.count({ where: { workspaceId } })
+        const toolPolicyCount = await appServer.AppDataSource.getRepository(AgentToolPolicy).count({ where: { workspaceId } })
 
         const items = await Promise.all(
-            catalog.map(async (item) => {
-                if (item.key === 'tool_allowlist') {
+            definitions.map(async (def) => {
+                if (def.key === 'tool_allowlist') {
                     return {
-                        catalogKey: item.key,
-                        name: item.name,
-                        description: item.description,
-                        kind: item.kind,
-                        enforcementStatus: item.enforcementStatus,
+                        catalogKey: def.key,
+                        name: def.name,
+                        description: def.description,
+                        isNode: false,
+                        isToolAllowlist: true,
                         active: toolPolicyCount > 0,
                         source: toolPolicyCount > 0 ? 'tool-access-policy' : 'none',
                         managedVia: '/tool-policy'
                     }
                 }
-                if (item.kind === GuardrailKind.NODE) {
-                    const nodeNames: string[] = item.nodeNames ? JSON.parse(item.nodeNames) : []
+                if (NODE_DETECTION_KEYS.includes(def.key)) {
+                    const legacyCatalogItem = await appServer.AppDataSource.getRepository(GuardrailCatalogItem).findOneBy({
+                        key: def.key
+                    })
+                    const nodeNames: string[] = legacyCatalogItem?.nodeNames ? JSON.parse(legacyCatalogItem.nodeNames) : []
                     const present = nodeNames.some((n) => flowNodeNames.includes(n))
                     return {
-                        catalogKey: item.key,
-                        name: item.name,
-                        description: item.description,
-                        kind: item.kind,
-                        enforcementStatus: item.enforcementStatus,
+                        catalogKey: def.key,
+                        name: def.name,
+                        description: def.description,
+                        isNode: true,
+                        isToolAllowlist: false,
                         active: present,
                         source: present ? 'canvas-node' : 'none'
                     }
                 }
-
-                const chatflowScoped = await appServer.AppDataSource.getRepository(GuardrailPolicy).findOneBy({
-                    workspaceId,
-                    chatflowId,
-                    catalogKey: item.key
-                })
-                const workspaceWide = chatflowScoped
-                    ? undefined
-                    : await appServer.AppDataSource.getRepository(GuardrailPolicy).findOneBy({
-                          workspaceId,
-                          chatflowId: WORKSPACE_WIDE,
-                          catalogKey: item.key
-                      })
-                const effectiveRow = chatflowScoped ?? workspaceWide
+                if (BACKFILLED_KEYS.includes(def.key)) {
+                    const resolved = await evaluate(workspaceId, chatflowId, def.key)
+                    return {
+                        catalogKey: def.key,
+                        name: def.name,
+                        description: def.description,
+                        isNode: false,
+                        isToolAllowlist: false,
+                        active: resolved.enabled,
+                        source: resolved.enabled ? 'attached' : 'none'
+                    }
+                }
+                const resolvedLegacy = await evaluate(workspaceId, WORKSPACE_WIDE, def.key)
                 return {
-                    catalogKey: item.key,
-                    name: item.name,
-                    description: item.description,
-                    kind: item.kind,
-                    enforcementStatus: item.enforcementStatus,
-                    active: !!effectiveRow?.enabled,
-                    source: chatflowScoped ? 'overridden-for-this-agent' : workspaceWide ? 'workspace-default' : 'none'
+                    catalogKey: def.key,
+                    name: def.name,
+                    description: def.description,
+                    isNode: false,
+                    isToolAllowlist: false,
+                    active: resolvedLegacy.enabled,
+                    source: resolvedLegacy.enabled ? 'workspace-default' : 'none'
                 }
             })
         )
@@ -306,43 +360,43 @@ const getSummary = async (workspaceId: string, chatflowId: string) => {
 }
 
 /**
- * Called from utilAddChatMessage() on every message save. Returns null (meaning: skip redaction
- * entirely, do not modify content) unless at least one redaction-capable policy -- the standard
- * 'pii_redaction' entry or a custom, non-standard policy-type entry -- is enabled for this
- * workspace/chatflow. When enabled, returns the extra regex patterns (beyond the built-in PII
- * presets baked into redactContent()) to also redact.
+ * Called from utilAddChatMessage() on every message save. Returns null (skip redaction
+ * entirely) unless pii_redaction is enabled for this workspace/chatflow. The real decision
+ * below is UNCHANGED, still driven by the old GuardrailPolicy-backed evaluate(). A shadow
+ * verdict against the new model is recorded alongside, purely for later comparison -- it never
+ * influences whether redaction actually happens.
  */
 const getActiveRedactionPatterns = async (workspaceId: string, chatflowId: string): Promise<string[] | null> => {
-    const appServer = getRunningExpressApp()
-    const catalog = await listCatalog(workspaceId)
-    const candidates = catalog.filter((c) => c.kind === GuardrailKind.POLICY && (c.key === 'pii_redaction' || !c.isStandard))
-    const policyRepo = appServer.AppDataSource.getRepository(GuardrailPolicy)
+    const start = Date.now()
+    const row = await evaluate(workspaceId, chatflowId, 'pii_redaction')
 
-    let anyEnabled = false
-    const extraPatterns: string[] = []
-    for (const item of candidates) {
-        const chatflowScoped = await policyRepo.findOneBy({ workspaceId, chatflowId, catalogKey: item.key })
-        const row = chatflowScoped ?? (await policyRepo.findOneBy({ workspaceId, chatflowId: WORKSPACE_WIDE, catalogKey: item.key }))
-        if (!row?.enabled) continue
-        anyEnabled = true
-        try {
-            const cfg = row.config ? JSON.parse(row.config) : item.defaultConfig ? JSON.parse(item.defaultConfig) : {}
-            if (Array.isArray(cfg?.patterns)) extraPatterns.push(...cfg.patterns)
-        } catch {
-            // Malformed config -- ignore its extra patterns, built-in presets still apply.
-        }
+    const shadow = await resolveGuardrailAttachment(chatflowId, 'pii_redaction')
+    if (shadow.enabled) {
+        await recordVerdict({
+            workspaceId,
+            chatflowId,
+            definitionKey: 'pii_redaction',
+            kindKey: shadow.kindKey || 'pii_regex',
+            verdict: row.enabled ? 'redact' : 'pass',
+            latencyMs: Date.now() - start,
+            observeMode: true
+        })
     }
-    return anyEnabled ? extraPatterns : null
+
+    if (!row.enabled) return null
+    const patterns = row.config?.patterns
+    return Array.isArray(patterns) ? patterns : []
 }
 
 export default {
-    listCatalog,
-    createCustomCatalogItem,
+    listDefinitions,
     listPolicies,
     upsertPolicy,
     deletePolicy,
+    resolveGuardrailAttachment,
+    isPromoted,
+    recordVerdict,
     evaluate,
     getSummary,
-    getActiveRedactionPatterns,
-    applyDefaultPolicyTemplate
+    getActiveRedactionPatterns
 }
