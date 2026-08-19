@@ -224,6 +224,69 @@ export interface IGuardrailPolicy {
     updatedDate: Date
 }
 
+// Guardrails v2 -- see rules/guardrails-v2/definition-schema.md for full field rationale.
+export interface IGuardrailDefinition {
+    id: string
+    key: string
+    name: string
+    description: string
+    icon?: string
+    origin: string
+    category: string
+    kindKey: string
+    placement: string
+    allowedHosts?: string
+    hooks?: string
+    paramSchema: string
+    defaultParams: string
+    defaultOnFailAction: string
+    defaultFailMode: string
+    defaultTimeoutMs: number
+    defaultObserveMode: boolean
+    frameworkRefs?: string
+    version: number
+    supersededByDefinitionId?: string
+    workspaceId?: string
+    createdBy?: string
+    deletedAt?: Date
+    createdDate: Date
+    updatedDate: Date
+}
+
+export interface IGuardrailFlowAttachment {
+    id: string
+    workspaceId: string
+    chatflowId: string
+    definitionId: string
+    definitionKey: string
+    kindKey: string
+    paramsSnapshot: string
+    onFailAction: string
+    failMode: string
+    timeoutMs: number
+    observeMode: boolean
+    createdBy?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
+export interface IGuardrailVerdict {
+    id: string
+    workspaceId: string
+    chatflowId: string
+    nodeId: string
+    definitionId?: string
+    definitionKey: string
+    kindKey: string
+    verdict: string
+    score?: number
+    reason?: string
+    evidence?: string
+    latencyMs: number
+    observeMode: boolean
+    createdDate: Date
+}
+
 export interface IVariable {
     id: string
     name: string

@@ -7,6 +7,9 @@ import { CredentialAccess } from './CredentialAccess'
 import { ToolCallAudit } from './ToolCallAudit'
 import { GuardrailCatalogItem } from './GuardrailCatalogItem'
 import { GuardrailPolicy } from './GuardrailPolicy'
+import { GuardrailDefinition } from './GuardrailDefinition'
+import { GuardrailFlowAttachment } from './GuardrailFlowAttachment'
+import { GuardrailVerdict } from './GuardrailVerdict'
 import { AuditLog } from './AuditLog'
 import { Tool } from './Tool'
 import { Assistant } from './Assistant'
@@ -46,6 +49,9 @@ export const entities = {
     ToolCallAudit,
     GuardrailCatalogItem,
     GuardrailPolicy,
+    GuardrailDefinition,
+    GuardrailFlowAttachment,
+    GuardrailVerdict,
     AuditLog,
     Tool,
     Assistant,
