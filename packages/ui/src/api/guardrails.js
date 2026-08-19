@@ -1,8 +1,12 @@
 import client from './client'
 
-const getCatalog = () => client.get('/guardrails/catalog')
+// createCustomCatalogItem (POST /catalog) removed per Guardrails v2 §2.2 -- custom-catalog
+// authoring is deleted, not deferred. getPolicies/upsertPolicy/deletePolicy are KEPT -- the
+// per-agent canvas panel and the /compliance page's data_retention_policy toggle both still
+// depend on them for real, currently-working functionality (see
+// packages/server/src/services/guardrails/index.ts's file comment).
 
-const createCustomCatalogItem = (body) => client.post('/guardrails/catalog', body)
+const getCatalog = () => client.get('/guardrails/catalog')
 
 const getPolicies = (chatflowId) => client.get('/guardrails/policy', { params: { chatflowId } })
 
@@ -14,7 +18,6 @@ const getSummary = (chatflowId) => client.get(`/guardrails/summary/${chatflowId}
 
 export default {
     getCatalog,
-    createCustomCatalogItem,
     getPolicies,
     upsertPolicy,
     deletePolicy,
