@@ -1,0 +1,1 @@
+import{N as o}from"./index-LeCD4Ym0.js";const t=s=>o.post("/auth/resolve",s),e=s=>o.post("/auth/login",s),n=s=>o.get(`/auth/permissions/${s}`),i=s=>o.get(`/auth/sso-success?token=${s}`),c={resolveLogin:t,login:e,getAllPermissions:n,ssoSuccess:i};export{c as a};

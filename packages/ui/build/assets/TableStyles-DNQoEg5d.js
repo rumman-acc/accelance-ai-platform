@@ -1,1 +1,0 @@
-import{s as a,a4 as t,ah as e}from"./data-grid-gH2S7mw4.js";import{w as o}from"./index-BfPs_hYf.js";const d=a(t)(({theme:l})=>({borderColor:l.palette.grey[900]+25,[`&.${e.head}`]:{color:l.palette.grey[900]},[`&.${e.body}`]:{fontSize:14,height:64}})),b=a(o)(()=>({"&:last-child td, &:last-child th":{border:0}}));export{b as S,d as a};

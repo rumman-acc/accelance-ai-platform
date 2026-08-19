@@ -1,0 +1,1 @@
+import{N as t}from"./index-LeCD4Ym0.js";const r=()=>t.get("/guardrails/catalog"),s=a=>t.get("/guardrails/policy",{params:{chatflowId:a}}),o=a=>t.post("/guardrails/policy",a),i=a=>t.delete(`/guardrails/policy/${a}`),l=a=>t.get(`/guardrails/summary/${a}`),g={getCatalog:r,getPolicies:s,upsertPolicy:o,deletePolicy:i,getSummary:l};export{g};

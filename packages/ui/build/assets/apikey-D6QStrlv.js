@@ -1,0 +1,1 @@
+import{N as t}from"./index-LeCD4Ym0.js";const a=e=>t.get("/apikey",{params:e}),i=e=>t.post("/apikey",e),o=(e,p)=>t.put(`/apikey/${e}`,p),s=e=>t.delete(`/apikey/${e}`),n={getAllAPIKeys:a,createNewAPI:i,updateAPI:o,deleteAPI:s};export{n as a};

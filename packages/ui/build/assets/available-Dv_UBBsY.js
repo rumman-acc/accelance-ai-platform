@@ -1,1 +1,0 @@
-import{E as r}from"./data-grid-gH2S7mw4.js";import{r as i}from"./index-BfPs_hYf.js";const p=({permission:s,children:e})=>{const{hasPermission:o}=i();if(o(s))return e};p.propTypes={permission:r.string,children:r.element};export{p as A};
