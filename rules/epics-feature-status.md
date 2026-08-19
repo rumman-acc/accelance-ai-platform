@@ -531,6 +531,65 @@ is newly estimated on the same reduced basis.
 
 **Memory & RAG write validation** — `services/documentstore/index.ts` checks a custom regex/pattern denylist (empty by default) against content before a document-chunk write. **Effort remaining: ~1 day** to seed a sensible non-empty default pattern set, since an empty denylist enforces nothing until an admin populates it.
 
+**Update (2026-08-19, Guardrails v2 — Phase 0 + Phase 1 of `Guardrails_build_plan.md`):**
+a separate planning doc called for replacing this boolean-toggle catalog with a DB-driven,
+drag-and-drop node system (Kind → Definition → Node instance; verdict contract;
+`inline`/`attached`/`flow` placement) — full rationale in `rules/guardrails-v2/` (four Phase 0
+artifacts: `kinds.md`, `verdict-contract.md`, `definition-schema.md`, `phase0-audit.md`, plus a
+`reconciliation.md` accounting for every catalog row) and the "Guardrails Rearchitecture
+Phase 0 + Phase 1" implementation plan. Two corrections the plan's own problem statement got
+wrong, found by reading the real code rather than trusting the doc (same discipline as
+`known-issues.md` #015): the catalog above is **14 rows, not 5**, by the time this landed
+(11 guardrail-category above + 3 compliance-category in §10); and
+`memory_rag_write_validation`/`audit_log`/`data_retention_policy` are real but
+workspace-scoped-only checks with no chatflow to attach to, not items with "no live
+enforcement" as first assumed.
+
+Built this pass: three new entities (`GuardrailDefinition` replacing `GuardrailCatalogItem` as
+the source of truth going forward, `GuardrailFlowAttachment` — chatflow-scoped, no more
+workspace-wide `''` sentinel — and append-only `GuardrailVerdict`); a 5-migration batch
+(`1791000000000`–`1795000000000` × 4 drivers) seeding 13 of the 14 catalog rows
+(`policy_templates` deleted outright, not migrated — its whole function was the
+retroactive-apply mechanism §2.2 removes) and backfilling `GuardrailFlowAttachment` for the 7
+keys that are genuinely chatflow-scoped and read `GuardrailPolicy` today (`pii_redaction`,
+`topic_action_scoping`, `spend_token_budgets`, `prompt_injection_defense`, `egress_filtering`,
+`confused_deputy_prevention`, `loop_recursion_detection`) — verified against the real dev DB:
+13 definitions, 147 attachment rows (21 chatflows × 7 keys), re-running the backfill SQL a
+second time confirmed idempotent (147 → 147, no duplicates). The `/guardrails` page is now a
+read-only catalog browser (no toggles, no override counts, no custom-catalog authoring) per
+§2.2 — the per-agent canvas panel and the `/compliance` page's `data_retention_policy` toggle
+are unchanged and still fully functional.
+
+**Load-bearing design choice, verified not asserted:** every one of the 7 backfilled keys'
+real block/allow decision is **still made by the OLD `GuardrailPolicy`-backed `evaluate()`
+path, unchanged** — the new `GuardrailFlowAttachment`-backed path only records a
+`GuardrailVerdict` for later diffing, never blocks anything itself. One exception required
+explicit handling: fixing `known-issues.md` #016 (a `databaseEntities` plumbing bug that had
+silently disabled Prompt-Injection Defense and Egress Filtering on AgentFlow V2 Tool nodes)
+makes their old path functional *for the first time* — since that path was never actually
+live, simply fixing the bug would itself have turned on real enforcement for the one real
+workspace that already has both toggled on (confirmed via direct DB query: 18 live AgentFlow
+V2 agents). `toolPolicy.ts` now gates the real action behind an explicit `isPromoted()` check
+(a `GuardrailFlowAttachment.observeMode === false`, which nothing in this codebase ever sets)
+— verified directly against the real database and real toggle state: a tool call matching a
+blocked egress pattern is still allowed through, and prompt-injection wrapping still doesn't
+happen, while the correct "would have blocked"/"would have redacted" verdicts are written to
+`guardrail_verdict`.
+
+**Residual risk, stated plainly rather than assumed away:** the backfill migration was
+verified against postgres only (the real dev DB) — mysql/mariadb/sqlite were not exercised
+against real instances of those drivers in this pass. The seed migration
+(`SeedGuardrailDefinitions`) is **not** idempotent at the raw-SQL level (`guardrail_definition`
+has no unique constraint on `key`, only a plain index) — safe under normal operation because
+TypeORM's migration-tracking table prevents a re-run, but would create duplicate rows if ever
+re-executed outside that tracking. All 5 migrations have a `down()` method, but none has been
+tested executing.
+
+**Not built this pass, deliberately** (Phase 2+ per the build plan): a real `guardrails` input
+anchor on any host node, inline pass/fail ports, a schema-driven config panel, connection
+validation, custom-definition authoring, the dry-run tester, and framework-coverage reporting
+on `/compliance`.
+
 ### 10. Compliance & Data Governance
 
 **Audit log** — `database/entities/AuditLog.ts` + `services/audit-log`, built 2026-08-17/18. Records guardrail-policy changes, tool-policy changes, and chatflow deletion. **Effort remaining: ~3 days** to extend write-path hooks to the remaining consequential actions (credential/role changes, individual predictions) — first pass covers governance-relevant changes, not literally everything.
@@ -539,7 +598,7 @@ is newly estimated on the same reduced basis.
 
 **Compliance certifications/data residency** — Largely an audit/business process (external audit, legal review, region guarantees), not a coding task. **Effort: not a dev estimate — pursue only once a contract requires it**, and only after the technical controls above exist.
 
-**Policy templates platform-wide** — `services/guardrails`' `applyDefaultPolicyTemplate` applies one hardcoded bundle (currently just PII redaction) to every new workspace, and retroactively when toggled on for an existing one. **Effort remaining: ~2 days** for a real template picker/editor if more than one bundle is ever needed — today's is intentionally a single fixed default.
+**Policy templates platform-wide** — 🔴 **Deleted 2026-08-19**, not built. `applyDefaultPolicyTemplate`, `DEFAULT_POLICY_TEMPLATE`, the `policy_templates` catalog row, and its workspace-creation call site are all removed per the Guardrails v2 rearchitecture §2.2 — no workspace-wide defaults or retroactive-apply concept exists in the new model. Revisit only if a future "framework packs a builder applies to one agent" feature is scoped (build-plan §11 flags this as the likely redefinition, not a straight rebuild).
 
 ### 11. Security & Permission Model
 
