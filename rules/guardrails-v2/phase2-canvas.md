@@ -86,10 +86,51 @@ resolution does zero shape validation on what `.init()` returns — whatever lan
 
 ## Verification status
 
-Typecheck (`tsc --noEmit`) and lint (`eslint`) are clean across all new/modified files as of
-this writing. **Live verification (rebuild, restart, palette check, drag/connect/configure,
-save/reload persistence, observe-mode shadow-verdict proof, promote-and-block proof, existing-
-flow regression check) has not yet been run** — see the plan document's Verification section
-for the exact remaining checklist. Do not treat Phase 2 as signed off until that list is
-actually run against a live dev instance, per this project's standing evidence-over-assertion
-practice.
+**Live verification completed 2026-08-20, on the real dev instance and real dev DB** (not
+mocked). Typecheck/lint clean throughout. Evidence for each step:
+
+1. **Rebuild + restart**: `packages/components` built clean; server restart's boot log showed
+   `Nodes pool initialized successfully` with zero errors/warnings referencing any of the 3 new
+   nodes, `ToolAgent`, or `AgentAsTool` (one pre-existing, unrelated Couchbase native-binding
+   error appears on every boot regardless of this change).
+2. **Palette check**: a real classic canvas's node picker, searched for "Guardrail", showed a
+   "Guardrails" category with all 3 nodes and their correct descriptions/icons.
+3. **Drag, connect, configure, save, reload**: built a real test chatflow ("Phase2 Guardrails
+   Verify") with Egress Filtering attached to a `ToolAgent`'s new `guardrails` anchor,
+   configured `blockedDomainPatterns`. Confirmed via direct DB query of the persisted
+   `flowData` that the node, its config, and the edge all round-tripped correctly — critically,
+   confirmed `toolAgent_0.data.inputs.guardrails` persists as `["{{egressFilteringGuardrail_0
+   .data.instance}}"]`, the exact anchor-resolution placeholder format the classic build path
+   expects. Re-opening the chatflow and a full browser F5 reload both re-rendered the node,
+   edge, and config identically (`react-flow__node` count 2, `react-flow__edge` count 1 in
+   both cases).
+4. **Runtime resolution check**: added temporary debug logging to `runToolEgressGuardrails`,
+   rebuilt, and captured a real tool-call execution. Confirmed `guardrailConfigs` arrives as a
+   real resolved array (`isArray: true`) containing the exact object `EgressFiltering.ts`'s
+   `init()` produces (`{"definitionKey":"egress_filtering","kindKey":"regex_match",
+   "observeMode":true,"blockedDomainPatterns":["phase2-verify.example.com"]}`) — not node ids,
+   not `undefined`, not a LangChain-shaped instance. Instrumentation removed after capture;
+   `runAttachedGuardrails.ts` is byte-for-byte identical to the committed version again.
+5. **Observe-mode shadow-verdict proof**: with a real Anthropic/OpenAI/Gemini-model-backed
+   agent (Calculator tool, real LLM call — every credential in this workspace was tried, most
+   were dead; Gemini with a corrected model name worked), triggered a tool call whose argument
+   matched the blocked pattern. `guardrail_verdict` went from 0 rows to 2 rows
+   (`verdict:'block'`, `observeMode:true`, `nodeId:'toolAgent_0'` — the real host node's id, the
+   per-node granularity this table exists for), while the chat transcript confirms the
+   Calculator tool call itself still succeeded ("I don't know how to do that" — its own
+   response to a non-numeric input, not a guardrail error) — shadow mode holds.
+6. **Promote-to-block proof**: flipped this one node instance's `observeMode` to `false`
+   (confirmed scoped to this attachment via direct DB check, not workspace-wide), re-sent the
+   identical input — the chat transcript now shows the tool call itself returned "Egress
+   Filtering: blocked a reference to \"phase2-verify.example.com\"", and the new
+   `guardrail_verdict` row has `observeMode:false`. Flipped back to `observeMode:true`, re-sent
+   again — the tool call succeeded normally again ("I don't know how to do that"), with the
+   corresponding verdict row back to `observeMode:true`. Promotion is real, per-node, and
+   reversible.
+
+**Not covered by this pass**: `AgentAsTool.ts`/Confused Deputy Prevention's equivalent
+live-trigger proof (steps 5/6 only exercised Egress Filtering via `ToolAgent.ts`) and the
+existing-flow regression check (confirming an already-saved flow using the pre-Phase-2
+`ToolAgent.ts`/`AgentAsTool.ts` version still loads without data loss, only showing the
+outdated-node sync warning). Both are mechanically the same pattern already proven here and
+carry low residual risk, but were not separately executed.

@@ -600,9 +600,19 @@ impossible on the classic build path (a node must be a real file scanned by `Nod
 `packages/components/nodes/guardrails/` instead — the "merged nodes API"/`nodeSynthesis.ts`
 piece from the original plan was dropped entirely, not deferred. Each new node attaches via a
 new `guardrails` anchor and is wired independently of Phase 1's legacy toggle path (which
-remains untouched, still permanently observe-only via `isPromoted()`). **Typecheck/lint clean;
-live verification (rebuild, palette check, drag/connect/configure, promote-and-block proof)
-has not yet been run** — do not treat as signed off until that happens.
+remains untouched, still permanently observe-only via `isPromoted()`). **Live verification
+completed 2026-08-20** against the real dev instance/DB, including a genuine LLM-backed
+tool-call trigger (Calculator tool, real model call after working through several dead
+credentials in this workspace): confirmed the palette entry, drag/connect/save/reload
+persistence (`guardrails` anchor round-trips as `["{{nodeId.data.instance}}"]`, matching the
+classic resolution mechanism), the exact resolved-config shape `runToolEgressGuardrails`
+receives at runtime, a shadow-mode run (`GuardrailVerdict` recorded `block`/`observeMode:true`,
+tool call still succeeded), and a promote-to-block run scoped to the one node instance (tool
+call actually blocked, verdict `observeMode:false`), then confirmed reverting `observeMode`
+restores normal behavior. Full evidence in `rules/guardrails-v2/phase2-canvas.md`. Not
+separately covered: the same live-trigger proof for `AgentAsTool.ts`/Confused Deputy
+Prevention, and an existing-flow-regression check — both mechanically identical to what was
+proven, low residual risk, not yet separately executed.
 
 **Not built this pass, deliberately:** dynamic DB-driven node registration (so a
 `GuardrailDefinition` row becomes a droppable canvas node with no code changes) — a hard
