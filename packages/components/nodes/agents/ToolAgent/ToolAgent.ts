@@ -37,7 +37,7 @@ class ToolAgent_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Tool Agent'
         this.name = 'toolAgent'
-        this.version = 2.1
+        this.version = 2.2
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'toolAgent.png'
@@ -92,7 +92,7 @@ class ToolAgent_Agents implements INode {
                 description:
                     'Attach guardrail nodes (e.g. Egress Filtering, Prompt-Injection Defense) to check around every tool call this agent makes',
                 name: 'guardrails',
-                type: 'Guardrail',
+                type: 'ToolCallGuardrail',
                 optional: true,
                 list: true
             },

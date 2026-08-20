@@ -21,12 +21,14 @@ class ConfusedDeputyPrevention_Guardrails implements INode {
     constructor() {
         this.label = 'Confused Deputy Prevention'
         this.name = 'confusedDeputyPreventionGuardrail'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Guardrail'
         this.icon = 'guardrail.svg'
         this.category = 'Guardrails'
         this.description = 'Verifies a claimed triggering-user identity is an active member of the target workspace before trusting it'
-        this.baseClasses = [this.type]
+        // 'IdentityGuardrail' restricts this node to AgentAsTool.ts's guardrails anchor --
+        // see EgressFiltering.ts for the mechanism this relies on.
+        this.baseClasses = [this.type, 'IdentityGuardrail']
         this.inputs = [
             {
                 label: 'Observe Only (do not grant trust yet)',

@@ -25,12 +25,16 @@ class EgressFiltering_Guardrails implements INode {
     constructor() {
         this.label = 'Egress Filtering'
         this.name = 'egressFilteringGuardrail'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Guardrail'
         this.icon = 'guardrail.svg'
         this.category = 'Guardrails'
         this.description = 'Blocks a tool call whose arguments reference a blocked domain/host pattern'
-        this.baseClasses = [this.type]
+        // 'ToolCallGuardrail' restricts this node to host nodes whose own `guardrails` anchor
+        // declares that same type (ToolAgent.ts) -- isValidConnection (genericHelper.js) does
+        // plain type-string matching with no category/allowedHosts awareness, so the anchor
+        // type itself is what enforces "this can't attach to AgentAsTool.ts's identity anchor."
+        this.baseClasses = [this.type, 'ToolCallGuardrail']
         this.inputs = [
             {
                 label: 'Blocked Domain/Host Patterns',

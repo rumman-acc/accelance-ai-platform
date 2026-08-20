@@ -19,12 +19,13 @@ class PromptInjectionDefense_Guardrails implements INode {
     constructor() {
         this.label = 'Prompt-Injection Defense'
         this.name = 'promptInjectionDefenseGuardrail'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Guardrail'
         this.icon = 'guardrail.svg'
         this.category = 'Guardrails'
         this.description = "Wraps a tool's result in untrusted-content delimiters so it cannot redirect the agent"
-        this.baseClasses = [this.type]
+        // See EgressFiltering.ts for why 'ToolCallGuardrail' -- both are ToolAgent.ts-only.
+        this.baseClasses = [this.type, 'ToolCallGuardrail']
         this.inputs = [
             {
                 label: 'Observe Only (do not redact yet)',

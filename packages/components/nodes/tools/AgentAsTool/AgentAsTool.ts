@@ -30,7 +30,7 @@ class AgentAsTool_Tools implements INode {
     constructor() {
         this.label = 'Agent as Tool'
         this.name = 'agentAsTool'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'AgentAsTool'
         this.icon = 'agentastool.svg'
         this.category = 'Tools'
@@ -122,7 +122,7 @@ class AgentAsTool_Tools implements INode {
             {
                 label: 'Guardrails',
                 name: 'guardrails',
-                type: 'Guardrail',
+                type: 'IdentityGuardrail',
                 list: true,
                 optional: true,
                 description: 'Attach a Guardrails node (e.g. Confused Deputy Prevention) to check before forwarding this tool call'

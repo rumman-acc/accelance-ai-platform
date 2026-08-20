@@ -215,3 +215,31 @@ a clean typecheck. The two corrections made mid-build (host node, node synthesis
 explicitly-labeled non-live test (item 7) are the honest record of what shipped and how it was
 checked — nothing here should be read as "same mechanism, assumed fine" without the evidence
 line next to it.
+
+## Phase 2 remaining scope — Connection validation (2026-08-20, per `Guardrails_end_to_end_protocol.md`)
+
+Before this unit, all 3 guardrail nodes and both host anchors declared the same generic
+`type:'Guardrail'`, so `isValidConnection` (plain type-string matching, no category/
+`allowedHosts` awareness) would have let `Egress Filtering`/`Prompt-Injection Defense` wrongly
+attach to `AgentAsTool.ts`'s anchor, and `Confused Deputy Prevention` wrongly attach to
+`ToolAgent.ts`'s — nothing rejected it structurally.
+
+**Fix:** gave each node a second, specific `baseClasses` entry — `ToolCallGuardrail` for
+`EgressFiltering.ts`/`PromptInjectionDefense.ts`, `IdentityGuardrail` for
+`ConfusedDeputyPrevention.ts` — and changed each host anchor's declared `type` to match only
+the one it should accept (`ToolAgent.ts` → `ToolCallGuardrail`, `AgentAsTool.ts` →
+`IdentityGuardrail`). No new validation code — this reuses the exact type-matching
+`isValidConnection` already does for every other typed anchor in the codebase.
+
+**Live-tested, 4 cases, before/after edge count on a real canvas:** Egress Filtering →
+`ToolAgent` guardrails succeeded (valid); Confused Deputy Prevention → `ToolAgent` guardrails
+was rejected (invalid); Confused Deputy Prevention → `AgentAsTool` guardrails succeeded
+(valid); Egress Filtering → `AgentAsTool` guardrails was rejected (invalid). All 4 correct.
+(One false-negative on the first pass was a node visually overlapping the source handle,
+confirmed via `elementFromPoint` and fixed by spreading nodes apart before retrying — not a
+validation bug.)
+
+This satisfies the *behavior* `allowedHosts` was meant to drive, structurally rather than by
+reading the DB column at runtime — consistent with Phase 2's static-physical-node-file
+pattern. `allowedHosts`/`hooks` on the 3 in-scope `guardrail_definition` rows remain
+unpopulated and unread; see the 2026-08-20 update in `definition-schema.md`.
