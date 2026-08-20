@@ -609,10 +609,19 @@ classic resolution mechanism), the exact resolved-config shape `runToolEgressGua
 receives at runtime, a shadow-mode run (`GuardrailVerdict` recorded `block`/`observeMode:true`,
 tool call still succeeded), and a promote-to-block run scoped to the one node instance (tool
 call actually blocked, verdict `observeMode:false`), then confirmed reverting `observeMode`
-restores normal behavior. Full evidence in `rules/guardrails-v2/phase2-canvas.md`. Not
-separately covered: the same live-trigger proof for `AgentAsTool.ts`/Confused Deputy
-Prevention, and an existing-flow-regression check — both mechanically identical to what was
-proven, low residual risk, not yet separately executed.
+restores normal behavior. **Follow-up (same day):** a review pass required two more checks
+before treating this as signed off rather than accepting "same mechanism, low risk" on faith —
+that exact phrase had already been wrong once this build (the AgentFlow V2 host-node
+assumption). Both ran: (1) `AgentAsTool.ts`/Confused Deputy Prevention — the real "block" case
+needs a claimed identity that isn't a valid workspace member, which a live session (always a
+real, valid member) can't produce, so this was proven via direct invocation of the real
+compiled function against the real DB instead (4 cases: shadow+valid, promoted+valid,
+promoted+invalid="block", shadow+invalid — all correct, each a real `GuardrailVerdict` write,
+cleaned up after); (2) existing-flow regression — no real flow in the DB uses these nodes
+except one unrelated pre-existing broken row, so a clean substitute was saved under the
+pre-Phase-2 code, triggered, then reopened unmodified under current code and re-triggered —
+byte-identical error, no data loss, correct sync-warning UI. Both passed. Full evidence in
+`rules/guardrails-v2/phase2-canvas.md`.
 
 **Not built this pass, deliberately:** dynamic DB-driven node registration (so a
 `GuardrailDefinition` row becomes a droppable canvas node with no code changes) — a hard

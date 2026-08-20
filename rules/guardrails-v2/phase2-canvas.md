@@ -128,9 +128,90 @@ mocked). Typecheck/lint clean throughout. Evidence for each step:
    corresponding verdict row back to `observeMode:true`. Promotion is real, per-node, and
    reversible.
 
-**Not covered by this pass**: `AgentAsTool.ts`/Confused Deputy Prevention's equivalent
-live-trigger proof (steps 5/6 only exercised Egress Filtering via `ToolAgent.ts`) and the
-existing-flow regression check (confirming an already-saved flow using the pre-Phase-2
-`ToolAgent.ts`/`AgentAsTool.ts` version still loads without data loss, only showing the
-outdated-node sync warning). Both are mechanically the same pattern already proven here and
-carry low residual risk, but were not separately executed.
+## Follow-up verification (2026-08-20, same day, after initial sign-off review)
+
+A review pass on the initial verification asked for two more things before treating Phase 2
+as fully signed off, on the grounds that "same mechanism, low risk" had already been wrong
+once this build (the AgentFlow V2 host-node assumption) and shouldn't be trusted twice without
+checking. Both were run.
+
+### 7. `AgentAsTool.ts` / Confused Deputy Prevention proof
+
+**Not a live chat trigger** — stated plainly, because it's a real, deliberate difference from
+steps 4-6 above, not an oversight. Two independent blockers made a live UI trigger impractical:
+- The "block" scenario for this guardrail specifically requires a claimed identity that is
+  **not** an active workspace member. A live browser session run by a genuine, valid member
+  (which any session driving this verification necessarily is) can never produce that input —
+  there is no way to "become" an invalid user through the normal chat UI. Testing the block
+  path at all requires supplying the claim directly, not routing it through a live session.
+- Separately, building a live `AgentAsTool` fixture hit real UI infrastructure friction
+  unrelated to the guardrails code: the "Select Agent" async-options loader
+  (`AgentAsTool.ts`'s `listAgentflows`) returned `[]` for an entire build attempt before the
+  cause was found — the fixture had silently landed in "Personal Workspace" (the last-active
+  workspace from an earlier, unrelated test in this same pass, which persists server-side per
+  account) while the target agentflow lived in "Default Workspace"; `listAgentflows` is
+  correctly workspace-scoped, so it legitimately found nothing to list.
+
+Given both, verification instead directly invoked the real, compiled
+`runAgentAsToolIdentityGuardrails` (`packages/components/dist/src/guardrails/
+runAttachedGuardrails.js`) against a real `DataSource` connected to the live dev DB (via
+`packages/server/dist/DataSource.js`, same entities, same `GuardrailVerdict`/`WorkspaceUser`
+tables) — the identical function classic `AgentAsTool.ts` calls, exercised with the exact
+`guardrailConfigs` shape `ConfusedDeputyPrevention.ts`'s `init()` produces
+(`{definitionKey:'confused_deputy_prevention', kindKey:'enum_constraint', observeMode}`), just
+supplied directly rather than resolved from a live canvas. Four cases, each writing and then
+verified via a real `GuardrailVerdict` row:
+
+| Case | claimedUserId | observeMode | `isTrusted` returned | verdict recorded |
+|---|---|---|---|---|
+| 1. Shadow, valid member | real, active user | `true` | `false` | `pass` |
+| 2. Promoted, valid member | real, active user | `false` | `true` | `pass` |
+| 3. Promoted, non-member (**the real block case**) | `00000000-…-000000000000` | `false` | `false` | `block`, reason: "claimed user … is not an active member of this workspace" |
+| 4. Shadow, non-member | `00000000-…-000000000000` | `true` | `false` | `block` |
+
+Case 1 confirms decision 5 (observe-first) applied correctly to a "grant" action: even a claim
+that verifies successfully gets no real trust while unpromoted. Case 2 confirms promotion
+genuinely grants trust once verified. Case 3 is the actual "block" proof the live path couldn't
+produce. Case 4 confirms shadow mode still computes and records the correct decision without
+enforcing it. All 4 test verdict rows were deleted after verification (0 → 4 → 0).
+
+**PASS**, by this standard — real compiled code, real DB, real verdict writes — but explicitly
+not a live chat/UI-driven trigger the way steps 4-6 were. That distinction is real, not
+cosmetic, and is why it's called out rather than folded into the pass/fail summary silently.
+
+### 8. Existing-flow regression check
+
+No real chatflow in this database uses `toolAgent` or `agentAsTool` at all except one — a
+workspace's `Sample-test01`, which turned out to be unrelated pre-existing broken test data
+(every node has `position: null` and `type: null`, created 2026-08-05, crashes the canvas on
+load under **either** code version — confirmed by loading it under the pre-Phase-2 code first).
+Not a usable baseline.
+
+Built a clean substitute instead: a real chatflow (`ToolAgent` + `Calculator` + `BufferMemory`
++ `Anthropic Claude`, no working credential — deliberately irrelevant, since the regression
+question is about the code path reaching the same failure point, not about getting a
+successful model response) saved under the **pre-Phase-2** `ToolAgent.ts` (temporarily restored
+via `git checkout fd57784 --`, rebuilt, server restarted on that build). Triggered it — result:
+`Error: Anthropic API key not found`, thrown downstream of `prepareAgent()`, same as it would
+be with a real pre-existing flow.
+
+Restored the current Phase 2 code (`git checkout HEAD --`, rebuilt, restarted), reopened the
+**same saved chatflow** (not rebuilt, not resaved) and re-triggered the identical input.
+Result: **byte-identical** `Error: Anthropic API key not found`. Node count (4) and edge count
+(3) unchanged. The canvas showed the expected "Sync Nodes" warning icon and toolbar button
+(confirming the version-mismatch UI engaged correctly) while still rendering the node's old,
+pre-Phase-2 schema (no "Guardrails" row) until an explicit sync — no forced upgrade, no data
+loss, no crash.
+
+**PASS.** An absent `guardrails` field (as every pre-existing flow has, since the field never
+existed before this change) does not alter behavior — same error, same point of failure, same
+persisted shape, before and after. Test fixture deleted after verification.
+
+## Sign-off
+
+With both follow-up items passing, Phase 2 is signed off as of 2026-08-20: all 8 verification
+steps (6 original + 2 follow-up) have direct, DB- or log-confirmed evidence, not inference from
+a clean typecheck. The two corrections made mid-build (host node, node synthesis) and the one
+explicitly-labeled non-live test (item 7) are the honest record of what shipped and how it was
+checked — nothing here should be read as "same mechanism, assumed fine" without the evidence
+line next to it.
