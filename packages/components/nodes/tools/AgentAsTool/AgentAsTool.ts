@@ -13,6 +13,7 @@ import {
 } from '../../../src/utils'
 import { isValidUUID, isValidURL } from '../../../src/validator'
 import { v4 as uuidv4 } from 'uuid'
+import { runAgentAsToolIdentityGuardrails } from '../../../src/guardrails/runAttachedGuardrails'
 
 class AgentAsTool_Tools implements INode {
     label: string
@@ -29,7 +30,7 @@ class AgentAsTool_Tools implements INode {
     constructor() {
         this.label = 'Agent as Tool'
         this.name = 'agentAsTool'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'AgentAsTool'
         this.icon = 'agentastool.svg'
         this.category = 'Tools'
@@ -117,6 +118,14 @@ class AgentAsTool_Tools implements INode {
                 show: {
                     useQuestionFromChat: false
                 }
+            },
+            {
+                label: 'Guardrails',
+                name: 'guardrails',
+                type: 'Guardrail',
+                list: true,
+                optional: true,
+                description: 'Attach a Guardrails node (e.g. Confused Deputy Prevention) to check before forwarding this tool call'
             }
         ]
     }
@@ -199,7 +208,30 @@ class AgentAsTool_Tools implements INode {
         // verify and use it, instead of the inner call always running with no principal. The
         // receiving end re-verifies workspace membership before trusting this -- see
         // utils/preflightGuardrails.ts's resolveTrustedToolCallerUserId.
-        const triggeringUserId = options.userId as string | undefined
+        let triggeringUserId = options.userId as string | undefined
+
+        // Guardrails v2 Phase 2 -- an attached Confused Deputy Prevention node re-verifies the
+        // SAME claim on the sender side before it's even forwarded. Per decision 5
+        // (observe-first), a passing verdict only actually withholds/keeps forwarding the claim
+        // once the node is explicitly promoted (observeMode=false) -- while observing, the
+        // legacy behavior (always forward) is unchanged and only a verdict gets recorded.
+        const guardrails = nodeData.inputs?.guardrails as ICommonObject[] | undefined
+        if (guardrails?.length) {
+            const isTrusted = await runAgentAsToolIdentityGuardrails(
+                guardrails,
+                triggeringUserId,
+                {
+                    workspaceId: options.workspaceId as string,
+                    chatflowId: options.chatflowid as string,
+                    hostNodeId: nodeData.id
+                },
+                options
+            )
+            if (!isTrusted && guardrails.some((g) => g?.definitionKey === 'confused_deputy_prevention' && g?.observeMode === false)) {
+                triggeringUserId = undefined
+            }
+        }
+
         if (triggeringUserId) headers = { ...headers, 'x-original-user-id': triggeringUserId }
 
         return new AgentflowTool({

@@ -20,6 +20,7 @@ import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
+import { wrapToolsWithAttachedGuardrails } from '../../../src/guardrails/runAttachedGuardrails'
 
 class ToolAgent_Agents implements INode {
     label: string
@@ -36,7 +37,7 @@ class ToolAgent_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Tool Agent'
         this.name = 'toolAgent'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'toolAgent.png'
@@ -83,6 +84,15 @@ class ToolAgent_Agents implements INode {
                 description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
                 name: 'inputModeration',
                 type: 'Moderation',
+                optional: true,
+                list: true
+            },
+            {
+                label: 'Guardrails',
+                description:
+                    'Attach guardrail nodes (e.g. Egress Filtering, Prompt-Injection Defense) to check around every tool call this agent makes',
+                name: 'guardrails',
+                type: 'Guardrail',
                 optional: true,
                 list: true
             },
@@ -267,6 +277,17 @@ const prepareAgent = async (
     let systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
+    const guardrails = nodeData.inputs?.guardrails as ICommonObject[] | undefined
+    tools = wrapToolsWithAttachedGuardrails(
+        tools,
+        guardrails,
+        {
+            workspaceId: options.workspaceId as string,
+            chatflowId: options.chatflowid as string,
+            hostNodeId: nodeData.id
+        },
+        options
+    )
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const prependMessages = options?.prependMessages
