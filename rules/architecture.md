@@ -334,6 +334,30 @@ landed — so the tracking file spent a full day contradicting the code sitting 
 same commit. Caught and corrected 2026-08-18 by reading the migration content and call sites directly
 rather than trusting the commit message. See `rules/known-issues.md` #015.
 
+**Update (2026-08-19/20, Guardrails v2 rearchitecture):** the `GuardrailCatalogItem`/
+`GuardrailPolicy` boolean-toggle model above is being replaced by a DB-driven Kind → Definition
+→ Node-instance model per `Guardrails_build_plan.md` — full detail in `rules/guardrails-v2/`
+(`kinds.md`, `verdict-contract.md`, `definition-schema.md`, `reconciliation.md`,
+`phase2-canvas.md`), only summarized here. New entities `GuardrailDefinition` (replaces
+`GuardrailCatalogItem` as source of truth), `GuardrailFlowAttachment` (chatflow-scoped,
+`UNIQUE(key, version)`), and append-only `GuardrailVerdict`. The old `GuardrailPolicy`-backed
+`evaluate()` path (this section, above) is **unchanged and remains the only thing that makes
+real block/allow decisions** for the 7 flow-attachable keys — the new path only records shadow
+verdicts, gated behind an `isPromoted()` check (`toolPolicy.ts`) that nothing in this codebase
+ever flips. Phase 2 added a second, independent, opt-in canvas mechanism: a new `guardrails`
+typed-connection anchor (`type:'Guardrail', list:true`) on classic `packages/components/nodes/
+agents/ToolAgent/ToolAgent.ts` and `packages/components/nodes/tools/AgentAsTool/AgentAsTool.ts`
+— **not** AgentFlow V2, which has no typed-connection anchor mechanism at all (confirmed by
+exhaustive grep; every AgentFlow V2 node input is a primitive type, tools are picked from a
+dropdown, not wired via canvas handles). Attaching a guardrail node means dragging one of 3 new
+real, physical component files under `packages/components/nodes/guardrails/`
+(`EgressFiltering.ts`, `PromptInjectionDefense.ts`, `ConfusedDeputyPrevention.ts`) — not a
+DB-synthesized node, since the classic build path's anchor-resolution mechanism
+(`resolveVariables`/`getVariableValue` in `packages/server/src/utils/index.ts`) requires a real
+file scanned by `NodesPool` at startup to be `.init()`-able; a `GuardrailDefinition` DB row
+alone can never satisfy that. Live verification (rebuild, palette check, drag/connect,
+promote-and-block proof) has not yet been run as of this writing.
+
 **Update (2026-08-12):** the AgentFlow V2 natural-language "Generate" feature
 (`packages/server/src/services/agentflowv2-generator`, `packages/components/src/
 agentflowv2Generator.ts`) had two real bugs, found by actually generating a flow and inspecting

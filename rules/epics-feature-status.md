@@ -578,17 +578,38 @@ happen, while the correct "would have blocked"/"would have redacted" verdicts ar
 
 **Residual risk, stated plainly rather than assumed away:** the backfill migration was
 verified against postgres only (the real dev DB) — mysql/mariadb/sqlite were not exercised
-against real instances of those drivers in this pass. The seed migration
-(`SeedGuardrailDefinitions`) is **not** idempotent at the raw-SQL level (`guardrail_definition`
-has no unique constraint on `key`, only a plain index) — safe under normal operation because
-TypeORM's migration-tracking table prevents a re-run, but would create duplicate rows if ever
-re-executed outside that tracking. All 5 migrations have a `down()` method, but none has been
-tested executing.
+against real instances of those drivers in this pass. **Update (2026-08-19):** the seed
+migration's idempotency gap was closed — a follow-up migration
+(`1797000000000-MakeGuardrailDefinitionKeyVersionUnique`) replaced the plain index on `key`
+with a real `UNIQUE(key, version)` constraint, applied to the live dev DB and proven via both a
+duplicate-insert rejection and a legitimate-new-version-success test; "current version" for a
+key is application-determined (`deletedAt IS NULL AND supersededByDefinitionId IS NULL`), not
+`MAX(version)`. All 5 original migrations have a `down()` method, but none has been tested
+executing.
 
-**Not built this pass, deliberately** (Phase 2+ per the build plan): a real `guardrails` input
-anchor on any host node, inline pass/fail ports, a schema-driven config panel, connection
-validation, custom-definition authoring, the dry-run tester, and framework-coverage reporting
-on `/compliance`.
+**Update (2026-08-20, Guardrails v2 — Phase 2 of `Guardrails_build_plan.md`):** the approved
+Phase 2 plan targeted AgentFlow V2 host nodes and a DB-synthesized ("no physical file") node
+system; both were corrected mid-build after verifying the actual mechanisms directly against
+the code — full account in `rules/guardrails-v2/phase2-canvas.md`. In short: AgentFlow V2 has
+no typed-connection anchor mechanism at all (tools are picked from a dropdown, not wired via
+canvas handles), so host nodes became classic `ToolAgent.ts` (v2.0→2.1) and `AgentAsTool.ts`
+(v1.0→1.1) instead of AgentFlow V2's `Tool.ts`/`Agent.ts`; and DB-synthesized nodes are
+impossible on the classic build path (a node must be a real file scanned by `NodesPool` to be
+`.init()`-able), so `egress_filtering`, `prompt_injection_defense`, and
+`confused_deputy_prevention` shipped as 3 real physical component files under
+`packages/components/nodes/guardrails/` instead — the "merged nodes API"/`nodeSynthesis.ts`
+piece from the original plan was dropped entirely, not deferred. Each new node attaches via a
+new `guardrails` anchor and is wired independently of Phase 1's legacy toggle path (which
+remains untouched, still permanently observe-only via `isPromoted()`). **Typecheck/lint clean;
+live verification (rebuild, palette check, drag/connect/configure, promote-and-block proof)
+has not yet been run** — do not treat as signed off until that happens.
+
+**Not built this pass, deliberately:** dynamic DB-driven node registration (so a
+`GuardrailDefinition` row becomes a droppable canvas node with no code changes) — a hard
+prerequisite for any future custom-definition-authoring phase, since user-created guardrails
+have no physical file under the design shipped here. Also still not built: inline pass/fail
+ports (no seeded definition uses `inline` placement), the dry-run tester, and
+framework-coverage reporting on `/compliance`.
 
 ### 10. Compliance & Data Governance
 
