@@ -17,7 +17,7 @@ import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
 
 // const
 import { baseURL } from '@/store/constant'
-import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle, IconShieldCheck } from '@tabler/icons-react'
+import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle, IconShieldCheck, IconShieldExclamation } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
@@ -197,6 +197,41 @@ const CanvasNode = ({ data }) => {
                                     </Box>
                                 </Tooltip>
                             )}
+                            {data.category === 'Guardrails' &&
+                                (data.inputs?.observeMode === false ? (
+                                    <Tooltip
+                                        title='Enforcing -- this guardrail actively blocks/redacts on a failing verdict'
+                                        placement='top'
+                                    >
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                borderRadius: '50%',
+                                                p: 1,
+                                                mr: 1,
+                                                color: '#16a34a'
+                                            }}
+                                        >
+                                            <IconShieldCheck size={20} stroke={1.5} />
+                                        </Box>
+                                    </Tooltip>
+                                ) : (
+                                    <Tooltip title='Observe only -- recording verdicts, not blocking or redacting yet' placement='top'>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                borderRadius: '50%',
+                                                p: 1,
+                                                mr: 1,
+                                                color: '#d97706'
+                                            }}
+                                        >
+                                            <IconShieldExclamation size={20} stroke={1.5} />
+                                        </Box>
+                                    </Tooltip>
+                                ))}
                             {data.tags && data.tags.includes('LlamaIndex') && (
                                 <>
                                     <div

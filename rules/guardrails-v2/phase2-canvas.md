@@ -308,3 +308,41 @@ place. Server rebuilt and restarted against the live Neon DB; boot log confirmed
   `prompt_injection_defense` to the v2 row.
 
 **PASS.**
+
+## Phase 2 remaining scope — Observe-vs-block UI state (2026-08-21, per `Guardrails_end_to_end_protocol.md`)
+
+**Tier B (visual) + Tier A (DB-truth confirmation), per the protocol's own split for this item.**
+
+**Build:** `packages/ui/src/views/canvas/CanvasNode.jsx` — reused the existing shield-badge
+pattern already there for `category === 'Moderation'` nodes (a green `IconShieldCheck`, added
+2026-08-17 for the unrelated Guardrails & Compliance dashboard feature). Added a second
+condition for `category === 'Guardrails'` reading `data.inputs?.observeMode` directly off the
+live node-data object already available to this component (confirmed via research: the same
+`data` reference `NodeInputHandler.jsx` mutates via `onNodeDataChange`, which replaces the node
+in React Flow's state with a new `inputs` object -- so toggling the switch forces a real React
+re-render of the card, not just the expanded panel):
+- `observeMode !== false` (default/true, still observing) -> amber `IconShieldExclamation`
+  (`#d97706`), tooltip "Observe only -- recording verdicts, not blocking or redacting yet".
+- `observeMode === false` (promoted, enforcing) -> green `IconShieldCheck` (`#16a34a`), tooltip
+  "Enforcing -- this guardrail actively blocks/redacts on a failing verdict".
+
+The `!== false` check matches the exact same condition each guardrail node's own `init()`
+already uses at runtime (e.g. `EgressFiltering.ts`: `nodeData.inputs?.observeMode !== false`),
+so the badge cannot show a state the enforcement code doesn't actually implement.
+
+**Test 1 (Tier B, live toggle, no save/reload):** dropped Egress Filtering on a fresh canvas --
+badge rendered amber by default. Toggled the switch off -- badge turned green **live**, in the
+same interaction, confirming the re-render theory above rather than assuming it. Toggled back
+on -- badge returned to amber. Screenshots captured at each step.
+
+**Test 2 (Tier A, DB-truth after a hard reload):** built a 3-node fixture ("Observe Badge Tier A
+Verify") with Egress Filtering left at default (`observeMode:true`) and both Prompt-Injection
+Defense and Confused Deputy Prevention toggled off (`observeMode:false`), saved. Queried the
+Neon DB directly on the saved `flowData`: confirmed exactly `{egress: true, promptInjection:
+false, confusedDeputy: false}`. Then did a genuine hard reload (fresh login, full page `load`,
+not a client-side route change) and visually confirmed all 3 badges: Egress Filtering amber,
+Prompt-Injection Defense green, Confused Deputy Prevention green -- an exact match to the DB
+values, not just to what was clicked in the same session. Test fixture deleted after
+verification.
+
+**PASS.** No known-issues carry-forward from this unit.

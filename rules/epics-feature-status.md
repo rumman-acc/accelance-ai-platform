@@ -634,9 +634,12 @@ correct. Config-panel round-trip: full save/reload cycle for all 3 nodes' real p
 reload; surfaced and closed a real, pre-existing catalog/reality mismatch on
 `prompt_injection_defense` (DB `paramSchema` implied 2 configurable params the shipped node
 never had) via a proper new-version migration row, not an in-place edit, confirmed
-before/after against the live DB with a negative case (other 12 keys untouched). Remaining:
-observe-vs-block UI state (Tier B + a Tier A DB-truth check) and the Content
-Moderation/HITL-placement decision — not yet started. Full evidence in
+before/after against the live DB with a negative case (other 12 keys untouched).
+**Observe-vs-block UI state (2026-08-21), done:** `CanvasNode.jsx` now renders an amber/green
+shield badge on any `category:'Guardrails'` node reflecting its `observeMode` — live-updates on
+toggle with no save/reload (Tier B), and confirmed via a hard reload against a real 3-node
+fixture that all 3 badge colors exactly matched the persisted DB `observeMode` values (Tier A).
+Remaining: the Content Moderation/HITL-placement decision — not yet started. Full evidence in
 `rules/guardrails-v2/phase2-canvas.md`.
 
 **Not built this pass, deliberately:** dynamic DB-driven node registration (so a
