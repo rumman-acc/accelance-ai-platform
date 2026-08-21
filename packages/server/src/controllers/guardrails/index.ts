@@ -56,6 +56,24 @@ const createDefinition = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+// Dry-run tester -- Tier A per Guardrails_end_to_end_protocol.md's Phase 3 build list. Pure:
+// no GuardrailDefinition row created, no GuardrailVerdict recorded. Still gated by
+// guardrails:manage and a real workspace (an authoring action, even though nothing persists).
+const dryRunDefinition = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        requireWorkspaceId(req)
+        const body = req.body || {}
+        const apiResponse = await guardrailsService.dryRunDefinition({
+            kindKey: body.kindKey,
+            defaultParams: body.defaultParams,
+            sampleInput: body.sampleInput
+        })
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const listPolicies = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const workspaceId = requireWorkspaceId(req)
@@ -120,6 +138,7 @@ const getSummary = async (req: Request, res: Response, next: NextFunction) => {
 export default {
     listCatalog,
     createDefinition,
+    dryRunDefinition,
     listPolicies,
     upsertPolicy,
     deletePolicy,

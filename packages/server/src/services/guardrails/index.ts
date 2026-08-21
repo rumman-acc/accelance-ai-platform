@@ -12,6 +12,7 @@ import { GuardrailFlowAttachment } from '../../database/entities/GuardrailFlowAt
 import { GuardrailVerdict } from '../../database/entities/GuardrailVerdict'
 import { AgentToolPolicy } from '../../database/entities/AgentToolPolicy'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { evaluateRegexMatch } from 'accelance-components'
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -98,6 +99,54 @@ const AUTHORING_KIND_VALIDATORS: Record<string, (params: Record<string, unknown>
 
 const AUTHORING_PARAM_SCHEMAS: Record<string, string> = {
     regex_match: JSON.stringify({ pattern: 'string', action: 'string' })
+}
+
+/**
+ * The same real, generic executors `AUTHORING_KIND_VALIDATORS` validates the shape for --
+ * reused here so the dry-run tester runs the EXACT function a saved definition would run at
+ * attach-time (via `CustomToolCallGuardrail.ts`'s `init()` + `runCustomToolCallGuardrails`),
+ * not a second, parallel "preview" implementation that could silently drift from the real one.
+ */
+const AUTHORING_KIND_EXECUTORS: Record<string, (params: Record<string, unknown>, sampleInput: string) => unknown> = {
+    regex_match: (params, sampleInput) =>
+        evaluateRegexMatch({ pattern: params.pattern as string, action: params.action as 'block' | 'flag' | 'redact' }, sampleInput)
+}
+
+/**
+ * Phase 3's dry-run tester (Guardrails_end_to_end_protocol.md's Phase 3 build list, Tier A: "prove
+ * a user-authored regex ... can actually be tested against sample input before save"). Pure --
+ * no DB write, no GuardrailDefinition row created or touched, no GuardrailVerdict recorded.
+ * Reuses the same validator `createCustomDefinition` runs, so an invalid pattern is rejected
+ * identically here and at save time, not more leniently in the tester.
+ */
+const dryRunDefinition = async (params: { kindKey: string; defaultParams: Record<string, unknown>; sampleInput: string }) => {
+    try {
+        const validator = AUTHORING_KIND_VALIDATORS[params.kindKey]
+        const executor = AUTHORING_KIND_EXECUTORS[params.kindKey]
+        if (!validator || !executor) {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.dryRunDefinition - kindKey "${params.kindKey}" has no generic executor yet, only regex_match is authorable today`
+            )
+        }
+        const paramError = validator(params.defaultParams || {})
+        if (paramError) {
+            throw new InternalAccelanceError(StatusCodes.PRECONDITION_FAILED, `Error: guardrailsService.dryRunDefinition - ${paramError}`)
+        }
+        if (typeof params.sampleInput !== 'string') {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.dryRunDefinition - "sampleInput" must be a string`
+            )
+        }
+        return executor(params.defaultParams, params.sampleInput)
+    } catch (error) {
+        if (error instanceof InternalAccelanceError) throw error
+        throw new InternalAccelanceError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: guardrailsService.dryRunDefinition - ${getErrorMessage(error)}`
+        )
+    }
 }
 
 /**
@@ -538,6 +587,7 @@ const getActiveRedactionPatterns = async (workspaceId: string, chatflowId: strin
 export default {
     listDefinitions,
     createCustomDefinition,
+    dryRunDefinition,
     listPolicies,
     upsertPolicy,
     deletePolicy,

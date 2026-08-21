@@ -195,12 +195,44 @@ reads `blockedDomainPatterns`, a field the custom config doesn't have), and sile
 than crash -- an unlikely but real edge case, not addressed this pass since it wasn't part of the
 directive that opened this unit.
 
+## Unit 4 — dry-run tester
+
+**Tier A** (per the protocol's own phase build list: "prove a user-authored regex ... can
+actually be tested against sample input before save, not just that the form submits").
+
+**Build:**
+- `packages/components/src/index.ts` -- exported `evaluateRegexMatch`/`IRegexMatchParams` as
+  public package surface for the first time. Deliberately narrow: the two hardcoded, non-generic
+  functions in the same file (`checkEgressPattern`, `wrapPromptInjection`) stay internal to
+  `packages/components`, not exported -- they were never meant to be called from outside
+  `runAttachedGuardrails.ts`.
+- `services/guardrails/index.ts`: `AUTHORING_KIND_EXECUTORS` (currently just `regex_match` ->
+  `evaluateRegexMatch`) and `dryRunDefinition(params)` -- validates via the SAME
+  `AUTHORING_KIND_VALIDATORS` entry `createCustomDefinition` uses (an invalid pattern is
+  rejected identically in both places, not more leniently in the tester), then runs the SAME
+  executor a saved definition would run at attach time -- not a second, parallel "preview"
+  implementation that could silently drift from the real one. Writes nothing: no
+  `GuardrailDefinition` row, no `GuardrailVerdict` row.
+- `POST /api/v1/guardrails/definitions/dry-run`, gated by `guardrails:manage` (same permission
+  as create -- this is authoring-time activity even though it persists nothing).
+
+**Test:** rebuilt both packages, restarted against the live Neon DB. Snapshotted
+`guardrail_definition`/`guardrail_verdict` row counts (16 / 0) before testing. Live-tested 5
+cases through a real authenticated session: a matching sample input correctly returns
+`verdict:'block'` with the matched text as evidence; a non-matching input correctly returns
+`verdict:'pass'`; a redact-action test correctly returns the real `transformedPayload`
+(`"...CONFIDENTIAL..."` -> `"...[REDACTED]..."`); an invalid regex pattern is rejected with the
+same validation error `createCustomDefinition` would give; an unsupported `kindKey` is rejected.
+Re-checked both row counts after all 5 calls -- still 16 / 0, exactly unchanged, confirming the
+tester is genuinely pure and never touches the DB.
+
+**RESULT: PASS.**
+
 ## Next units (not yet built)
 
-- Dry-run tester (Tier A: prove a user-authored pattern can be tested against sample input
-  before save).
 - Framework-pack browse and apply — not yet scoped in detail.
-- A create-custom-definition UI form (the endpoint has no frontend yet).
+- A create-custom-definition UI form (the endpoints above have no frontend yet -- authoring is
+  currently API-only).
 - `CustomIdentityGuardrail.ts` (the `AgentAsTool.ts`-side wrapper) — deferred until a real
   generic identity-scoped kind executor exists (today only `regex_match` is generic; the
   existing `enum_constraint` "executor" is still hardcoded to workspace-membership checking).

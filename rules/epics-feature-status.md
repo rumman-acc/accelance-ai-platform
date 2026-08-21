@@ -695,8 +695,14 @@ author-chosen field consumed by a real dispatcher (`runCustomToolCallGuardrails`
 code with captured logs showing execution order: pre-hook blocked strictly before the real tool
 call ran (based on args), post-hook ran after and redacted based on the result even when the
 pattern was absent from args entirely; real `GuardrailVerdict` rows confirmed written. Not yet
-built: the dry-run tester, framework packs, a create-definition UI form, and
-`CustomIdentityGuardrail.ts` (deferred — no generic identity-scoped kind executor exists yet).
+built: framework packs, a create-definition UI form, and `CustomIdentityGuardrail.ts`
+(deferred — no generic identity-scoped kind executor exists yet).
+**Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
+executor and validator a saved definition would use, against a real sample input, with zero DB
+writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/
+unsupported-kind); confirmed `guardrail_definition`/`guardrail_verdict` row counts unchanged
+(16/0) before and after, proving the tester never persists anything — satisfies the protocol's
+explicit "before save" requirement for this unit.
 
 ### 10. Compliance & Data Governance
 

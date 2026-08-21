@@ -10,6 +10,7 @@ router.get('/catalog', checkPermission('guardrails:view'), guardrailsController.
 // custom-CATALOG-ITEM authoring under the old model; this creates a real GuardrailDefinition
 // row under the new one). See controllers/guardrails/index.ts's createDefinition doc comment.
 router.post('/definitions', checkPermission('guardrails:manage'), guardrailsController.createDefinition)
+router.post('/definitions/dry-run', checkPermission('guardrails:manage'), guardrailsController.dryRunDefinition)
 router.get('/policy', checkPermission('guardrails:view'), guardrailsController.listPolicies)
 router.post('/policy', checkPermission('guardrails:manage'), guardrailsController.upsertPolicy)
 router.delete('/policy/:id', checkPermission('guardrails:manage'), guardrailsController.deletePolicy)
