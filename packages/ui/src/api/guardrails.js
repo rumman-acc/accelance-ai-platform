@@ -8,6 +8,12 @@ import client from './client'
 
 const getCatalog = () => client.get('/guardrails/catalog')
 
+// Phase 3 authoring -- new surface, not a resurrection of the removed custom-catalog-item POST.
+// See packages/server/src/controllers/guardrails/index.ts's createDefinition/dryRunDefinition.
+const createDefinition = (body) => client.post('/guardrails/definitions', body)
+
+const dryRunDefinition = (body) => client.post('/guardrails/definitions/dry-run', body)
+
 const getPolicies = (chatflowId) => client.get('/guardrails/policy', { params: { chatflowId } })
 
 const upsertPolicy = (body) => client.post('/guardrails/policy', body)
@@ -18,6 +24,8 @@ const getSummary = (chatflowId) => client.get(`/guardrails/summary/${chatflowId}
 
 export default {
     getCatalog,
+    createDefinition,
+    dryRunDefinition,
     getPolicies,
     upsertPolicy,
     deletePolicy,

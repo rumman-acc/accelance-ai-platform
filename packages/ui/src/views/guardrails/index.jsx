@@ -4,10 +4,13 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 
 // material-ui
 import { Button, Stack, Typography, CircularProgress, Box } from '@mui/material'
+import { IconPlus } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import CreateGuardrailDefinitionDialog from './CreateGuardrailDefinitionDialog'
 
 // API
 import guardrailsApi from '@/api/guardrails'
@@ -20,7 +23,8 @@ const CATEGORY_LABELS = {
     privacy: 'Privacy',
     security: 'Security',
     quality: 'Quality',
-    compliance: 'Compliance'
+    compliance: 'Compliance',
+    custom: 'Custom'
 }
 
 /**
@@ -38,6 +42,7 @@ const GuardrailsPage = () => {
 
     const [definitions, setDefinitions] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [showCreateDialog, setShowCreateDialog] = useState(false)
 
     const showError = (message) => {
         enqueueSnackbar({
@@ -55,21 +60,27 @@ const GuardrailsPage = () => {
         })
     }
 
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true)
-            try {
-                const res = await guardrailsApi.getCatalog()
-                setDefinitions(res.data)
-            } catch (err) {
-                showError(err?.response?.data?.message || 'Failed to load the Guardrails catalog')
-            } finally {
-                setLoading(false)
-            }
+    const loadCatalog = async () => {
+        setLoading(true)
+        try {
+            const res = await guardrailsApi.getCatalog()
+            setDefinitions(res.data)
+        } catch (err) {
+            showError(err?.response?.data?.message || 'Failed to load the Guardrails catalog')
+        } finally {
+            setLoading(false)
         }
-        load()
+    }
+
+    useEffect(() => {
+        loadCatalog()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    const onCreateConfirmed = () => {
+        setShowCreateDialog(false)
+        loadCatalog()
+    }
 
     const grouped = (definitions || []).reduce((acc, def) => {
         const category = def.category || 'safety'
@@ -84,7 +95,16 @@ const GuardrailsPage = () => {
                 <ViewHeader
                     title='Guardrails'
                     description="Browsable catalog of guardrails available to place on an agent's canvas. Attach one, and any per-agent override, from that agent's own settings panel."
-                />
+                >
+                    <StyledPermissionButton
+                        permissionId='guardrails:manage'
+                        variant='contained'
+                        startIcon={<IconPlus />}
+                        onClick={() => setShowCreateDialog(true)}
+                    >
+                        Create Custom Guardrail
+                    </StyledPermissionButton>
+                </ViewHeader>
 
                 {loading && !definitions && <CircularProgress size={20} />}
 
@@ -110,7 +130,17 @@ const GuardrailsPage = () => {
                                                 borderColor: 'divider'
                                             }}
                                         >
-                                            <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>{def.name}</Typography>
+                                            <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                                                {def.name}
+                                                {def.origin === 'custom' && (
+                                                    <Typography
+                                                        component='span'
+                                                        sx={{ fontSize: '0.7rem', color: 'text.secondary', fontWeight: 400, ml: 1 }}
+                                                    >
+                                                        (custom)
+                                                    </Typography>
+                                                )}
+                                            </Typography>
                                             <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mt: 0.5, lineHeight: 1.5 }}>
                                                 {def.description}
                                             </Typography>
@@ -120,6 +150,11 @@ const GuardrailsPage = () => {
                             </Stack>
                         ))}
             </Stack>
+            <CreateGuardrailDefinitionDialog
+                show={showCreateDialog}
+                onCancel={() => setShowCreateDialog(false)}
+                onConfirm={onCreateConfirmed}
+            />
         </MainCard>
     )
 }

@@ -695,8 +695,15 @@ author-chosen field consumed by a real dispatcher (`runCustomToolCallGuardrails`
 code with captured logs showing execution order: pre-hook blocked strictly before the real tool
 call ran (based on args), post-hook ran after and redacted based on the result even when the
 pattern was absent from args entirely; real `GuardrailVerdict` rows confirmed written. Not yet
-built: framework packs, a create-definition UI form, and `CustomIdentityGuardrail.ts`
-(deferred — no generic identity-scoped kind executor exists yet).
+built: framework packs and `CustomIdentityGuardrail.ts` (deferred — no generic identity-scoped
+kind executor exists yet).
+**Unit 5, done:** a real create-custom-definition UI form (`views/guardrails/
+CreateGuardrailDefinitionDialog.jsx`), modeled on `ToolDialog.jsx`, with a live dry-run "Test"
+button and a properly-capitalized "Custom" catalog section (`migration-checklist.md` row 28 —
+this feature area stays plain-MUI, logged `not started` for the design-system pass same as rows
+25-27). Full browser test confirmed end to end: create → dry-run test shows a real verdict →
+save → appears in the catalog under Custom on reload → confirmed via direct DB query → cleaned
+up.
 **Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
 executor and validator a saved definition would use, against a real sample input, with zero DB
 writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/

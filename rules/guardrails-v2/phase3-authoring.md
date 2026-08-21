@@ -228,11 +228,51 @@ tester is genuinely pure and never touches the DB.
 
 **RESULT: PASS.**
 
+## Unit 5 — create-custom-definition UI form
+
+**Tier B** (UI rendering/form -- no new backend surface, no schema change; the two calls it
+makes were already Tier-A-verified in units 2 and 4).
+
+Per this repo's CLAUDE.md, UI/presentation work requires reading `DESIGN_SPEC.md`,
+`migration-checklist.md`, `design-system/tokens.json`, and `component-inventory.md` first --
+done. Rows 25-27 already logged this whole feature area (`views/guardrails/`) as `not started`
+for the design-system pass, staying on plain MUI following `MainCard`/`ViewHeader` conventions
+-- this unit follows that same precedent, not a Tailwind/shadcn rebuild. Added
+`migration-checklist.md` row 28 per the "log it even if built outside the row-by-row flow" rule.
+
+**Build:**
+- `packages/ui/src/api/guardrails.js`: `createDefinition`/`dryRunDefinition` wrappers.
+- `packages/ui/src/views/guardrails/CreateGuardrailDefinitionDialog.jsx` -- new dialog, modeled
+  directly on `views/tools/ToolDialog.jsx` (the closest existing precedent: a workspace user
+  authoring a reusable, DB-backed capability). Fields: name, key (client-validated against the
+  same `^[a-z0-9_]+$` the backend enforces), description, kind (a real `Select`, currently one
+  disabled option -- adding a second kind later is additive, not a rebuild), pattern, action,
+  `hooks` (pre/post), a sample-input box with a "Test" button that calls the real dry-run
+  endpoint and renders the actual verdict (color-coded via standard MUI theme palette keys --
+  `success`/`warning`/`error`/`info` -- not new ad hoc hex values, so no Gap-protocol entry
+  needed).
+- `packages/ui/src/views/guardrails/index.jsx`: wired in a `StyledPermissionButton`
+  (`guardrails:manage`) that opens the dialog, reloads the catalog on successful create, and
+  added `custom: 'Custom'` to the existing `CATEGORY_LABELS` map so custom definitions get a
+  properly-capitalized section header instead of the raw `'custom'` string. Also renders a small
+  `(custom)` tag next to a custom definition's name in its card.
+
+**Test:** `pnpm build` clean for both `accelance-components` and `accelance-ui`. Full browser
+test against the running dev server: opened the dialog, filled the form, clicked Test -- the
+real dry-run endpoint returned and rendered an actual `block` verdict with the matched-pattern
+evidence text (not a stub), clicked Create -- real snackbar confirmation, dialog closed. First
+check (2s after click, same session) didn't yet show the new definition; a fresh hard reload did
+-- confirmed via `guardrail_definition`/`GET /guardrails/catalog` directly that the row and API
+response were correct all along, so this was the test script's own wait timing, not an app bug.
+Full-page screenshot on a clean reload confirmed the "UI Test SSN Blocker (custom)" card renders
+correctly under a properly-capitalized "Custom" section header. Test definition and its (empty
+-- audit logging not enabled for this workspace) audit-log row deleted after.
+
+**RESULT: PASS.**
+
 ## Next units (not yet built)
 
 - Framework-pack browse and apply — not yet scoped in detail.
-- A create-custom-definition UI form (the endpoints above have no frontend yet -- authoring is
-  currently API-only).
 - `CustomIdentityGuardrail.ts` (the `AgentAsTool.ts`-side wrapper) — deferred until a real
   generic identity-scoped kind executor exists (today only `regex_match` is generic; the
   existing `enum_constraint` "executor" is still hardcoded to workspace-membership checking).
