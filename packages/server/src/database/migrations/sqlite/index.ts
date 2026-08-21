@@ -64,6 +64,7 @@ import { AddGuardrailDefinitionKeyUniqueConstraint1796000000003 } from './179600
 import { MakeGuardrailDefinitionKeyVersionUnique1797000000003 } from './1797000000003-MakeGuardrailDefinitionKeyVersionUnique'
 import { SupersedePromptInjectionDefenseParamSchema1798000000003 } from './1798000000003-SupersedePromptInjectionDefenseParamSchema'
 import { CorrectContentModerationHitlPlacement1799000000003 } from './1799000000003-CorrectContentModerationHitlPlacement'
+import { ScopeGuardrailDefinitionKeyToWorkspace1800000000003 } from './1800000000003-ScopeGuardrailDefinitionKeyToWorkspace'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
@@ -156,5 +157,6 @@ export const sqliteMigrations = [
     AddGuardrailDefinitionKeyUniqueConstraint1796000000003,
     MakeGuardrailDefinitionKeyVersionUnique1797000000003,
     SupersedePromptInjectionDefenseParamSchema1798000000003,
-    CorrectContentModerationHitlPlacement1799000000003
+    CorrectContentModerationHitlPlacement1799000000003,
+    ScopeGuardrailDefinitionKeyToWorkspace1800000000003
 ]

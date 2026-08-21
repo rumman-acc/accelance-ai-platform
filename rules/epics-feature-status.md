@@ -675,9 +675,17 @@ a real finding surfaced first: neither of the two existing "kind executors" is a
 one specific existing definition, none take arbitrary user-supplied config), so authoring v1 is
 correctly scoped to `regex_match` only until other kinds get their own real generic executor.
 Verified directly (8 cases: match/no-match across block/flag/redact, multi-match redact,
-invalid-pattern fails closed to `block` rather than throwing, empty/non-string content). Not yet
-built: the create-custom-definition endpoint, the two generic wrapper canvas nodes, the dry-run
-tester, framework packs.
+invalid-pattern fails closed to `block` rather than throwing, empty/non-string content).
+**Unit 2, done:** `POST /api/v1/guardrails/definitions` — building it surfaced a real bug in a
+Phase 1 non-negotiable: the `UNIQUE(key, version)` index wasn't scoped by workspace, so two
+workspaces choosing the same custom key would have collided. Fixed via a 4-driver migration to
+`UNIQUE(COALESCE(workspaceId,''), key, version)` (same `''`-sentinel idiom `GuardrailPolicy`
+already uses), verified with 3 transactional negative-case proofs directly against the DB
+(different workspaces: no collision; same workspace: still collides; two system rows: still
+collides) plus 5 live-endpoint cases (valid create, duplicate-key rejection, invalid-pattern
+rejection, unsupported-kind rejection, malformed-key rejection). `defaultObserveMode` is forced
+`true` server-side, never client-controllable. Not yet built: the two generic wrapper canvas
+nodes, the dry-run tester, framework packs, and a UI form for the new endpoint.
 
 ### 10. Compliance & Data Governance
 

@@ -26,6 +26,35 @@ const listCatalog = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+// Phase 3 authoring -- see services/guardrails/index.ts's createCustomDefinition doc comment.
+// Explicit allowlist, same convention as toolsController.createTool: workspaceId/createdBy are
+// never taken from the client body, and defaultObserveMode is not client-controllable at all
+// (decision 5 -- observe-first is non-negotiable).
+const createDefinition = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const workspaceId = requireWorkspaceId(req)
+        const body = req.body || {}
+        const params: Record<string, unknown> = {}
+        if (body.key !== undefined) params.key = body.key
+        if (body.name !== undefined) params.name = body.name
+        if (body.description !== undefined) params.description = body.description
+        if (body.kindKey !== undefined) params.kindKey = body.kindKey
+        if (body.defaultParams !== undefined) params.defaultParams = body.defaultParams
+        if (body.defaultOnFailAction !== undefined) params.defaultOnFailAction = body.defaultOnFailAction
+        if (body.defaultFailMode !== undefined) params.defaultFailMode = body.defaultFailMode
+        if (body.defaultTimeoutMs !== undefined) params.defaultTimeoutMs = body.defaultTimeoutMs
+
+        const apiResponse = await guardrailsService.createCustomDefinition(workspaceId, params as any, req.user?.id)
+        await auditLogService.record(workspaceId, req.user?.id, 'guardrail_definition.create', 'GuardrailDefinition', apiResponse.id, {
+            key: apiResponse.key,
+            kindKey: apiResponse.kindKey
+        })
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const listPolicies = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const workspaceId = requireWorkspaceId(req)
@@ -89,6 +118,7 @@ const getSummary = async (req: Request, res: Response, next: NextFunction) => {
 
 export default {
     listCatalog,
+    createDefinition,
     listPolicies,
     upsertPolicy,
     deletePolicy,

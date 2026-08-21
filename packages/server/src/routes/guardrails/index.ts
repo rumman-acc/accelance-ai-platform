@@ -6,6 +6,10 @@ const router = express.Router()
 // POST /catalog (custom-catalog authoring) removed per Guardrails v2 §2.2 -- see
 // controllers/guardrails/index.ts for why GET/POST/DELETE /policy are kept.
 router.get('/catalog', checkPermission('guardrails:view'), guardrailsController.listCatalog)
+// Phase 3 authoring -- new surface, not a resurrection of the removed POST /catalog (that was
+// custom-CATALOG-ITEM authoring under the old model; this creates a real GuardrailDefinition
+// row under the new one). See controllers/guardrails/index.ts's createDefinition doc comment.
+router.post('/definitions', checkPermission('guardrails:manage'), guardrailsController.createDefinition)
 router.get('/policy', checkPermission('guardrails:view'), guardrailsController.listPolicies)
 router.post('/policy', checkPermission('guardrails:manage'), guardrailsController.upsertPolicy)
 router.delete('/policy/:id', checkPermission('guardrails:manage'), guardrailsController.deletePolicy)

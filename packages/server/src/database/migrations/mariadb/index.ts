@@ -66,6 +66,7 @@ import { AddGuardrailDefinitionKeyUniqueConstraint1796000000002 } from './179600
 import { MakeGuardrailDefinitionKeyVersionUnique1797000000002 } from './1797000000002-MakeGuardrailDefinitionKeyVersionUnique'
 import { SupersedePromptInjectionDefenseParamSchema1798000000002 } from './1798000000002-SupersedePromptInjectionDefenseParamSchema'
 import { CorrectContentModerationHitlPlacement1799000000002 } from './1799000000002-CorrectContentModerationHitlPlacement'
+import { ScopeGuardrailDefinitionKeyToWorkspace1800000000002 } from './1800000000002-ScopeGuardrailDefinitionKeyToWorkspace'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mariadb/1720230151482-AddAuthTables'
 import { AddWorkspace1725437498242 } from '../../../enterprise/database/migrations/mariadb/1725437498242-AddWorkspace'
@@ -158,5 +159,6 @@ export const mariadbMigrations = [
     AddGuardrailDefinitionKeyUniqueConstraint1796000000002,
     MakeGuardrailDefinitionKeyVersionUnique1797000000002,
     SupersedePromptInjectionDefenseParamSchema1798000000002,
-    CorrectContentModerationHitlPlacement1799000000002
+    CorrectContentModerationHitlPlacement1799000000002,
+    ScopeGuardrailDefinitionKeyToWorkspace1800000000002
 ]

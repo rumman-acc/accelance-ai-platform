@@ -1,7 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 import { GuardrailCatalogItem } from '../../database/entities/GuardrailCatalogItem'
 import { GuardrailPolicy } from '../../database/entities/GuardrailPolicy'
-import { GuardrailDefinition } from '../../database/entities/GuardrailDefinition'
+import {
+    GuardrailDefinition,
+    GuardrailOrigin,
+    GuardrailPlacement,
+    GuardrailOnFailAction,
+    GuardrailFailMode
+} from '../../database/entities/GuardrailDefinition'
 import { GuardrailFlowAttachment } from '../../database/entities/GuardrailFlowAttachment'
 import { GuardrailVerdict } from '../../database/entities/GuardrailVerdict'
 import { AgentToolPolicy } from '../../database/entities/AgentToolPolicy'
@@ -64,6 +70,126 @@ const listDefinitions = async (workspaceId: string) => {
         throw new InternalAccelanceError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: guardrailsService.listDefinitions - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+/**
+ * Guardrails v2 Phase 3 -- kinds a custom definition may be authored against today. Only
+ * kinds with a real, generic, config-driven executor belong here -- see
+ * rules/guardrails-v2/phase3-authoring.md for why this started at zero (neither pre-existing
+ * "kind executor" was actually generic) and is currently exactly one. Each entry validates its
+ * own `defaultParams` shape at creation time, so a malformed custom definition is rejected up
+ * front rather than saved and silently doing nothing when attached.
+ */
+const AUTHORING_KIND_VALIDATORS: Record<string, (params: Record<string, unknown>) => string | null> = {
+    regex_match: (params) => {
+        if (typeof params.pattern !== 'string' || !params.pattern) return '"pattern" must be a non-empty string'
+        try {
+            // eslint-disable-next-line no-new
+            new RegExp(params.pattern)
+        } catch (e) {
+            return `"pattern" is not a valid regular expression: ${e instanceof Error ? e.message : String(e)}`
+        }
+        if (!['block', 'flag', 'redact'].includes(params.action as string)) return '"action" must be one of block, flag, redact'
+        return null
+    }
+}
+
+const AUTHORING_PARAM_SCHEMAS: Record<string, string> = {
+    regex_match: JSON.stringify({ pattern: 'string', action: 'string' })
+}
+
+/**
+ * Creates a workspace-scoped custom GuardrailDefinition row (origin:'custom'). This is the
+ * Phase 3 authoring entry point -- see phase3-authoring-mechanism.md for why the definition
+ * itself carries the real config (defaultParams) rather than a canvas node: the generic
+ * wrapper node a user drags is shared across every custom definition, so it can only ever
+ * select one by key, not carry its own pattern. `defaultObserveMode` is deliberately NOT a
+ * client-controllable input -- decision 5 (observe-first) is non-negotiable, every new
+ * definition starts observe-only regardless of what the request body contains.
+ */
+const createCustomDefinition = async (
+    workspaceId: string,
+    params: {
+        key: string
+        name: string
+        description?: string
+        kindKey: string
+        defaultParams: Record<string, unknown>
+        defaultOnFailAction?: string
+        defaultFailMode?: string
+        defaultTimeoutMs?: number
+    },
+    createdBy?: string
+) => {
+    try {
+        const validator = AUTHORING_KIND_VALIDATORS[params.kindKey]
+        if (!validator) {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.createCustomDefinition - kindKey "${params.kindKey}" has no generic executor yet, only regex_match is authorable today`
+            )
+        }
+        if (!params.key || !/^[a-z0-9_]+$/.test(params.key)) {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.createCustomDefinition - "key" must be lowercase letters, numbers, and underscores only`
+            )
+        }
+        if (!params.name) {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.createCustomDefinition - "name" is required`
+            )
+        }
+        const paramError = validator(params.defaultParams || {})
+        if (paramError) {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.createCustomDefinition - ${paramError}`
+            )
+        }
+
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(GuardrailDefinition)
+
+        const existing = await repo
+            .createQueryBuilder('def')
+            .where('def.key = :key', { key: params.key })
+            .andWhere('def.workspaceId = :workspaceId', { workspaceId })
+            .getOne()
+        if (existing) {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.createCustomDefinition - a custom definition with key "${params.key}" already exists in this workspace`
+            )
+        }
+
+        const definition = repo.create({
+            key: params.key,
+            name: params.name,
+            description: params.description || '',
+            origin: GuardrailOrigin.CUSTOM,
+            category: 'custom',
+            kindKey: params.kindKey,
+            placement: GuardrailPlacement.ATTACHED,
+            paramSchema: AUTHORING_PARAM_SCHEMAS[params.kindKey],
+            defaultParams: JSON.stringify(params.defaultParams),
+            defaultOnFailAction: (params.defaultOnFailAction as GuardrailOnFailAction) || GuardrailOnFailAction.FLAG,
+            defaultFailMode: (params.defaultFailMode as GuardrailFailMode) || GuardrailFailMode.OPEN,
+            defaultTimeoutMs: params.defaultTimeoutMs || 5000,
+            defaultObserveMode: true,
+            version: 1,
+            workspaceId,
+            createdBy
+        })
+        return await repo.save(definition)
+    } catch (error) {
+        if (error instanceof InternalAccelanceError) throw error
+        throw new InternalAccelanceError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: guardrailsService.createCustomDefinition - ${getErrorMessage(error)}`
         )
     }
 }
@@ -390,6 +516,7 @@ const getActiveRedactionPatterns = async (workspaceId: string, chatflowId: strin
 
 export default {
     listDefinitions,
+    createCustomDefinition,
     listPolicies,
     upsertPolicy,
     deletePolicy,
