@@ -712,6 +712,16 @@ end-to-end proof that a brand-new custom definition appears in a fresh chatflow'
 `CustomToolCallGuardrail` dropdown with the server running continuously throughout — no restart,
 no deploy — satisfying the protocol's own "single most important proof in this phase." **All of
 Phase 3's originally stated build-list items are now closed.**
+
+**Phase 4 (Governance surface) started 2026-08-21** (`rules/guardrails-v2/phase4-governance.md`):
+first unit built `GET /guardrails/verdicts`, the first read path for `GuardrailVerdict` (nothing
+read this table before — write-only since Phase 1/2). Real pagination (`{data,total}`, matching
+`toolsService.getAllTools`'s convention, not `audit-log`'s uncapped `take`-only list), gated by
+the existing `guardrails:view` permission. Verified via direct invocation against the real DB
+with 6 cases including the real negative case (workspace-A results never leak workspace-B rows)
+— all passed. Remaining: the verdict audit trail UI, and the framework coverage view (blocked on
+`frameworkRefs` being populated — currently `NULL` everywhere — and a real framework/control
+vocabulary, neither of which exists yet).
 **Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
 executor and validator a saved definition would use, against a real sample input, with zero DB
 writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/

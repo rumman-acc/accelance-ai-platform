@@ -584,10 +584,49 @@ const getActiveRedactionPatterns = async (workspaceId: string, chatflowId: strin
     return Array.isArray(patterns) ? patterns : []
 }
 
+/**
+ * Guardrails v2 Phase 4 -- the first read path for GuardrailVerdict, which until now was
+ * write-only (recordVerdict, called from every attached-guardrail check throughout Phases 2/3
+ * and getActiveRedactionPatterns's Phase 1 shadow verdicts -- "Nothing reads this table yet in
+ * Phase 1" per the entity's own header comment). Follows toolsService.getAllTools's exact
+ * pagination convention: {data, total} when page/limit are both provided, a plain array
+ * otherwise -- not audit-log's list() (a `take`-only cap, no true pagination), since a verdict
+ * trail can grow large fast (one row per attached guardrail per tool call) and deserves real
+ * paging from day one.
+ */
+const listVerdicts = async (workspaceId: string, chatflowId?: string, page: number = -1, limit: number = -1) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const queryBuilder = appServer.AppDataSource.getRepository(GuardrailVerdict)
+            .createQueryBuilder('verdict')
+            .where('verdict.workspaceId = :workspaceId', { workspaceId })
+            .orderBy('verdict.createdDate', 'DESC')
+
+        if (chatflowId) queryBuilder.andWhere('verdict.chatflowId = :chatflowId', { chatflowId })
+
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
+        const [data, total] = await queryBuilder.getManyAndCount()
+
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        }
+        return data
+    } catch (error) {
+        throw new InternalAccelanceError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: guardrailsService.listVerdicts - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     listDefinitions,
     createCustomDefinition,
     dryRunDefinition,
+    listVerdicts,
     listPolicies,
     upsertPolicy,
     deletePolicy,

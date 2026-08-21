@@ -3,6 +3,7 @@ import guardrailsService from '../../services/guardrails'
 import auditLogService from '../../services/audit-log'
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { StatusCodes } from 'http-status-codes'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const requireWorkspaceId = (req: Request): string => {
     const workspaceId = req.user?.activeWorkspaceId
@@ -74,6 +75,20 @@ const dryRunDefinition = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+// Phase 4 -- first read path for GuardrailVerdict. guardrails:view (same permission already
+// gating the read-only catalog and the existing /audit-log endpoint), not a new permission.
+const listVerdicts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const workspaceId = requireWorkspaceId(req)
+        const { page, limit } = getPageAndLimitParams(req)
+        const chatflowId = req.query.chatflowId as string | undefined
+        const apiResponse = await guardrailsService.listVerdicts(workspaceId, chatflowId, page, limit)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const listPolicies = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const workspaceId = requireWorkspaceId(req)
@@ -139,6 +154,7 @@ export default {
     listCatalog,
     createDefinition,
     dryRunDefinition,
+    listVerdicts,
     listPolicies,
     upsertPolicy,
     deletePolicy,

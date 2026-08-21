@@ -11,6 +11,7 @@ router.get('/catalog', checkPermission('guardrails:view'), guardrailsController.
 // row under the new one). See controllers/guardrails/index.ts's createDefinition doc comment.
 router.post('/definitions', checkPermission('guardrails:manage'), guardrailsController.createDefinition)
 router.post('/definitions/dry-run', checkPermission('guardrails:manage'), guardrailsController.dryRunDefinition)
+router.get('/verdicts', checkPermission('guardrails:view'), guardrailsController.listVerdicts)
 router.get('/policy', checkPermission('guardrails:view'), guardrailsController.listPolicies)
 router.post('/policy', checkPermission('guardrails:manage'), guardrailsController.upsertPolicy)
 router.delete('/policy/:id', checkPermission('guardrails:manage'), guardrailsController.deletePolicy)
