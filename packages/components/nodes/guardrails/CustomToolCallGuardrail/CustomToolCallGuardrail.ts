@@ -1,5 +1,9 @@
-import { DataSource } from 'typeorm'
+import { DataSource, In } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+
+/** Kinds with a real generic tool-call-scoped executor -- see runAttachedGuardrails.ts's
+ * GENERIC_TOOL_CALL_KIND_EXECUTORS, which this list must stay in sync with. */
+const TOOL_CALL_KIND_KEYS = ['regex_match', 'classifier_http']
 
 /**
  * Guardrails v2 Phase 3 -- the generic wrapper node for user-authored custom guardrails
@@ -71,7 +75,7 @@ class CustomToolCallGuardrail_Guardrails implements INode {
                 where: {
                     ...searchOptions,
                     origin: 'custom',
-                    kindKey: 'regex_match',
+                    kindKey: In(TOOL_CALL_KIND_KEYS),
                     deletedAt: null,
                     supersededByDefinitionId: null
                 }

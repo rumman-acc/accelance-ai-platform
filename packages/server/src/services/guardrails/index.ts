@@ -12,7 +12,7 @@ import { GuardrailFlowAttachment } from '../../database/entities/GuardrailFlowAt
 import { GuardrailVerdict } from '../../database/entities/GuardrailVerdict'
 import { AgentToolPolicy } from '../../database/entities/AgentToolPolicy'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import { evaluateRegexMatch } from 'accelance-components'
+import { evaluateRegexMatch, evaluateClassifierHttp } from 'accelance-components'
 import { InternalAccelanceError } from '../../errors/internalAccelanceError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -94,11 +94,31 @@ const AUTHORING_KIND_VALIDATORS: Record<string, (params: Record<string, unknown>
         }
         if (!['block', 'flag', 'redact'].includes(params.action as string)) return '"action" must be one of block, flag, redact'
         return null
+    },
+    // Phase 5 -- see rules/guardrails-v2/phase5-deferred.md. Validated the same way regex_match
+    // is: reject a malformed definition at creation time rather than let it save and silently
+    // do nothing (or worse, silently fail every real call) once attached.
+    classifier_http: (params) => {
+        if (typeof params.url !== 'string' || !params.url) return '"url" must be a non-empty string'
+        try {
+            const parsed = new URL(params.url)
+            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '"url" must be an http or https URL'
+        } catch {
+            return '"url" is not a valid URL'
+        }
+        if (params.timeoutMs !== undefined && (typeof params.timeoutMs !== 'number' || params.timeoutMs <= 0)) {
+            return '"timeoutMs" must be a positive number'
+        }
+        if (params.failMode !== undefined && !['open', 'closed'].includes(params.failMode as string)) {
+            return '"failMode" must be "open" or "closed"'
+        }
+        return null
     }
 }
 
 const AUTHORING_PARAM_SCHEMAS: Record<string, string> = {
-    regex_match: JSON.stringify({ pattern: 'string', action: 'string' })
+    regex_match: JSON.stringify({ pattern: 'string', action: 'string' }),
+    classifier_http: JSON.stringify({ url: 'string', timeoutMs: 'number', failMode: 'string' })
 }
 
 /**
@@ -109,7 +129,12 @@ const AUTHORING_PARAM_SCHEMAS: Record<string, string> = {
  */
 const AUTHORING_KIND_EXECUTORS: Record<string, (params: Record<string, unknown>, sampleInput: string) => unknown> = {
     regex_match: (params, sampleInput) =>
-        evaluateRegexMatch({ pattern: params.pattern as string, action: params.action as 'block' | 'flag' | 'redact' }, sampleInput)
+        evaluateRegexMatch({ pattern: params.pattern as string, action: params.action as 'block' | 'flag' | 'redact' }, sampleInput),
+    classifier_http: (params, sampleInput) =>
+        evaluateClassifierHttp(
+            { url: params.url as string, timeoutMs: params.timeoutMs as number, failMode: params.failMode as 'open' | 'closed' },
+            sampleInput
+        )
 }
 
 /**
@@ -160,7 +185,7 @@ const dryRunDefinition = async (params: { kindKey: string; defaultParams: Record
  * for a capability with no demonstrated need yet; a user wanting both today authors two
  * separate custom definitions with the same pattern, one `pre` and one `post`.
  */
-const HOOK_SELECTABLE_KIND_KEYS = ['regex_match']
+const HOOK_SELECTABLE_KIND_KEYS = ['regex_match', 'classifier_http']
 
 /**
  * Creates a workspace-scoped custom GuardrailDefinition row (origin:'custom'). This is the

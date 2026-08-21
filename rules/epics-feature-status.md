@@ -736,6 +736,23 @@ view is logged as a real, unstarted gap, not silently folded into "done."** Phas
 behind this per the protocol but is not to be started without a separate explicit go-ahead —
 its remaining items include `custom_code` sandboxing, the one item in the whole build flagged
 as having a real security surface if done wrong.
+
+**Phase 5 (Deferred set) started 2026-08-21** (`rules/guardrails-v2/phase5-deferred.md`), user
+authorized the first three items except `custom_code` (explicitly deferred). All three
+(`pii_ner`, `classifier_http`/webhook, retrieval-stage) turned out to be a total blank slate —
+nothing in `rules/guardrails-v2/` defined any of them. `pii_ner` deferred (no NER
+library/model/API exists in this repo, and the real choice — local library vs. external API —
+has a genuine privacy tension a PII-detection feature shouldn't resolve by default).
+**Unit 1, done:** `classifier_http` — a new kind that POSTs content to a user-configured URL
+and expects a real verdict back, via `secureFetch`'s existing SSRF-safe deny-list mechanism
+(not a bare `fetch()` — reused the same protection `RequestsPost.ts` already has, rather than
+building a weaker second path). First kind to actually consume `defaultFailMode` (schema-defined
+but inert since Phase 0). Verified with 9 direct-invocation cases (SSRF targets correctly
+rejected under the real default-secure posture, correct fail-open/closed per config, correct
+parsing of real block/redact/malformed/500/timeout responses from a real local test server) plus
+4 live-HTTP-API cases (dry-run, invalid-URL rejection, valid creation, duplicate-key rejection).
+Retrieval-stage guardrails scoped (generic mechanism + 1-2 vectorstore nodes first) but not yet
+built.
 **Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
 executor and validator a saved definition would use, against a real sample input, with zero DB
 writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/

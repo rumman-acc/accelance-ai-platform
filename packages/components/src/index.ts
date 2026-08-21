@@ -14,6 +14,7 @@ export * from './followUpPrompts'
 // internal to packages/components -- they're hardcoded to one specific built-in definition
 // each, not meant to be called from outside runAttachedGuardrails.ts.
 export { evaluateRegexMatch, IRegexMatchParams } from './guardrails/kinds/regexMatch'
+export { evaluateClassifierHttp, IClassifierHttpParams } from './guardrails/kinds/classifierHttp'
 export * from './handler'
 export * from './headerValidation'
 export * from './httpSecurity'

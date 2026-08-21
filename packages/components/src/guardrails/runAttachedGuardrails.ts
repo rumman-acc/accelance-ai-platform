@@ -2,7 +2,29 @@ import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity } from '../Interface'
 import { checkEgressPattern, wrapPromptInjection, evaluateRegexMatch } from './kinds/regexMatch'
 import { verifyWorkspaceMembership } from './kinds/enumConstraint'
+import { evaluateClassifierHttp } from './kinds/classifierHttp'
 import { IGuardrailVerdict } from './verdictTypes'
+
+/**
+ * Guardrails v2 Phase 5 -- generic kind executors a CUSTOM (`origin:'custom'`) tool-call
+ * guardrail may run, keyed by `kindKey`. Deliberately separate from the 2 built-in
+ * `definitionKey`-keyed functions above (`runToolEgressGuardrails`/
+ * `runToolPromptInjectionGuardrails`) -- those are fixed to one specific existing definition
+ * each and must keep working unchanged; this map is what lets `runCustomToolCallGuardrails`
+ * support more than one authorable kind without hardcoding a new `if` per kind.
+ */
+const GENERIC_TOOL_CALL_KIND_EXECUTORS: Record<
+    string,
+    (params: ICommonObject, content: string) => Promise<IGuardrailVerdict> | IGuardrailVerdict
+> = {
+    regex_match: (params, content) =>
+        evaluateRegexMatch({ pattern: params.pattern as string, action: params.action as 'block' | 'flag' | 'redact' }, content),
+    classifier_http: (params, content) =>
+        evaluateClassifierHttp(
+            { url: params.url as string, timeoutMs: params.timeoutMs as number, failMode: params.failMode as 'open' | 'closed' },
+            content
+        )
+}
 
 /**
  * Guardrails v2 Phase 2 -- resolves and runs guardrail nodes attached to a host node's
@@ -160,18 +182,26 @@ export const runCustomToolCallGuardrails = async (
 ): Promise<{ decision: 'allowed' | 'denied'; reason?: string; transformedPayload: unknown }> => {
     if (!Array.isArray(guardrailConfigs)) return { decision: 'allowed', transformedPayload: payload }
 
-    const matches = guardrailConfigs.filter((c) => c?.origin === 'custom' && c?.hooks === hookPoint && c?.kindKey === 'regex_match')
+    const matches = guardrailConfigs.filter(
+        (c) => c?.origin === 'custom' && c?.hooks === hookPoint && GENERIC_TOOL_CALL_KIND_EXECUTORS[c?.kindKey as string]
+    )
 
     let currentPayload = payload
     for (const config of matches) {
         const start = Date.now()
         const observeMode = config.observeMode !== false
         const content = safeStringify(currentPayload)
-        const verdict = evaluateRegexMatch(
-            { pattern: config.pattern as string, action: config.action as 'block' | 'flag' | 'redact' },
-            content
+        const executor = GENERIC_TOOL_CALL_KIND_EXECUTORS[config.kindKey as string]
+        const verdict = await executor(config, content)
+        await recordAttachedGuardrailVerdict(
+            context,
+            config.definitionKey as string,
+            config.kindKey as string,
+            verdict,
+            observeMode,
+            start,
+            options
         )
-        await recordAttachedGuardrailVerdict(context, config.definitionKey as string, 'regex_match', verdict, observeMode, start, options)
 
         if (hookPoint === 'pre' && verdict.verdict === 'block' && !observeMode) {
             return { decision: 'denied', reason: `${config.definitionKey}: ${verdict.reason}`, transformedPayload: currentPayload }
