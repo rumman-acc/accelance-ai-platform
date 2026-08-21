@@ -62,6 +62,7 @@ import { SeedGuardrailDefinitions1794000000003 } from './1794000000003-SeedGuard
 import { BackfillGuardrailFlowAttachments1795000000003 } from './1795000000003-BackfillGuardrailFlowAttachments'
 import { AddGuardrailDefinitionKeyUniqueConstraint1796000000003 } from './1796000000003-AddGuardrailDefinitionKeyUniqueConstraint'
 import { MakeGuardrailDefinitionKeyVersionUnique1797000000003 } from './1797000000003-MakeGuardrailDefinitionKeyVersionUnique'
+import { SupersedePromptInjectionDefenseParamSchema1798000000003 } from './1798000000003-SupersedePromptInjectionDefenseParamSchema'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
@@ -152,5 +153,6 @@ export const sqliteMigrations = [
     SeedGuardrailDefinitions1794000000003,
     BackfillGuardrailFlowAttachments1795000000003,
     AddGuardrailDefinitionKeyUniqueConstraint1796000000003,
-    MakeGuardrailDefinitionKeyVersionUnique1797000000003
+    MakeGuardrailDefinitionKeyVersionUnique1797000000003,
+    SupersedePromptInjectionDefenseParamSchema1798000000003
 ]

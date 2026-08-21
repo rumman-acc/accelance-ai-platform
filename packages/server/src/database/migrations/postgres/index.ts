@@ -76,6 +76,7 @@ import { SeedGuardrailDefinitions1794000000000 } from './1794000000000-SeedGuard
 import { BackfillGuardrailFlowAttachments1795000000000 } from './1795000000000-BackfillGuardrailFlowAttachments'
 import { AddGuardrailDefinitionKeyUniqueConstraint1796000000000 } from './1796000000000-AddGuardrailDefinitionKeyUniqueConstraint'
 import { MakeGuardrailDefinitionKeyVersionUnique1797000000000 } from './1797000000000-MakeGuardrailDefinitionKeyVersionUnique'
+import { SupersedePromptInjectionDefenseParamSchema1798000000000 } from './1798000000000-SupersedePromptInjectionDefenseParamSchema'
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/postgres/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/postgres/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/postgres/1746862866554-ExecutionLinkWorkspaceId'
@@ -160,5 +161,6 @@ export const postgresMigrations = [
     SeedGuardrailDefinitions1794000000000,
     BackfillGuardrailFlowAttachments1795000000000,
     AddGuardrailDefinitionKeyUniqueConstraint1796000000000,
-    MakeGuardrailDefinitionKeyVersionUnique1797000000000
+    MakeGuardrailDefinitionKeyVersionUnique1797000000000,
+    SupersedePromptInjectionDefenseParamSchema1798000000000
 ]

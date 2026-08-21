@@ -243,3 +243,68 @@ This satisfies the *behavior* `allowedHosts` was meant to drive, structurally ra
 reading the DB column at runtime — consistent with Phase 2's static-physical-node-file
 pattern. `allowedHosts`/`hooks` on the 3 in-scope `guardrail_definition` rows remain
 unpopulated and unread; see the 2026-08-20 update in `definition-schema.md`.
+
+## Phase 2 remaining scope — Config panel round-trip (2026-08-21, per `Guardrails_end_to_end_protocol.md`)
+
+**Tier A.** Built a real chatflow ("Config Roundtrip Verify") on the Neon DB with `ToolAgent`,
+`AgentAsTool`, and all 3 guardrail nodes: set `Egress Filtering.blockedDomainPatterns` to a
+custom multi-line value, toggled `observeMode` off on all 3 guardrail nodes, connected Egress
+Filtering + Prompt-Injection Defense to `ToolAgent.guardrails`, Confused Deputy Prevention to
+`AgentAsTool.guardrails`, saved.
+
+**First save persisted only 2 of 3 edges** and left `Egress Filtering.observeMode` stuck at
+`true` — confirmed via direct DB query on `chat_flow.flowData`. Root cause, confirmed via
+screenshot: Egress Filtering's card was rendered directly underneath Prompt-Injection Defense's,
+the same node-overlap hit-testing failure already diagnosed and fixed in the connection-
+validation unit above — mouse events aimed at Egress Filtering's toggle/output handle landed on
+the card stacked on top of it instead. Not a persistence or mapping bug.
+
+**Fix:** reopened the same saved chatflow, dragged Egress Filtering clear of the overlapping
+card, confirmed `elementFromPoint` at its output handle now resolved to the handle itself
+(`srcClear:true`), redid the toggle and the connection, re-saved.
+
+**Re-verified directly against the DB after the fix:**
+- `toolAgent.inputs.guardrails` = `["{{promptInjectionDefenseGuardrail_0.data.instance}}",
+  "{{egressFilteringGuardrail_0.data.instance}}"]` — both present.
+- `agentAsTool.inputs.guardrails` = `["{{confusedDeputyPreventionGuardrail_0.data.instance}}"]`.
+- `egressFilteringGuardrail.inputs.blockedDomainPatterns` = exact string set:
+  `"roundtrip-check.example.com\nsecond-pattern.example.org"`.
+- All 3 guardrail nodes: `observeMode: false`.
+- `flowData.edges` array length = 3.
+
+**Hard-reload re-check** (fresh login, full page `load`, then explicit `page.reload()` — not a
+client-side route change): edge count 3, all 3 `observeMode` checkboxes unchecked, Egress
+Filtering's textarea value byte-identical to what was set. UI state matches DB truth exactly.
+
+**PASS.** Test chatflow and its (empty — no chat was triggered in this unit, so no verdict or
+message rows existed) fixture data deleted after verification.
+
+**Finding closed, 2026-08-21.** `guardrail_definition` row for `prompt_injection_defense` had
+`paramSchema: {"pattern":"string","action":"string"}` in the DB, but the shipped
+`PromptInjectionDefense.ts` node has zero configurable params beyond `observeMode` — it
+implements the "match-all approximation" already documented as final v1 scope in `kinds.md`.
+The DB schema was never updated to match. Since this touches a versioned catalog row on the
+live Neon instance, per the protocol's own stop-and-ask criteria the fix method was confirmed
+with the user before executing (new-version migration row, not an in-place edit) rather than
+decided unilaterally.
+
+Closed via a 4-driver migration batch (`1798000000000..1798000000003-
+SupersedePromptInjectionDefenseParamSchema`), following `definition-schema.md`'s documented
+versioning model exactly: a new row (`version: 2`, `paramSchema: {}`, `defaultParams: {}`)
+inserted with the old row's `supersededByDefinitionId` pointing forward — no row mutated in
+place. Server rebuilt and restarted against the live Neon DB; boot log confirmed
+`Database migrations completed successfully`.
+
+**Verified directly against the DB, before and after:**
+- Before: `prompt_injection_defense` v1, `paramSchema:{"pattern":"string","action":"string"}`,
+  `supersededByDefinitionId: NULL`.
+- After: v1 now has `supersededByDefinitionId` pointing to a new v2 row; v2 has
+  `paramSchema:{}`, `defaultParams:{}`.
+- Negative case: all other 12 seeded keys still resolve to exactly one current row each
+  (`deletedAt IS NULL AND supersededByDefinitionId IS NULL`), still at `version: 1`, untouched —
+  confirms the migration's `WHERE key = 'prompt_injection_defense'` scoping didn't leak.
+  `SELECT count(*) FROM guardrail_definition` = 14 (13 original + 1 new), as expected.
+- The app's own "current row" query (`listDefinitions()`'s filter) now correctly resolves
+  `prompt_injection_defense` to the v2 row.
+
+**PASS.**

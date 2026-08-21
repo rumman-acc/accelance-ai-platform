@@ -623,6 +623,22 @@ pre-Phase-2 code, triggered, then reopened unmodified under current code and re-
 byte-identical error, no data loss, correct sync-warning UI. Both passed. Full evidence in
 `rules/guardrails-v2/phase2-canvas.md`.
 
+**Phase 2 remaining scope, in progress per `Guardrails_end_to_end_protocol.md` (2026-08-20/21):**
+connection validation and the config-panel round-trip are both done and Tier-A-verified against
+the live Neon DB. Connection validation: gave each of the 3 guardrail nodes a specific
+`baseClasses` entry (`ToolCallGuardrail`/`IdentityGuardrail`) instead of a shared generic
+`'Guardrail'` type, so the existing `isValidConnection` type-matching now structurally rejects
+wrong-host attachments (e.g. Confused Deputy Prevention → `ToolAgent`) — live-tested, 4/4
+correct. Config-panel round-trip: full save/reload cycle for all 3 nodes' real params
+(`blockedDomainPatterns`, `observeMode`) verified byte-identical against the DB and a hard page
+reload; surfaced and closed a real, pre-existing catalog/reality mismatch on
+`prompt_injection_defense` (DB `paramSchema` implied 2 configurable params the shipped node
+never had) via a proper new-version migration row, not an in-place edit, confirmed
+before/after against the live DB with a negative case (other 12 keys untouched). Remaining:
+observe-vs-block UI state (Tier B + a Tier A DB-truth check) and the Content
+Moderation/HITL-placement decision — not yet started. Full evidence in
+`rules/guardrails-v2/phase2-canvas.md`.
+
 **Not built this pass, deliberately:** dynamic DB-driven node registration (so a
 `GuardrailDefinition` row becomes a droppable canvas node with no code changes) — a hard
 prerequisite for any future custom-definition-authoring phase, since user-created guardrails
