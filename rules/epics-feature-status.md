@@ -751,8 +751,21 @@ but inert since Phase 0). Verified with 9 direct-invocation cases (SSRF targets 
 rejected under the real default-secure posture, correct fail-open/closed per config, correct
 parsing of real block/redact/malformed/500/timeout responses from a real local test server) plus
 4 live-HTTP-API cases (dry-run, invalid-URL rejection, valid creation, duplicate-key rejection).
-Retrieval-stage guardrails scoped (generic mechanism + 1-2 vectorstore nodes first) but not yet
-built.
+**Unit 2, done:** retrieval-stage guardrails — the "wire into 1-2 vectorstores" premise was
+wrong and corrected before building: no vectorstore node ever touches retrieved document
+content (they only construct a retriever object; every implementation routes through the same
+shared util). The real content-extraction points are `RetrieverTool.ts` (a LangChain tool
+attached to `ToolAgent` like any other) and `ConversationalRetrievalQAChain.ts` (a direct LCEL
+step, no tool-call lifecycle). Traced `ToolAgent.ts` and confirmed its existing
+`wrapToolsWithAttachedGuardrails` call wraps every attached tool generically, with no
+special-casing that would exclude a retriever tool — meaning the agent-tool retrieval path is
+already covered by Phase 3's mechanism, not new integration surface. Verified live via direct
+invocation of the real `RetrieverTool` + real wrapping mechanism + a real custom guardrail
+(only the vectorstore's retriever itself stubbed, the one piece needing real embeddings
+credentials): retrieved content was correctly redacted with **zero new guardrails code**.
+**Result: nothing to build for the agent-tool retrieval path — confirmed already covered.**
+The separate `ConversationalRetrievalQAChain` direct-LCEL path remains genuinely uncovered and
+unscoped.
 **Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
 executor and validator a saved definition would use, against a real sample input, with zero DB
 writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/

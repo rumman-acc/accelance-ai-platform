@@ -82,9 +82,59 @@ duplicate key. Test definition and its (empty) audit-log row deleted after.
 
 **RESULT: PASS.**
 
+## Unit 2 — retrieval-stage guardrails: premise corrected, then confirmed already covered
+
+**Tier A** (confirms whether real security-relevant content-checking already happens, not just
+that a UI renders).
+
+Before building, traced where retrieved-document content actually becomes an LLM-visible string
+in this codebase -- the premise "wire the generic mechanism into 1-2 vectorstore nodes" turned
+out to be wrong and was corrected before writing any code, not silently redefined:
+
+- **No vectorstore node ever touches retrieved document content.** Every one of the 24
+  implementations (Pinecone, Qdrant, Redis, Postgres/PGVector, Milvus, etc.) routes through the
+  same shared `VectorStoreUtils.ts`'s `resolveVectorStoreOrRetriever`, which only *constructs*
+  a `VectorStore`/`VectorStoreRetriever` object and hands it off -- it never calls
+  `.similaritySearch()` itself. There is no vectorstore-level hook point to wire anything into,
+  regardless of how many vectorstores a pass touches.
+- The real `Document[] -> string` extraction happens in exactly two places:
+  `RetrieverTool.ts:209-210` (`docs.map(doc => doc.pageContent).join(...)`) and
+  `ConversationalRetrievalQAChain.ts:332-334` (a direct LCEL chain step, no tool-call lifecycle
+  at all).
+- **`RetrieverTool` is itself just a LangChain tool** (`baseClasses` includes `DynamicTool`),
+  attached to `ToolAgent` exactly like Calculator or any other tool. Traced `ToolAgent.ts:278-286`:
+  `tools = wrapToolsWithAttachedGuardrails(tools, guardrails, ...)` wraps **every** attached
+  tool generically, based only on it having a `_call` method -- it has no special-casing that
+  would exclude a retriever tool.
+
+Presented this correction to the user before building anything further, since it changes what
+"retrieval-stage guardrails" even means: the agent-tool retrieval path (the common case --
+retrieval used as something an agent decides to call) is a special case of a mechanism already
+built and proven in Phase 3, not a new integration surface. Only the separate
+`ConversationalRetrievalQAChain` LCEL path (no tool-call lifecycle to reuse) remains genuinely
+uncovered. User chose: verify the existing-coverage claim live and stop there, leaving the
+QA-chain path as its own, later, explicitly-not-yet-scoped item.
+
+**Test:** direct invocation of real code, not a mock of the mechanism under test -- a real
+`RetrieverTool` instance (via its actual compiled `init()`), wrapped by the real, unmodified
+`wrapToolsWithAttachedGuardrails`, with a real custom `regex_match` guardrail (`hooks:'post'`,
+`action:'redact'`, promoted/enforcing) resolved through the real `CustomToolCallGuardrail`
+node. Only the vectorstore's retriever itself was stubbed (a plain object satisfying
+`BaseRetriever`'s duck-typed `.invoke()` contract) -- the one piece that would otherwise need
+real embeddings API credentials, not the mechanism being tested. Called the wrapped tool via
+`.call()`, the exact same public method LangChain/`ToolAgent` uses. Result: the retrieved
+document's `FORBIDDEN_SECRET_TERM` was correctly redacted to `[REDACTED]` in the tool's actual
+returned string, and a real `GuardrailVerdict` row was written (`retrieval_redact_proof:redact`)
+-- confirmed with **zero new guardrails code**. Test data cleaned up after.
+
+**RESULT: PASS.** Retrieval-stage guardrails, for the agent-tool retrieval path, is confirmed
+already fully covered by Phase 3's existing mechanism -- nothing to build for it. Documented
+here so this isn't silently re-discovered as "missing" by a future pass.
+
 ## Next units (not yet built)
 
-- Retrieval-stage guardrails -- generic mechanism + wiring into 1-2 vectorstore nodes.
+- `ConversationalRetrievalQAChain` (and similar direct-LCEL QA-chain nodes) retrieval path --
+  genuinely uncovered, needs its own new guardrails anchor from scratch; not yet scoped.
 - `pii_ner` -- deferred, needs its own NER-approach decision first.
 - `custom_code` guardrails -- explicitly deferred per the user, needs its own go-ahead and a
   real sandboxing spec (egress allowlist, timeout, no credential access) before any code.
