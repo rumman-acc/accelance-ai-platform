@@ -667,6 +667,18 @@ Also still not built: inline pass/fail ports (the two catalog-only keys correcte
 placement 2026-08-21 are description-only, not a rendered port on canvas — see
 `phase2-canvas.md`), the dry-run tester, and framework-coverage reporting on `/compliance`.
 
+**Phase 3 (Authoring) started 2026-08-21** (`rules/guardrails-v2/phase3-authoring.md`): first
+unit built one real generic `regex_match` kind executor
+(`evaluateRegexMatch` in `packages/components/src/guardrails/kinds/regexMatch.ts`) —
+a real finding surfaced first: neither of the two existing "kind executors" is actually generic
+(`checkEgressPattern`/`wrapPromptInjection`/`verifyWorkspaceMembership` are each hardcoded to
+one specific existing definition, none take arbitrary user-supplied config), so authoring v1 is
+correctly scoped to `regex_match` only until other kinds get their own real generic executor.
+Verified directly (8 cases: match/no-match across block/flag/redact, multi-match redact,
+invalid-pattern fails closed to `block` rather than throwing, empty/non-string content). Not yet
+built: the create-custom-definition endpoint, the two generic wrapper canvas nodes, the dry-run
+tester, framework packs.
+
 ### 10. Compliance & Data Governance
 
 **Audit log** — `database/entities/AuditLog.ts` + `services/audit-log`, built 2026-08-17/18. Records guardrail-policy changes, tool-policy changes, and chatflow deletion. **Effort remaining: ~3 days** to extend write-path hooks to the remaining consequential actions (credential/role changes, individual predictions) — first pass covers governance-relevant changes, not literally everything.
