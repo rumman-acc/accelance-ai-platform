@@ -651,11 +651,21 @@ Phase 2 remaining-scope items are now closed — Phase 2 is fully signed off as 
 Full evidence in `rules/guardrails-v2/phase2-canvas.md`.
 
 **Not built this pass, deliberately:** dynamic DB-driven node registration (so a
-`GuardrailDefinition` row becomes a droppable canvas node with no code changes) — a hard
-prerequisite for any future custom-definition-authoring phase, since user-created guardrails
-have no physical file under the design shipped here. Also still not built: inline pass/fail
-ports (no seeded definition uses `inline` placement), the dry-run tester, and
-framework-coverage reporting on `/compliance`.
+`GuardrailDefinition` row becomes a droppable canvas node with no code changes) was not built
+and — per the Phase 3 authoring-mechanism re-confirmation done 2026-08-21
+(`rules/guardrails-v2/phase3-authoring-mechanism.md`) — never will be; it isn't required.
+`NodesPool` does a one-shot boot-time scan with no hot-reload path anywhere in this codebase,
+confirmed directly in code, so "no restart/deploy" for user-authored guardrails is instead
+satisfied the same way `CustomTool.ts`/`CustomMCP.ts` already satisfy it for custom
+tools/MCP servers: one or two generic wrapper node(s), always in the palette, whose
+`asyncOptions` dropdown resolves the user's saved custom `GuardrailDefinition` rows at
+flow-build time — zero new physical files per user-authored definition, ever. This unblocks
+Phase 3; the only addition to Phase 3's stated build list is two small generic node files
+(`CustomToolCallGuardrail.ts`/`CustomIdentityGuardrail.ts`, one per host category, so Phase 2's
+static connection-validation guarantee isn't broken by a single overly-permissive generic type).
+Also still not built: inline pass/fail ports (the two catalog-only keys corrected to `inline`
+placement 2026-08-21 are description-only, not a rendered port on canvas — see
+`phase2-canvas.md`), the dry-run tester, and framework-coverage reporting on `/compliance`.
 
 ### 10. Compliance & Data Governance
 
