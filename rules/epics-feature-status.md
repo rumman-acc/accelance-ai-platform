@@ -639,8 +639,16 @@ before/after against the live DB with a negative case (other 12 keys untouched).
 shield badge on any `category:'Guardrails'` node reflecting its `observeMode` — live-updates on
 toggle with no save/reload (Tier B), and confirmed via a hard reload against a real 3-node
 fixture that all 3 badge colors exactly matched the persisted DB `observeMode` values (Tier A).
-Remaining: the Content Moderation/HITL-placement decision — not yet started. Full evidence in
-`rules/guardrails-v2/phase2-canvas.md`.
+**Content Moderation/HITL placement decision (2026-08-21), done:** decided neither gets the
+attached-node treatment the other 3 guardrail nodes use — both already have a real placement
+mechanism (the Moderation node itself; the Human Input node), so `placement` was corrected from
+the seeded (wrong) `'attached'` to `'inline'` for both, via a proper versioned migration, not an
+in-place edit, verified before/after with a negative case on the other 11 keys. Catalog
+descriptions reconciled to current real capability in the same migration: `content_moderation`
+= built-but-unconfigured, `hitl_approval_gates` = real-when-placed. No UI build required — the
+`/guardrails` catalog page already renders `description`/`category` generically. **All four
+Phase 2 remaining-scope items are now closed — Phase 2 is fully signed off as of 2026-08-21.**
+Full evidence in `rules/guardrails-v2/phase2-canvas.md`.
 
 **Not built this pass, deliberately:** dynamic DB-driven node registration (so a
 `GuardrailDefinition` row becomes a droppable canvas node with no code changes) — a hard

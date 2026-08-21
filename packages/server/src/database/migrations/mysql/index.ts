@@ -66,6 +66,7 @@ import { BackfillGuardrailFlowAttachments1795000000001 } from './1795000000001-B
 import { AddGuardrailDefinitionKeyUniqueConstraint1796000000001 } from './1796000000001-AddGuardrailDefinitionKeyUniqueConstraint'
 import { MakeGuardrailDefinitionKeyVersionUnique1797000000001 } from './1797000000001-MakeGuardrailDefinitionKeyVersionUnique'
 import { SupersedePromptInjectionDefenseParamSchema1798000000001 } from './1798000000001-SupersedePromptInjectionDefenseParamSchema'
+import { CorrectContentModerationHitlPlacement1799000000001 } from './1799000000001-CorrectContentModerationHitlPlacement'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -158,5 +159,6 @@ export const mysqlMigrations = [
     BackfillGuardrailFlowAttachments1795000000001,
     AddGuardrailDefinitionKeyUniqueConstraint1796000000001,
     MakeGuardrailDefinitionKeyVersionUnique1797000000001,
-    SupersedePromptInjectionDefenseParamSchema1798000000001
+    SupersedePromptInjectionDefenseParamSchema1798000000001,
+    CorrectContentModerationHitlPlacement1799000000001
 ]

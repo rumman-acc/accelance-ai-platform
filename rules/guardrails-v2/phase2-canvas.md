@@ -346,3 +346,58 @@ values, not just to what was clicked in the same session. Test fixture deleted a
 verification.
 
 **PASS.** No known-issues carry-forward from this unit.
+
+## Phase 2 remaining scope — Content Moderation & HITL Approval Gates placement decision (2026-08-21, per `Guardrails_end_to_end_protocol.md`)
+
+Per the protocol: "decide in this phase whether they get the same attached-node treatment [as
+the 3 Phase 2 guardrail nodes] or a different one, and report the decision with reasoning
+before building either." Decision made, reported, no build follows from it -- this is a
+metadata/catalog correction only.
+
+**Decision: neither gets attached-node treatment. Both are corrected to `placement:'inline'`,
+not `'attached'`.** Reasoning: `content_moderation`'s real mechanism is the
+`SimplePromptModeration`/`OpenAIModeration` node itself, and `hitl_approval_gates`'s real
+mechanism is the Human Input node -- in both cases the node is placed directly as a first-class
+step in the flow's own graph, not connected as a side-accessory via a host node's `guardrails`
+anchor the way `EgressFiltering`/`PromptInjectionDefense`/`ConfusedDeputyPrevention` are. Giving
+them the attached-node treatment would mean building a second, parallel, redundant placement
+mechanism for something that already has a real one -- not a gap to close. The seeded
+`placement:'attached'` value on both (1794000000000-SeedGuardrailDefinitions.ts) was simply
+wrong from the start, not a decision this phase is reversing.
+
+**Catalog description also reconciled to current real capability**, since the old text
+undersold both as "catalog entry only":
+- `content_moderation`: **built but unconfigured** -- the nodes are real and functional, just
+  unused in any shipped flow, deny-list empty by default. Matches
+  `rules/epics-feature-status.md`'s existing characterization of this feature elsewhere in the
+  doc.
+- `hitl_approval_gates`: **real when placed** -- the Human Input node's pause/resume mechanism
+  genuinely works once placed in a flow; it's simply unused in any flow built so far (matches
+  `rules/epics-feature-status.md` section 8's "Execution checkpoint" entry).
+
+**Tier B** for the description-wording correction (documentation-only). **Tier A** for the
+`placement` field change itself, since it's a real value on a live catalog row, not just prose
+-- closed via a 4-driver migration batch
+(`1799000000000..1799000000003-CorrectContentModerationHitlPlacement`), following
+`definition-schema.md`'s documented versioning model (new row, `supersededByDefinitionId`
+pointing forward, no row mutated in place) -- same mechanism as the `prompt_injection_defense`
+paramSchema fix above.
+
+**Verified directly against the DB, before and after:**
+- Before: both keys at `version:1`, `placement:'attached'`, `supersededByDefinitionId: NULL`.
+- After: both keys' v1 rows now point `supersededByDefinitionId` forward to a new v2 row each;
+  both v2 rows have `placement:'inline'` and the corrected description text.
+- Negative case: the other 11 seeded keys (all non-`content_moderation`/`hitl_approval_gates`
+  rows) are untouched -- still their original version and placement value.
+  `SELECT count(*) FROM guardrail_definition` = 16 (14 prior + 2 new), as expected.
+- No UI code required a change: confirmed no component under
+  `packages/ui/src/views/guardrails`/`ui-component/extended/GuardrailsCompliance.jsx` branches
+  on the `placement` value -- the catalog page already renders `description`/`category`
+  generically, so the corrected text and placement value surface there with no build.
+
+**PASS.**
+
+With this decided and reported, all four Phase 2 remaining-scope items (connection validation,
+config panel round-trip, observe-vs-block UI state, Content Moderation/HITL placement decision)
+are closed. **Phase 2 is fully signed off as of 2026-08-21**, per the protocol's own gate
+("Phase 2 is not signed off until every item above has a report").
