@@ -724,9 +724,18 @@ VerdictAuditTrail.jsx`) — a new section on `/guardrails` (plain MUI table + re
 `TablePagination`, same convention `views/variables/index.jsx` uses, not a DataGrid; avoids a
 new top-level nav item and the icon-registry gotcha from `known-issues.md` #012). Full browser
 test with 3 real inserted verdict rows confirmed correct rendering end to end (order, verdict
-chips, Observe/Enforce mode, exact reason text, pagination summary), cleaned up after. Remaining:
-the framework coverage view (blocked on `frameworkRefs` being populated — currently `NULL`
-everywhere — and a real framework/control vocabulary, neither of which exists yet).
+chips, Observe/Enforce mode, exact reason text, pagination summary), cleaned up after.
+**Framework coverage view — deferred, not built (2026-08-21):** presented the user with the
+choice of which framework to target; no existing repo content gives a real mapping to build
+against (`/compliance`'s `FRAMEWORK_REFERENCES` list is explicitly "reference-only... not
+features to build"), and inventing control-level `frameworkRefs` values would mean fabricating
+compliance content, not implementing a spec. Deferred entirely rather than guessed at —
+`frameworkRefs` remains `NULL` on every definition, no framework/control vocabulary exists.
+**Phase 4 is signed off with the verdict audit trail UI as its one deliverable; the coverage
+view is logged as a real, unstarted gap, not silently folded into "done."** Phase 5 is gated
+behind this per the protocol but is not to be started without a separate explicit go-ahead —
+its remaining items include `custom_code` sandboxing, the one item in the whole build flagged
+as having a real security surface if done wrong.
 **Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
 executor and validator a saved definition would use, against a real sample input, with zero DB
 writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/

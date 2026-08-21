@@ -71,9 +71,34 @@ deleted after.
 
 **RESULT: PASS.**
 
-## Next units (not yet built)
+## Framework coverage view — deferred, not started (2026-08-21)
 
-- Framework coverage view -- blocked on `frameworkRefs` being populated (currently `NULL` on
-  every existing definition; carried forward from Phase 3's framework-pack deferral) and on
-  defining a real framework/control vocabulary, neither of which exists yet.
-- Wiring into `/compliance`, confirming no workspace-wide-defaults concept is reintroduced.
+Before scoping this unit, presented the user with the real choice: which framework(s) to
+target, since nothing in this repo currently has an authoritative mapping to reuse. The
+`/compliance` page's `FRAMEWORK_REFERENCES` list (NIST AI RMF, ISO/IEC 42001, EU AI Act, OWASP
+LLM Top 10) is explicitly labeled "reference-only... not features to build" -- adopting it as
+this unit's target would still require inventing real, control-level mappings
+(`{framework, control}` values in `frameworkRefs`) with no source to check them against.
+Fabricating those mappings myself would be authoring compliance content, not implementing a
+spec -- explicitly out of bounds for this build session.
+
+**Decision: defer entirely, do not build any part of this unit.** `frameworkRefs` remains
+`NULL` on every existing definition. No framework/control vocabulary is defined anywhere in this
+codebase. Populating either requires a real compliance/legal-reviewed mapping exercise -- a
+content-authoring task, not an engineering one -- and is not picked up on momentum from this
+session. This is the same "resolved by deferral, not silently dropped" treatment Phase 3 gave
+"framework-pack browse and apply" (which was folded into this exact unit); both now defer to
+whenever that mapping work is actually commissioned.
+
+**Not built, wiring into `/compliance` either** -- there is nothing real yet to wire in.
+
+## Phase 4 status
+
+**Signed off as of 2026-08-21**, with one deliverable: the verdict audit trail UI (units 1-2
+above, backend + frontend, both Tier A/B verified). The framework coverage view is the phase's
+only other originally-listed item, and it is explicitly NOT signed off as done -- it is an
+open, unstarted gap, logged above with the reason, not quietly treated as satisfied because the
+rest of the phase closed. Phase 5 is gated behind this sign-off per the protocol, but should not
+be started without a separate explicit go-ahead -- its remaining items include `custom_code`
+sandboxing, which the protocol itself flags as the one item in the whole build with a real
+security surface if done wrong.
