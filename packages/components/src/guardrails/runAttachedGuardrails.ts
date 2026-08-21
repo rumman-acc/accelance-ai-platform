@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity } from '../Interface'
-import { checkEgressPattern, wrapPromptInjection } from './kinds/regexMatch'
+import { checkEgressPattern, wrapPromptInjection, evaluateRegexMatch } from './kinds/regexMatch'
 import { verifyWorkspaceMembership } from './kinds/enumConstraint'
 import { IGuardrailVerdict } from './verdictTypes'
 
@@ -125,6 +125,64 @@ export const runAgentAsToolIdentityGuardrails = async (
     return verdict.verdict === 'pass' && !observeMode
 }
 
+const safeStringify = (value: unknown): string => {
+    if (typeof value === 'string') return value
+    try {
+        return JSON.stringify(value)
+    } catch {
+        return String(value)
+    }
+}
+
+/**
+ * Guardrails v2 Phase 3 -- the FIRST generic dispatcher in this file. Unlike the two functions
+ * above (hardcoded to one specific built-in `definitionKey` each, matching how `ToolAgent.ts`
+ * wires them at fixed call sites), a custom definition is authored data, not a call site --
+ * many different custom `regex_match` definitions share the same generic wrapper node, so
+ * *where* each one runs (`hookPoint`) has to be decided from the definition's own `hooks`
+ * field (`'pre'|'post'`, see services/guardrails/index.ts's HOOK_SELECTABLE_KIND_KEYS), not
+ * from which function got called. Only matches configs carrying `origin:'custom'` -- the 2
+ * built-in keys are already handled above and must never double-run through this path.
+ *
+ * `action:'flag'` never blocks or transforms on either hook -- it only ever records a verdict
+ * -- matching kinds.md's own semantics table. `action:'block'` is only meaningful pre-call
+ * (nothing to "block" once a result already exists); `action:'redact'` is only meaningful
+ * post-call (mirrors prompt_injection_defense's own redact-only post-hook). A `block` verdict
+ * for a `post`-hooked definition, or a `redact` verdict for a `pre`-hooked one, is recorded
+ * but has no additional effect -- an odd combination, not a crash.
+ */
+export const runCustomToolCallGuardrails = async (
+    guardrailConfigs: ICommonObject[] | undefined,
+    hookPoint: 'pre' | 'post',
+    payload: unknown,
+    context: IAttachedGuardrailContext,
+    options: ICommonObject
+): Promise<{ decision: 'allowed' | 'denied'; reason?: string; transformedPayload: unknown }> => {
+    if (!Array.isArray(guardrailConfigs)) return { decision: 'allowed', transformedPayload: payload }
+
+    const matches = guardrailConfigs.filter((c) => c?.origin === 'custom' && c?.hooks === hookPoint && c?.kindKey === 'regex_match')
+
+    let currentPayload = payload
+    for (const config of matches) {
+        const start = Date.now()
+        const observeMode = config.observeMode !== false
+        const content = safeStringify(currentPayload)
+        const verdict = evaluateRegexMatch(
+            { pattern: config.pattern as string, action: config.action as 'block' | 'flag' | 'redact' },
+            content
+        )
+        await recordAttachedGuardrailVerdict(context, config.definitionKey as string, 'regex_match', verdict, observeMode, start, options)
+
+        if (hookPoint === 'pre' && verdict.verdict === 'block' && !observeMode) {
+            return { decision: 'denied', reason: `${config.definitionKey}: ${verdict.reason}`, transformedPayload: currentPayload }
+        }
+        if (hookPoint === 'post' && verdict.verdict === 'redact' && !observeMode && verdict.transformedPayload !== undefined) {
+            currentPayload = verdict.transformedPayload
+        }
+    }
+    return { decision: 'allowed', transformedPayload: currentPayload }
+}
+
 /**
  * Mutates each tool's `_call` (same technique as toolPolicy.ts's wrapToolWithPolicy, kept
  * independent of it rather than composed -- this is the new, opt-in, per-node attached
@@ -153,8 +211,15 @@ export const wrapToolsWithAttachedGuardrails = <T>(
         if (egress.decision === 'denied') {
             throw new Error(egress.reason || `Tool call blocked by an attached guardrail`)
         }
+        const customPre = await runCustomToolCallGuardrails(guardrailConfigs, 'pre', args, context, options)
+        if (customPre.decision === 'denied') {
+            throw new Error(customPre.reason || `Tool call blocked by an attached custom guardrail`)
+        }
+
         const result = await originalCall(...args)
-        return runToolPromptInjectionGuardrails(guardrailConfigs, result, context, options)
+        const afterBuiltins = await runToolPromptInjectionGuardrails(guardrailConfigs, result, context, options)
+        const customPost = await runCustomToolCallGuardrails(guardrailConfigs, 'post', afterBuiltins, context, options)
+        return customPost.transformedPayload
     }
     return tool
 }

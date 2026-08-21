@@ -101,6 +101,19 @@ const AUTHORING_PARAM_SCHEMAS: Record<string, string> = {
 }
 
 /**
+ * Kinds whose runtime dispatch (runAttachedGuardrails.ts's runCustomToolCallGuardrails) needs
+ * to know WHERE to run relative to the tool call -- i.e. every kind that checks tool-call
+ * content rather than an identity claim. `hooks` was schema-defined since Phase 0 but
+ * "Phase-1-inert" (never read by any code) until this decision: single-select `'pre'`
+ * (outgoing tool arguments, mirrors egress_filtering) or `'post'` (the tool's result, mirrors
+ * prompt_injection_defense) only. `'both'` is deliberately NOT implemented this pass -- it
+ * would double the verdict/proof surface (two independent executions and verdicts per call)
+ * for a capability with no demonstrated need yet; a user wanting both today authors two
+ * separate custom definitions with the same pattern, one `pre` and one `post`.
+ */
+const HOOK_SELECTABLE_KIND_KEYS = ['regex_match']
+
+/**
  * Creates a workspace-scoped custom GuardrailDefinition row (origin:'custom'). This is the
  * Phase 3 authoring entry point -- see phase3-authoring-mechanism.md for why the definition
  * itself carries the real config (defaultParams) rather than a canvas node: the generic
@@ -117,6 +130,7 @@ const createCustomDefinition = async (
         description?: string
         kindKey: string
         defaultParams: Record<string, unknown>
+        hooks?: string
         defaultOnFailAction?: string
         defaultFailMode?: string
         defaultTimeoutMs?: number
@@ -150,6 +164,12 @@ const createCustomDefinition = async (
                 `Error: guardrailsService.createCustomDefinition - ${paramError}`
             )
         }
+        if (HOOK_SELECTABLE_KIND_KEYS.includes(params.kindKey) && params.hooks !== 'pre' && params.hooks !== 'post') {
+            throw new InternalAccelanceError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: guardrailsService.createCustomDefinition - "hooks" must be "pre" (check outgoing tool arguments) or "post" (check the tool's result) -- "both" is not supported yet`
+            )
+        }
 
         const appServer = getRunningExpressApp()
         const repo = appServer.AppDataSource.getRepository(GuardrailDefinition)
@@ -174,6 +194,7 @@ const createCustomDefinition = async (
             category: 'custom',
             kindKey: params.kindKey,
             placement: GuardrailPlacement.ATTACHED,
+            hooks: params.hooks,
             paramSchema: AUTHORING_PARAM_SCHEMAS[params.kindKey],
             defaultParams: JSON.stringify(params.defaultParams),
             defaultOnFailAction: (params.defaultOnFailAction as GuardrailOnFailAction) || GuardrailOnFailAction.FLAG,

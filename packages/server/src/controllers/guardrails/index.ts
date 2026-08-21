@@ -40,6 +40,7 @@ const createDefinition = async (req: Request, res: Response, next: NextFunction)
         if (body.description !== undefined) params.description = body.description
         if (body.kindKey !== undefined) params.kindKey = body.kindKey
         if (body.defaultParams !== undefined) params.defaultParams = body.defaultParams
+        if (body.hooks !== undefined) params.hooks = body.hooks
         if (body.defaultOnFailAction !== undefined) params.defaultOnFailAction = body.defaultOnFailAction
         if (body.defaultFailMode !== undefined) params.defaultFailMode = body.defaultFailMode
         if (body.defaultTimeoutMs !== undefined) params.defaultTimeoutMs = body.defaultTimeoutMs

@@ -684,8 +684,19 @@ already uses), verified with 3 transactional negative-case proofs directly again
 (different workspaces: no collision; same workspace: still collides; two system rows: still
 collides) plus 5 live-endpoint cases (valid create, duplicate-key rejection, invalid-pattern
 rejection, unsupported-kind rejection, malformed-key rejection). `defaultObserveMode` is forced
-`true` server-side, never client-controllable. Not yet built: the two generic wrapper canvas
-nodes, the dry-run tester, framework packs, and a UI form for the new endpoint.
+`true` server-side, never client-controllable.
+**Unit 3, done:** building the wrapper node surfaced a deeper gap — the runtime dispatcher only
+recognized 2 hardcoded built-in keys, so any custom guardrail would have attached and shown a
+live badge while being completely inert. User rejected the simpler "fix to post-call" option and
+directed real (narrowed) scope: `hooks` (`pre`|`post` only, `both` explicitly deferred) is now an
+author-chosen field consumed by a real dispatcher (`runCustomToolCallGuardrails`), wired into
+`ToolAgent.ts`'s existing wrap path, plus the actual `CustomToolCallGuardrail.ts` wrapper node
+(following `CustomTool.ts`'s exact precedent). Proven via direct invocation of the real compiled
+code with captured logs showing execution order: pre-hook blocked strictly before the real tool
+call ran (based on args), post-hook ran after and redacted based on the result even when the
+pattern was absent from args entirely; real `GuardrailVerdict` rows confirmed written. Not yet
+built: the dry-run tester, framework packs, a create-definition UI form, and
+`CustomIdentityGuardrail.ts` (deferred — no generic identity-scoped kind executor exists yet).
 
 ### 10. Compliance & Data Governance
 
