@@ -251,3 +251,45 @@ Per explicit user request, increased both durations: `IDLE_TIMEOUT_MS` in `Sessi
 **Impact:** verification work that should have taken minutes (once the flow was wired) took several credential-swap round trips to find one working combination. If you're setting up a test agent in this workspace, budget for this — start with `googleGenerativeAI` / `rumman-personal-api-key` with an explicit, current model name in "Custom Model Name" rather than trusting the node's dropdown default.
 
 **Prevention:** none proposed — this is dev-account hygiene, not a product gap. Worth a periodic manual check if this workspace keeps getting used for live verification passes.
+
+---
+
+## #019 — `vm2`/`NodeVM` (unmaintained, documented sandbox-escape CVE history) executes arbitrary tenant-submitted JavaScript in-process, in production, today
+
+**Severity: real, live, currently-shipping — not hypothetical, not deferred.** Found
+2026-08-21 as a side effect of an implementer's review of an unrelated, not-yet-built
+"`custom_code` guardrail" sandboxing spec (`Custom code guardrail sandboxing spec.md`)
+— logged here on its own because it's an existing production exposure independent of
+that spec, not something to fold into or wait on a feature that hasn't been built yet.
+
+**Symptom / what's actually running:** `vm2` (`packages/components/package.json`) is a
+direct dependency, imported in `packages/components/src/utils.ts` (`executeJavaScriptCode`,
+via `NodeVM`), and is the execution engine behind the "Custom Function" node family
+(`nodes/utilities/CustomFunction`, `nodes/agentflow/CustomFunction`,
+`nodes/sequentialagents/CustomFunction`). Any workspace member who can drop a Custom
+Function node onto a canvas can submit arbitrary JavaScript that runs **inside the main
+server process**, sharing memory space and the event loop with all other tenants'
+in-flight traffic.
+
+**Root cause:** `vm2` is unmaintained and has a documented, repeated history of public
+sandbox-escape CVEs — the exact class of tool the new `custom_code` guardrail spec
+explicitly rejects for that (still unbuilt) feature. This is not a new choice being
+made; it's a pre-existing one already shipped for Custom Function, discovered while
+reasoning about a different feature that correctly avoided repeating it.
+
+**Impact:** a maliciously or carelessly authored Custom Function node is a plausible
+path to reading environment variables/other tenants' in-flight data, or a full sandbox
+escape, depending on which `vm2` CVE applies to the version pinned here — worth an
+actual CVE-database check against the pinned version (`3.11.2` as of this writing)
+rather than assuming "probably fine because it hasn't been reported yet."
+
+**Prevention / what this entry is NOT doing:** not fixing this here — out of scope for
+the guardrails work that surfaced it, and replacing `vm2` in an already-shipping,
+widely-used node family is a real migration project (likely `worker_threads` +
+`resourceLimits`, the same mechanism named in the `custom_code` spec, but applied to an
+existing feature with existing saved flows depending on its current behavior — a
+different, larger undertaking than building `custom_code` fresh). Logged here so it
+doesn't quietly disappear as a footnote in a document about an unrelated, unbuilt
+feature. Recommend: a real CVE audit against the pinned `vm2` version, and a scoped
+follow-up decision (accept the risk explicitly, restrict Custom Function further, or
+migrate the execution engine) — made deliberately, not by default.
