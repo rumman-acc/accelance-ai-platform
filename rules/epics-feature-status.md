@@ -704,6 +704,14 @@ this feature area stays plain-MUI, logged `not started` for the design-system pa
 25-27). Full browser test confirmed end to end: create → dry-run test shows a real verdict →
 save → appears in the catalog under Custom on reload → confirmed via direct DB query → cleaned
 up.
+**"Framework-pack browse and apply" resolved by deferral to Phase 4 (2026-08-21):** the term is
+undefined anywhere in this repo (the source doc that reportedly defined it doesn't exist here),
+and two competing hints disagree on what it even is — deferred into Phase 4's already-planned
+coverage view rather than guessed at. **Phase 3's capstone check closed the same day:** live
+end-to-end proof that a brand-new custom definition appears in a fresh chatflow's
+`CustomToolCallGuardrail` dropdown with the server running continuously throughout — no restart,
+no deploy — satisfying the protocol's own "single most important proof in this phase." **All of
+Phase 3's originally stated build-list items are now closed.**
 **Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
 executor and validator a saved definition would use, against a real sample input, with zero DB
 writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/

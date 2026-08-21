@@ -270,9 +270,64 @@ correctly under a properly-capitalized "Custom" section header. Test definition 
 
 **RESULT: PASS.**
 
-## Next units (not yet built)
+## Framework-pack browse and apply — scoped and deferred to Phase 4 (2026-08-21)
 
-- Framework-pack browse and apply — not yet scoped in detail.
-- `CustomIdentityGuardrail.ts` (the `AgentAsTool.ts`-side wrapper) — deferred until a real
-  generic identity-scoped kind executor exists (today only `regex_match` is generic; the
-  existing `enum_constraint` "executor" is still hardcoded to workspace-membership checking).
+Researched before attempting to build: "framework pack" is never defined anywhere in this
+repo, only named -- `Guardrails_end_to_end_protocol.md`'s Phase 3 build list names it with no
+inline definition, and the source document that reportedly resolved it
+(`Guardrails_build_plan.md §11`) does not exist in this repo (confirmed absent, consistent with
+earlier findings this session). Two competing, unreconciled hints exist: (a)
+`epics-feature-status.md`/`FEATURE-BUILD-LEDGER.md` suggest a per-agent bundle-apply feature
+(the deleted "policy templates" feature's likely redefinition); (b) the protocol's own Phase 4
+section describes a read-only "per-agent framework coverage view, wired to `frameworkRefs`" --
+but assigns it to Phase 4, not Phase 3, as a separate line item. Compounding this: `frameworkRefs`
+(the column either interpretation depends on) is `NULL` on every single existing definition
+today -- no migration has ever populated it, despite the protocol's own non-negotiable claiming
+it's "populated on every new definition from Phase 0 onward." No framework/control vocabulary
+(SOC2 control IDs etc.) exists anywhere in code or docs under either interpretation.
+
+**Decision (user's call, presented with both options plus a third to defer):** defer
+"framework-pack browse and apply" entirely to Phase 4, folding it into the coverage view already
+planned there once `frameworkRefs` is actually populated. This Phase 3 build-list line item is
+resolved by deferral, not built -- not silently dropped. **Carry-forward for Phase 4:**
+`frameworkRefs` being NULL everywhere is a real gap that phase will need to close (define the
+framework/control vocabulary, backfill or re-author values) before a coverage view can show
+anything real.
+
+## Capstone verification — palette appearance with no restart or deploy (2026-08-21)
+
+**Tier A.** Per the protocol: "Verify: a newly authored custom definition appears in the
+palette without a restart or deploy... This is the single most important proof in this phase --
+it's the entire premise of decision 1." Units 2-5 verified the underlying mechanism (DB write,
+`init()` resolution, dispatcher, UI form) but not this specific end-to-end UX claim directly, so
+closing it explicitly now rather than treating it as implied.
+
+**Test:** with the server running continuously throughout (confirmed no restart between the
+start of this check and its conclusion), created a brand-new, uniquely-named custom definition
+through the real UI form, then immediately navigated to a **new, unrelated chatflow** and
+dragged a fresh `CustomToolCallGuardrail` node onto it. Opened its "Select Custom Guardrail"
+dropdown -- the freshly-created definition appeared in the live list immediately, alongside
+every other custom definition created earlier in the same no-restart window (screenshot
+captured: 7 distinct "Palette Proof <timestamp>" entries, each created moments before its own
+successful appearance, none present at server boot). No `NodesPool` rescan, no page reload of
+the running app's own session, no server restart, no deploy -- confirms decision 1's premise
+holds for the actual mechanism this build shipped (a generic wrapper node's DB-backed dropdown,
+not dynamic node-class registration). All 7 test definitions and their audit-log rows deleted
+after.
+
+**RESULT: PASS.**
+
+## Phase 3 status
+
+All items from `Guardrails_end_to_end_protocol.md`'s Phase 3 build list are now closed:
+create-custom-definition flow (units 2, 5), dry-run tester (unit 4), and framework-pack
+browse/apply (resolved by deferral to Phase 4, above). The phase's own "Verify" checkpoint
+(palette appearance with no restart/deploy) is directly proven, above.
+
+**Remaining, not part of the original build list but flagged during the work:**
+`CustomIdentityGuardrail.ts` (the `AgentAsTool.ts`-side wrapper) — deferred until a real generic
+identity-scoped kind executor exists (today only `regex_match` is generic; the existing
+`enum_constraint` "executor" is still hardcoded to workspace-membership checking, not
+config-driven). This was never in the protocol's explicit Phase 3 list -- it's a natural
+extension surfaced by `phase3-authoring-mechanism.md`'s own design, logged so it isn't silently
+assumed done.
