@@ -11,6 +11,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import CreateGuardrailDefinitionDialog from './CreateGuardrailDefinitionDialog'
+import VerdictAuditTrail from './VerdictAuditTrail'
 
 // API
 import guardrailsApi from '@/api/guardrails'
@@ -149,6 +150,7 @@ const GuardrailsPage = () => {
                                 </Stack>
                             </Stack>
                         ))}
+                <VerdictAuditTrail />
             </Stack>
             <CreateGuardrailDefinitionDialog
                 show={showCreateDialog}

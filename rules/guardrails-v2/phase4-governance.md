@@ -42,10 +42,37 @@ plain array, not `{data,total}`. All 6 passed. Test rows deleted after.
 
 **RESULT: PASS.**
 
+## Unit 2 — verdict audit trail UI
+
+**Tier B** (rendering) **+ Tier A** (confirming displayed verdicts match real DB rows, per the
+protocol's own split for this exact item).
+
+**Build:** `views/guardrails/VerdictAuditTrail.jsx` -- same plain-MUI table + real
+`TablePagination` component (`ui-component/pagination/TablePagination.jsx`) pattern
+`views/variables/index.jsx` already uses, not a DataGrid and not `audit-log`'s uncapped list.
+Rendered as a new section on the existing `/guardrails` page (not a new top-level nav item, to
+avoid the icon-registry gotcha logged in `known-issues.md` #012 for a view this narrow in
+scope) -- `migration-checklist.md` row 28 amended to cover it, same "not started for the
+design-system pass" status as the rest of this feature area. Columns: when, chatflow, definition
+key, a color-coded verdict chip (pass=success/flag=warning/block=error/redact=info, standard
+MUI palette keys, no new ad hoc colors), Observe/Enforce mode, reason.
+
+**Test:** rebuilt (`accelance-ui`), inserted 3 real verdict rows for the actual logged-in
+workspace directly via SQL, then live browser test. First pass showed both this section and the
+catalog above stuck on loading spinners -- traced to the catalog request genuinely taking ~3.9s
+(confirmed via a direct authenticated-fetch timing check hitting both endpoints, both returned
+200 with correct real data, just slower than the 2.5-3s wait I'd given the page) -- not a bug in
+this unit, a test-script timing issue. Re-ran with a proper wait: all 3 real rows rendered
+correctly, most-recent-first, with the exact real `reason` text
+(`blocked a reference to "169.254.169.254"`) on the one `block` row, correct
+Observe/Enforce label matching each row's real `observeMode` value, correct color-coded verdict
+chips, and correct pagination summary ("Items 1 to 3 of 3"). Screenshot captured. Test rows
+deleted after.
+
+**RESULT: PASS.**
+
 ## Next units (not yet built)
 
-- Verdict audit trail UI (Tier B rendering, Tier A confirming displayed verdicts match real DB
-  rows) -- the frontend for the endpoint above.
 - Framework coverage view -- blocked on `frameworkRefs` being populated (currently `NULL` on
   every existing definition; carried forward from Phase 3's framework-pack deferral) and on
   defining a real framework/control vocabulary, neither of which exists yet.

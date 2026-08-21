@@ -14,6 +14,9 @@ const createDefinition = (body) => client.post('/guardrails/definitions', body)
 
 const dryRunDefinition = (body) => client.post('/guardrails/definitions/dry-run', body)
 
+// Phase 4 -- first read path for GuardrailVerdict. params: {page, limit, chatflowId?}
+const listVerdicts = (params) => client.get('/guardrails/verdicts', { params })
+
 const getPolicies = (chatflowId) => client.get('/guardrails/policy', { params: { chatflowId } })
 
 const upsertPolicy = (body) => client.post('/guardrails/policy', body)
@@ -26,6 +29,7 @@ export default {
     getCatalog,
     createDefinition,
     dryRunDefinition,
+    listVerdicts,
     getPolicies,
     upsertPolicy,
     deletePolicy,

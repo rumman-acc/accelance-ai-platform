@@ -719,9 +719,14 @@ read this table before — write-only since Phase 1/2). Real pagination (`{data,
 `toolsService.getAllTools`'s convention, not `audit-log`'s uncapped `take`-only list), gated by
 the existing `guardrails:view` permission. Verified via direct invocation against the real DB
 with 6 cases including the real negative case (workspace-A results never leak workspace-B rows)
-— all passed. Remaining: the verdict audit trail UI, and the framework coverage view (blocked on
-`frameworkRefs` being populated — currently `NULL` everywhere — and a real framework/control
-vocabulary, neither of which exists yet).
+— all passed. **Unit 2, done:** the verdict audit trail UI (`views/guardrails/
+VerdictAuditTrail.jsx`) — a new section on `/guardrails` (plain MUI table + real
+`TablePagination`, same convention `views/variables/index.jsx` uses, not a DataGrid; avoids a
+new top-level nav item and the icon-registry gotcha from `known-issues.md` #012). Full browser
+test with 3 real inserted verdict rows confirmed correct rendering end to end (order, verdict
+chips, Observe/Enforce mode, exact reason text, pagination summary), cleaned up after. Remaining:
+the framework coverage view (blocked on `frameworkRefs` being populated — currently `NULL`
+everywhere — and a real framework/control vocabulary, neither of which exists yet).
 **Unit 4, done:** `POST /api/v1/guardrails/definitions/dry-run` — runs the exact same generic
 executor and validator a saved definition would use, against a real sample input, with zero DB
 writes. Live-tested 5 cases (match/no-match/redact-with-real-transformedPayload/invalid-pattern/
