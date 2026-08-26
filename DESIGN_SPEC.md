@@ -646,6 +646,19 @@ Anything the design conversation hasn't resolved yet — flagged here so Claude 
   is a design-conversation decision, not something to resolve unilaterally here. The mark no
   longer matches the "Fluid" wordmark's initial letter; needs a design-conversation decision
   (new mark vs. keep as an abstract, non-initial mark) before further pages ship with it.
+- **Mark/wordmark mismatch above RESOLVED (2026-08-27):** pulled `Fluid Logo.dc.html` from the
+  design conversation (Claude Design project `a8977b7a-1322-446b-9250-615d9b4fe305`) via
+  DesignSync at the user's request — an exploration offering two node-and-edge "bubble graph"
+  mark directions in the confirmed brand palette (deep-blue core, azure + green satellites),
+  replacing the old three-bar "E". Presented both to the user for review; **user chose "1b —
+  Branch"** (core branching up-left/up-right, not "1a — Horizontal molecule"'s inline
+  three-node row). Implemented in `Logo.jsx` (small flat-color treatment), the landing page's
+  `FluidLogo` (same small treatment, nav-bar sized), `AccelanceHeader.jsx` (32px header
+  treatment with gradients, matching the source mockup's own header mock), and
+  `fluid-icon-tile.svg`/`favicon.svg` (full gradient tile treatment) — favicon `.ico`/PNGs
+  regenerated from the new SVG. **Also changed alongside the mark, per the same source file:**
+  wordmark weight is now Lexend 300 (Light), not 500 — updated in `design-system/tokens.json`
+  `color.logo` and `component-inventory.md`'s Logo entry in this same pass.
 
 ## 10. Changelog
 

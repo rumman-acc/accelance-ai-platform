@@ -196,7 +196,8 @@
 - **Don't:** treat as the actual validation — it's feedback only; the zod schema is still the source of truth
 
 ### Logo — updated, not new
-- Gained a `variant` prop (`'auto' | 'light' | 'dark'`, default `'auto'`) so callers can force the white-on-gradient or navy-on-white treatment independent of the app's dark-mode setting (used by AuthSplitShell's brand panel). Mark itself unchanged (still the "E" mark, now labeled "Fluid" — see `design-system/tokens.json` `color.logo` for the current mark spec and DESIGN_SPEC.md Section 9 for the flagged letterform mismatch).
+- Gained a `variant` prop (`'auto' | 'light' | 'dark'`, default `'auto'`) so callers can force the white-on-gradient or navy-on-white treatment independent of the app's dark-mode setting (used by AuthSplitShell's brand panel).
+- **Mark replaced 2026-08-27** (`Fluid Logo.dc.html`, Claude Design project `a8977b7a-1322-446b-9250-615d9b4fe305`, user picked "1b — Branch" over "1a — Horizontal molecule"): the old three-bar "E" is gone, replaced by a node-and-edge bubble graph — deep-blue core branching to an azure node and a green node. Wordmark weight also changed, Lexend 500 → 300 (Light). See `design-system/tokens.json` `color.logo` for the full spec and `DESIGN_SPEC.md` Section 9 for the resolution note. Same swap applied to the landing page's `FluidLogo` and `AccelanceHeader.jsx`'s inline header mark (not itself a Logo.jsx instance, kept visually in sync by hand).
 
 ## Guardrails (`ui-component/extended/`) — status: draft, pending design review
 

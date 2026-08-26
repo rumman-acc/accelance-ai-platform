@@ -54,13 +54,32 @@ const AccelanceHeader = () => {
                 fontFamily: 'var(--accelance-font-primary)'
             }}
         >
-            <Link to='/' style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 176, textDecoration: 'none' }}>
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <span style={{ display: 'block', width: 18, height: 3, borderRadius: 2, background: 'var(--accelance-green-300)' }} />
-                    <span style={{ display: 'block', width: 13, height: 3, borderRadius: 2, background: 'var(--accelance-azure-400)' }} />
-                    <span style={{ display: 'block', width: 18, height: 3, borderRadius: 2, background: 'var(--accelance-azure-400)' }} />
-                </span>
-                <span style={{ fontSize: 21, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--accelance-deepblue-600)' }}>
+            <Link to='/' style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 176, textDecoration: 'none' }}>
+                <svg width='30' height='30' viewBox='0 0 200 200' fill='none' aria-hidden='true'>
+                    <defs>
+                        <radialGradient id='fluid-mark-core' cx='38%' cy='30%' r='62%'>
+                            <stop offset='0%' stopColor='#5AAEF0' />
+                            <stop offset='40%' stopColor='#0F74BD' />
+                            <stop offset='100%' stopColor='#062667' />
+                        </radialGradient>
+                        <radialGradient id='fluid-mark-tr' cx='36%' cy='28%' r='62%'>
+                            <stop offset='0%' stopColor='#7DEAB2' />
+                            <stop offset='40%' stopColor='#13BA2F' />
+                            <stop offset='100%' stopColor='#0A7A1F' />
+                        </radialGradient>
+                    </defs>
+                    <path d='M82 82 C72 66 62 56 52 48 C58 44 64 44 70 50 C76 56 82 66 84 78Z' fill='#0F74BD' opacity='0.4' />
+                    <path d='M106 80 C116 64 130 54 148 46 C150 52 148 58 140 63 C132 68 118 76 108 84Z' fill='#13BA2F' opacity='0.35' />
+                    <path d='M80 106 C66 116 52 126 36 138 C34 132 36 126 42 122 C48 118 66 110 82 104Z' fill='#0F74BD' opacity='0.3' />
+                    <circle cx='40' cy='36' r='22' fill='#0F74BD' />
+                    <ellipse cx='31' cy='26' rx='7' ry='4.5' fill='#FFFFFF' opacity='0.4' transform='rotate(-25,31,26)' />
+                    <circle cx='160' cy='36' r='26' fill='url(#fluid-mark-tr)' />
+                    <ellipse cx='150' cy='25' rx='8' ry='5' fill='#FFFFFF' opacity='0.4' transform='rotate(-25,150,25)' />
+                    <circle cx='96' cy='96' r='38' fill='url(#fluid-mark-core)' />
+                    <ellipse cx='81' cy='80' rx='12' ry='7' fill='#FFFFFF' opacity='0.35' transform='rotate(-25,81,80)' />
+                    <circle cx='26' cy='158' r='20' fill='#0F74BD' opacity='0.8' />
+                </svg>
+                <span style={{ fontSize: 25, fontWeight: 300, letterSpacing: '-0.02em', color: 'var(--accelance-deepblue-600)' }}>
                     fluid
                 </span>
             </Link>

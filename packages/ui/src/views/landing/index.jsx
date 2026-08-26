@@ -11,18 +11,20 @@ import { ApprovalCard } from '@/design-system/components/ui/approval-card'
 import { Field, Input } from '@/design-system/components/ui/input'
 import { cn } from '@/lib/utils'
 
-// Fluid mark "2a — Courier E" (renamed 2026-08-26, was Envoy; mark geometry unchanged — see
-// DESIGN_SPEC.md Section 9 for the flagged letterform mismatch), solid color (small-size
-// treatment, not the gradient hero variant).
+// Fluid mark "1b — Branch" (adopted 2026-08-27 from the "Fluid Logo" Claude Design
+// exploration, replacing the Envoy-era three-bar "E"): a node-and-edge bubble graph — a
+// deep-blue core branching up-left (azure) and up-right (green). This is the design's own
+// small-size (nav-bar, ~16-20px) flat-color treatment, not the gradient/edge hero variant.
 const FluidLogo = ({ className, textClassName }) => (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
-        <svg width='1em' height='1em' viewBox='0 0 96 96' fill='none' aria-hidden='true' className='shrink-0'>
-            <path d='M20 24 H70' stroke='#0F74BD' strokeWidth='14' strokeLinecap='round' />
-            <path d='M20 48 H46' stroke='#13BA2F' strokeWidth='14' strokeLinecap='round' />
-            <path d='M66 48 H82' stroke='#13BA2F' strokeWidth='14' strokeLinecap='round' />
-            <path d='M20 72 H70' stroke='#0F74BD' strokeWidth='14' strokeLinecap='round' />
+        <svg width='1em' height='1em' viewBox='0 0 200 200' fill='none' aria-hidden='true' className='shrink-0'>
+            <circle cx='40' cy='36' r='22' fill='#0F74BD' />
+            <circle cx='160' cy='36' r='26' fill='#13BA2F' />
+            <circle cx='96' cy='96' r='38' fill='#062667' />
+            <ellipse cx='81' cy='80' rx='12' ry='7' fill='#FFFFFF' opacity='0.35' transform='rotate(-25,81,80)' />
+            <circle cx='26' cy='158' r='20' fill='#0F74BD' opacity='0.8' />
         </svg>
-        <span className={cn('font-medium tracking-tight', textClassName)} style={{ color: '#062667' }}>
+        <span className={cn('font-light tracking-tight', textClassName)} style={{ color: '#062667' }}>
             fluid
         </span>
     </span>
