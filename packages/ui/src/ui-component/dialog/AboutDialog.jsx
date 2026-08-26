@@ -45,7 +45,7 @@ const AboutDialog = ({ show, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Envoy Version
+                Fluid Version
             </DialogTitle>
             <DialogContent>
                 {data && (

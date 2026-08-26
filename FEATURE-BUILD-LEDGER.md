@@ -17,6 +17,8 @@ Status legend: ✅ Done · 🟡 Built, not configured · 🔴 To be built
 2026-08-18: 8 §9/§10 guardrail/compliance items moved 🔴→✅ and 3 moved 🔴→🟡 — they were already
 built and enforced, just undocumented; see `rules/known-issues.md` #015.)
 
+**2026-08-26 — product renamed "Envoy" → "Fluid"** (user-facing name/copy only; see the matching note in `rules/epics-feature-status.md`).
+
 **TODO (2026-08-19, extended 2026-08-20):** the summary counts above don't yet reflect the
 Guardrails v2 rearchitecture rows changed since (Guardrails catalog ✅-leaning→🟡 40%→55%,
 Policy templates ✅→🔴) — `rules/epics-feature-status.md` §9/§10 is up to date and remains the
@@ -76,7 +78,7 @@ vs. end-user/tenant self-service — read that before scoping a build-out plan o
 
 | Feature | What it's for | Status | Built | Scope / what's left |
 | --- | --- | --- | --- | --- |
-| Provider-agnostic LLM access (30 providers) | OpenAI, Anthropic, Bedrock, Vertex, Watsonx, Groq, Mistral, Moonshot AI (Kimi), Ollama, LiteLLM, LocalAI, etc. | ✅ | 100% | Nothing to build. Model catalogs for Groq/Mistral/Alibaba Tongyi/Cerebras refreshed 2026-08-17 (`rules/epics-feature-status.md` § 4); most non-OpenAI/Anthropic/Gemini catalogs are hand-maintained and can drift stale again without a periodic re-check. |
+| Provider-agnostic LLM access (30 providers) | OpenAI, Anthropic, Bedrock, Vertex, Watsonx, Groq, Mistral, Moonshot AI (Kimi), Ollama, LiteLLM, LocalAI, etc. | ✅ | 100% | Nothing to build. Full ~120-entry stale-model sweep across all 19 provider lists done 2026-08-24 (`rules/known-issues.md` #020). Same day, `MODEL_REFRESH_ENABLED=true` plus all three `MODEL_REFRESH_{OPENAI,ANTHROPIC,GOOGLE}_API_KEY` were set and verified live, so OpenAI/Anthropic/Gemini now genuinely auto-refresh nightly (`rules/epics-feature-status.md` § 4). Every other provider (Bedrock, Azure, Groq, Cohere, Cerebras, DeepSeek, Perplexity, Mistral, Moonshot, Baidu, Alibaba, Voyage) still has no auto-refresh mechanism and will always need manual sweeps. |
 | Embedding providers (16) | Same provider-agnostic layer for embeddings. | ✅ | 100% | Nothing to build. |
 | Model tiering (cheap/critic vs. frontier) | Cheaper model for easy steps, frontier for hard ones. | 🟡 | 40% | Selectable per node; no platform-wide policy. ~2 days to define a tiering convention + default templates (policy, not code). |
 | Model allow/deny-listing | Restrict which models are selectable platform-wide. | 🟡 | 80% | Env vars exist, unpopulated. ~0.5 day. |

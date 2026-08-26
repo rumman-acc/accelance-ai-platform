@@ -61,7 +61,7 @@ const AccelanceHeader = () => {
                     <span style={{ display: 'block', width: 18, height: 3, borderRadius: 2, background: 'var(--accelance-azure-400)' }} />
                 </span>
                 <span style={{ fontSize: 21, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--accelance-deepblue-600)' }}>
-                    envoy
+                    fluid
                 </span>
             </Link>
 

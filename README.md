@@ -1,11 +1,11 @@
-# Envoy
+# Fluid
 
-Envoy is Accelance's multi-tenant AI agent platform — a low-code canvas for building,
+Fluid is Accelance's multi-tenant AI agent platform — a low-code canvas for building,
 running, and governing AI agents. It's built on a [Flowise](https://github.com/FlowiseAI/Flowise)
 3.1.2 OSS fork, running in enterprise mode (org → workspace → RBAC) on PostgreSQL (Neon).
 
 For a fuller picture of what the application does and how it's put together, start with
-**[Envoy-overview.md](Envoy-overview.md)**.
+**[Fluid-overview.md](Fluid-overview.md)**.
 
 ## Quick start
 
@@ -44,7 +44,7 @@ Full diagrams and request-path detail live in **[rules/architecture.md](rules/ar
 
 | Doc | What's in it |
 | --- | --- |
-| [Envoy-overview.md](Envoy-overview.md) | What the application is, at a glance — capabilities, architecture, and a full doc index |
+| [Fluid-overview.md](Fluid-overview.md) | What the application is, at a glance — capabilities, architecture, and a full doc index |
 | [NEW-DEVELOPER-SETUP.md](NEW-DEVELOPER-SETUP.md) | Local dev environment setup |
 | [rules/architecture.md](rules/architecture.md) | Full technical architecture — services, layers, auth flow, key files |
 | [rules/epics-feature-status.md](rules/epics-feature-status.md) | Feature-by-feature build status and effort estimates, with code evidence |
@@ -58,7 +58,7 @@ Full diagrams and request-path detail live in **[rules/architecture.md](rules/ar
 
 ## License
 
-Envoy is built on [Flowise](https://github.com/FlowiseAI/Flowise), used under the
+Fluid is built on [Flowise](https://github.com/FlowiseAI/Flowise), used under the
 [Apache License 2.0](https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md). This
 repository does not currently carry its own top-level license file — check with the project
 owner before treating Accelance-specific code as separately licensed.

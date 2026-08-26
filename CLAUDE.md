@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Envoy (formerly "Accelance AI Platform") — a multi-tenant AI agent platform built on a Flowise
+Fluid (formerly "Accelance AI Platform", then "Envoy") — a multi-tenant AI agent platform built on a Flowise
 3.1.2 OSS fork, running in enterprise mode with PostgreSQL on Neon. Root:
 `d:/Accelance AI Platform/AI-Platform-Internal/`. See `NEW-DEVELOPER-SETUP.md` for the dev setup
 path and `rules/architecture.md` for the full service layout.
@@ -13,7 +13,7 @@ apply depends on what kind of change you're making — most non-trivial changes 
 | If the change is... | Read / update... |
 |---|---|
 | UI/presentation — re-skinning an existing page, or any page-level visual work | `DESIGN_SPEC.md` (read-only except Section 9) + `migration-checklist.md` + `design-system/tokens.json` + `design-system/components/component-inventory.md` |
-| Backend, business logic, architecture, or a new feature/epic | `rules/architecture.md`, `rules/epics-feature-status.md`, `rules/known-issues.md`, `rules/changes.md`, `FEATURE-BUILD-LEDGER.md`, `Envoy-overview.md` |
+| Backend, business logic, architecture, or a new feature/epic | `rules/architecture.md`, `rules/epics-feature-status.md`, `rules/known-issues.md`, `rules/changes.md`, `FEATURE-BUILD-LEDGER.md`, `Fluid-overview.md` |
 | A user-facing rename or copy change (product name, page names, terminology) | Whichever of the above already refers to the old name — add a one-line note wherever it appears, don't just fix the code |
 
 **Never skip the read step because a change "looks small."** The 2026-08 Control Tower dashboard,
@@ -114,7 +114,7 @@ that contradict the spec. If the spec doesn't cover something you need, stop and
   `rules/epics-feature-status.md` (the source of truth) and add a one-line TODO at the
   top of `FEATURE-BUILD-LEDGER.md` flagging which rows are stale, rather than leaving it
   silently wrong.
-- **Also check `Envoy-overview.md`** whenever a change alters the architecture diagram,
+- **Also check `Fluid-overview.md`** whenever a change alters the architecture diagram,
   the tech stack, the core-capabilities list, the build-maturity snapshot counts, or the
   documentation map (a new tracked doc added/removed). It's a newcomer-facing synthesis
   of `rules/architecture.md` + `rules/epics-feature-status.md`, not a third source of

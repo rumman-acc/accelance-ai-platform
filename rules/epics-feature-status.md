@@ -343,7 +343,9 @@ workspaces and (per `09d279e`) its own independently-configured SSO via slug-bas
 (`/o/:slug/login`). What's described next — the *billing/quota* half of true multi-tenant
 SaaS — is still accurate and still open.
 
-Envoy runs today in `Platform.ENTERPRISE` mode (`packages/server/src/IdentityManager.ts`,
+**2026-08-26 — product renamed "Envoy" → "Fluid"** (user-facing name/copy across the app, docs, and emails; `ACCELANCE_PLATFORM`/`Accelance` remain the company name, unchanged). See `CLAUDE.md`'s rename-protocol row.
+
+Fluid runs today in `Platform.ENTERPRISE` mode (`packages/server/src/IdentityManager.ts`,
 forced via the `ACCELANCE_PLATFORM=enterprise` env override). Previously that mode enforced
 **exactly one organization per deployment**; as of `93bff59` it no longer does — every
 user, workspace, credential, and flow can now belong to any of several orgs on the same
@@ -451,7 +453,7 @@ is newly estimated on the same reduced basis.
 
 ### 4. Model Access & Cost Tiering
 
-**Provider-agnostic LLM access** — 30 chat-model providers already wired in, including self-hosted/local options (Ollama, LocalAI) and a LiteLLM gateway node. Added Moonshot AI (Kimi) as a standalone node/credential (`chatMoonshot`, OpenAI-compatible endpoint) on 2026-08-17; also refreshed the hand-maintained model catalogs for Groq, Mistral AI, Alibaba Tongyi, and Cerebras in `packages/components/models.json`, which had drifted stale relative to OpenAI/Anthropic/Gemini (kept current by the daily `refreshModelList` job) and Bedrock/Azure (kept current by hand). Non-refreshed catalogs (Perplexity, Cohere, Baidu Wenxin, DeepSeek) were checked and found already current. **Effort: 0 days** — see Q3 below.
+**Provider-agnostic LLM access** — 30 chat-model providers already wired in, including self-hosted/local options (Ollama, LocalAI) and a LiteLLM gateway node. Added Moonshot AI (Kimi) as a standalone node/credential (`chatMoonshot`, OpenAI-compatible endpoint) on 2026-08-17; also refreshed the hand-maintained model catalogs for Groq, Mistral AI, Alibaba Tongyi, and Cerebras in `packages/components/models.json` on that date. **Correction (2026-08-24):** the "kept current by the daily `refreshModelList` job" claim above was wrong — that job (`packages/server/src/jobs/refreshModelList.ts`) only covers OpenAI/Anthropic/Gemini even when fully configured, and until today none of the three `MODEL_REFRESH_{OPENAI,ANTHROPIC,GOOGLE}_API_KEY` values were set, so it ran on schedule but refreshed nothing (see known-issues #020 for the exact gating logic). Every other provider (Bedrock, Azure, Groq, Cohere, Cerebras, DeepSeek, Perplexity, Mistral, Moonshot, Baidu, Alibaba, Voyage) has no auto-refresh mechanism at all. All 19 chat/llm/embedding provider lists (604 entries) are effectively hand-maintained. A full catalog sweep on 2026-08-24 (known-issues #020) removed ~120 confirmed-retired IDs across every provider, including two legacy families with zero live models left (`llm/awsBedrock`, `llm/googlevertexai`). Same day: `MODEL_REFRESH_ENABLED=true` plus all three `MODEL_REFRESH_{OPENAI,ANTHROPIC,GOOGLE}_API_KEY` values were set and verified live — OpenAI/Anthropic/Gemini now genuinely auto-refresh nightly. **Effort: 0 days** — done for those three providers; every other provider (Bedrock, Azure, Groq, Cohere, Cerebras, DeepSeek, Perplexity, Mistral, Moonshot, Baidu, Alibaba, Voyage) still has no auto-refresh mechanism in `refreshModelList.ts` and needs a manual sweep like this one — see Q3 below.
 
 **Embedding providers** — 16 providers, same story. **Effort: 0 days.**
 

@@ -1,4 +1,4 @@
-# Envoy — Architecture
+# Fluid — Architecture
 
 **Current state (as of 2026-07-22):** a single-service application — a Flowise 3.1.2 fork,
 running in enterprise mode, on PostgreSQL (Neon). This document describes what actually
@@ -119,7 +119,7 @@ them — Qdrant or Neo4j.
 - Multi-tenant org → workspace hierarchy with RBAC and custom roles
 - Enterprise auth: registration, login, invites, password reset (JWT + session)
 - Encryption-key persistence and credential-loss prevention (self-healing key storage)
-- Brand theme (colors, email templates) and rebrand of internal error/metric identifiers — now on the Envoy brand (Azure Blue `#0F74BD` / DeepBlue `#062667` / Vivid Green `#13BA2F`, `packages/ui/src/assets/scss/_themes-vars.module.scss`), superseding the earlier Accelance blue
+- Brand theme (colors, email templates) and rebrand of internal error/metric identifiers — now on the Fluid brand (Azure Blue `#0F74BD` / DeepBlue `#062667` / Vivid Green `#13BA2F`, `packages/ui/src/assets/scss/_themes-vars.module.scss`), superseding the earlier Accelance blue, then the Envoy brand
 - Pluggable storage provider (local / S3 / GCS / Azure / ImageKit)
 - Control Tower: agent-health/execution overview dashboard, now the default landing page (`packages/ui/src/views/controltower/`, `packages/server/src/{controllers,routes,services}/control-tower/`), gated behind `executions:view`
 - Composio catalog importer: search Composio's action catalog and import specific actions as first-class `Tool` rows, without writing a hand-built connector per action (`packages/server/src/{controllers,routes,services}/composio-catalog/`, `packages/ui/src/views/tools/ComposioImportDialog.jsx`) — see `rules/epics-feature-status.md` § 2 for details
@@ -168,7 +168,7 @@ license check → forces `Platform.ENTERPRISE` in `IdentityManager`
 
 **Update (2026-08-10, commit `93bff59`):** the one-organization-per-deployment lock has been
 removed — `ensureOneOrganizationOnly()` no longer exists anywhere in the codebase. ENTERPRISE
-mode now permits multiple organizations on one Envoy deployment, each with its own
+mode now permits multiple organizations on one Fluid deployment, each with its own
 workspaces, and (per commit `09d279e`) its own independently-configured SSO via slug-based
 routing (`/o/:slug/login`, `organization.slug` column). What ENTERPRISE mode still lacks vs.
 `Platform.CLOUD` is self-serve signup UI, Stripe billing, and quota enforcement (Stripe
@@ -436,7 +436,7 @@ guaranteed-to-crash node is surfaced before the user hits it mid-run rather than
 
 ## Open item: no user-journey document exists yet
 
-There is currently no written user-journey flow for the Envoy platform itself anywhere
+There is currently no written user-journey flow for the Fluid platform itself anywhere
 in this repo (`rules/` was checked in full). If one is wanted for the same senior
 presentation this file is meant to support, that would be new documentation to write, not
 something to locate.

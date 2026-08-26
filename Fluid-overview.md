@@ -1,6 +1,6 @@
-# Envoy — Application Overview
+# Fluid — Application Overview
 
-A one-stop orientation doc: what Envoy is, how it's put together, what it can already do,
+A one-stop orientation doc: what Fluid is, how it's put together, what it can already do,
 and where to go for more depth. If you only read one file before touching this repo, read
 this one, then follow its links.
 
@@ -8,7 +8,7 @@ this one, then follow its links.
 
 ## 1. What it is
 
-Envoy (formerly "Accelance AI Platform") is a **multi-tenant AI agent platform** — a
+Fluid (formerly "Accelance AI Platform", then "Envoy") is a **multi-tenant AI agent platform** — a
 low-code, drag-and-drop canvas for building, running, and governing AI agents, agent
 swarms, and RAG pipelines, aimed at enterprise teams that need agents backed by real
 tenancy, RBAC, and (increasingly) governance controls rather than a single-user hobby tool.
@@ -99,7 +99,7 @@ Full breakdown, effort estimates, and a dedicated multi-tenant-SaaS deep dive li
 
 ## 5. Multi-tenancy & deployment model
 
-Envoy runs in `Platform.ENTERPRISE` mode (`ACCELANCE_PLATFORM=enterprise`). Any number of
+Fluid runs in `Platform.ENTERPRISE` mode (`ACCELANCE_PLATFORM=enterprise`). Any number of
 organizations can exist on one deployment, each with its own workspaces, users, and (as of
 `09d279e`) its own SSO configuration via slug-based routing. What enterprise mode does not
 yet provide is self-serve signup, billing, or quota enforcement — those exist in code
@@ -121,7 +121,7 @@ what you're changing (see [CLAUDE.md](CLAUDE.md) for the full rule).
 | Doc | Use it for |
 | --- | --- |
 | [README.md](README.md) | Repo front door — quick start, repo layout |
-| **Envoy-overview.md** *(this file)* | Orientation — what the app is, at a glance |
+| **Fluid-overview.md** *(this file)* | Orientation — what the app is, at a glance |
 | [NEW-DEVELOPER-SETUP.md](NEW-DEVELOPER-SETUP.md) | Local dev environment setup |
 | [rules/architecture.md](rules/architecture.md) | Full technical architecture, services, auth flow, key files |
 | [rules/architecture-reference-vs-accelance.md](rules/architecture-reference-vs-accelance.md) | Box-by-box comparison against an external reference architecture |

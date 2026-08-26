@@ -112,7 +112,7 @@
   Sidebar — doesn't exist in the source Claude Design project (checked via DesignSync 2026-08-13);
   it reuses TopNav's and Sidebar's individually-validated states/tokens rather than inventing new
   ones. See DESIGN_SPEC.md Section 9 for the full note. Colors resolve through `theme.palette.primary`
-  (the app's real Envoy brand), not the design system's literal Accelance-Blue `#0052CC`.
+  (the app's real Fluid brand, formerly Envoy), not the design system's literal Accelance-Blue `#0052CC`.
 - **Superseded visually, 2026-08-14** — see AccelanceHeader/AccelanceSidebar below. The
   logic/state this SectionNav entry documents (`useMenuSections.js`, `defaultItemId` navigation)
   is unchanged and still exactly what's running; only the rendered header/sidebar chrome changed.
@@ -126,7 +126,8 @@
   `accelance-design-system-ee18bc52-ef81-4433-9e6b-233c9f4b825e`) — **not** the "019dd881" system
   the rest of this inventory (Button/Card/Icon/Table/MetricCard above) was pulled from. This is
   the same newer system row 19's Envoy Auth rebuild used.
-- **Anatomy:** header — 3-bar mark + "envoy" wordmark, section tabs (bold + azure underline when
+- **Anatomy:** header — 3-bar mark + "fluid" wordmark (renamed 2026-08-26, was "envoy" — mark
+  geometry unchanged, see DESIGN_SPEC.md Section 9 for the flagged letterform mismatch), section tabs (bold + azure underline when
   active), org/workspace pill chips, azure-tinted settings-gear icon-circle (profile menu
   trigger). Sidebar — flat list of the active section's items, active item = rounded-12,
   azure-tinted pill (not TopNav/Sidebar's underline/left-bar — a different active-state recipe,
@@ -195,7 +196,7 @@
 - **Don't:** treat as the actual validation — it's feedback only; the zod schema is still the source of truth
 
 ### Logo — updated, not new
-- Gained a `variant` prop (`'auto' | 'light' | 'dark'`, default `'auto'`) so callers can force the white-on-gradient or navy-on-white treatment independent of the app's dark-mode setting (used by AuthSplitShell's brand panel). Mark/wordmark itself unchanged (see `design-system/tokens.json` `color.logo` for the current Envoy mark spec).
+- Gained a `variant` prop (`'auto' | 'light' | 'dark'`, default `'auto'`) so callers can force the white-on-gradient or navy-on-white treatment independent of the app's dark-mode setting (used by AuthSplitShell's brand panel). Mark itself unchanged (still the "E" mark, now labeled "Fluid" — see `design-system/tokens.json` `color.logo` for the current mark spec and DESIGN_SPEC.md Section 9 for the flagged letterform mismatch).
 
 ## Guardrails (`ui-component/extended/`) — status: draft, pending design review
 

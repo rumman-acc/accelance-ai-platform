@@ -1,4 +1,4 @@
-# New Developer Setup — Envoy
+# New Developer Setup — Fluid
 
 ## What you're running
 
@@ -138,7 +138,7 @@ The `/` route shows a login page — this is expected.
 
 1. Go to `http://localhost:3002/register`
 2. Fill in:
-    - **Organisation Name:** Envoy
+    - **Organisation Name:** Fluid
     - **Your Name:** your name
     - **Email:** your work email
     - **Password:** strong password

@@ -11,8 +11,10 @@ import { ApprovalCard } from '@/design-system/components/ui/approval-card'
 import { Field, Input } from '@/design-system/components/ui/input'
 import { cn } from '@/lib/utils'
 
-// Envoy mark "2a — Courier E", solid color (small-size treatment, not the gradient hero variant).
-const EnvoyLogo = ({ className, textClassName }) => (
+// Fluid mark "2a — Courier E" (renamed 2026-08-26, was Envoy; mark geometry unchanged — see
+// DESIGN_SPEC.md Section 9 for the flagged letterform mismatch), solid color (small-size
+// treatment, not the gradient hero variant).
+const FluidLogo = ({ className, textClassName }) => (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
         <svg width='1em' height='1em' viewBox='0 0 96 96' fill='none' aria-hidden='true' className='shrink-0'>
             <path d='M20 24 H70' stroke='#0F74BD' strokeWidth='14' strokeLinecap='round' />
@@ -21,12 +23,12 @@ const EnvoyLogo = ({ className, textClassName }) => (
             <path d='M20 72 H70' stroke='#0F74BD' strokeWidth='14' strokeLinecap='round' />
         </svg>
         <span className={cn('font-medium tracking-tight', textClassName)} style={{ color: '#062667' }}>
-            envoy
+            fluid
         </span>
     </span>
 )
 
-EnvoyLogo.propTypes = {
+FluidLogo.propTypes = {
     className: PropTypes.string,
     textClassName: PropTypes.string
 }
@@ -219,7 +221,7 @@ const SignupLandingPage = () => {
             <header className='sticky top-0 z-20 border-b border-border bg-white/95 backdrop-blur'>
                 <div className='mx-auto flex max-w-grid items-center justify-between gap-3 px-3 py-2'>
                     <Link to='/get-started'>
-                        <EnvoyLogo className='text-[20px]' textClassName='text-[20px]' />
+                        <FluidLogo className='text-[20px]' textClassName='text-[20px]' />
                     </Link>
                     <nav className='flex items-center gap-3 text-small font-bold'>
                         <a href='#platform' className='text-body no-underline hover:text-primary hover:underline'>
@@ -395,7 +397,7 @@ const SignupLandingPage = () => {
             <footer className='border-t border-border bg-white p-3'>
                 <div className='mx-auto flex max-w-grid flex-wrap items-center justify-between gap-2 text-small'>
                     <Link to='/get-started'>
-                        <EnvoyLogo className='text-[16px]' textClassName='text-[16px]' />
+                        <FluidLogo className='text-[16px]' textClassName='text-[16px]' />
                     </Link>
                     <span>
                         <a href='mailto:support@accelance.io' className='text-body no-underline hover:text-primary hover:underline'>

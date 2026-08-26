@@ -638,6 +638,14 @@ Anything the design conversation hasn't resolved yet — flagged here so Claude 
   treatment (explicit `min-width: 1320px`); the old shell's mobile hamburger/temporary-drawer
   behavior was not carried over — there is currently no mobile experience for the authenticated
   app. The old MUI Header/Sidebar files are left in place, unused, not deleted.
+- **Product renamed "Envoy" → "Fluid" (2026-08-26), wordmark/mark mismatch flagged, not
+  resolved:** all user-facing "Envoy" text (wordmark, page titles, emails, docs) has been
+  updated to "Fluid" per the user's explicit request. The logo **mark** itself
+  (`Logo.jsx`/`fluid-icon-tile.svg`) is a literal three-bar "E" shape with an arrow accent,
+  deliberately built for "Envoy" — its geometry was left unchanged since redesigning the mark
+  is a design-conversation decision, not something to resolve unilaterally here. The mark no
+  longer matches the "Fluid" wordmark's initial letter; needs a design-conversation decision
+  (new mark vs. keep as an abstract, non-initial mark) before further pages ship with it.
 
 ## 10. Changelog
 

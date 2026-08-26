@@ -1,7 +1,7 @@
 // paper & background
 $paper: #ffffff;
 
-// primary — Envoy brand (Claude Design "accelance design system" tokens/colors.css): Azure Blue ramp.
+// primary — Fluid brand, formerly Envoy (Claude Design "accelance design system" tokens/colors.css): Azure Blue ramp.
 // azure-400 (#0F74BD) is the confirmed brand primary; deepblue-600 (#062667) is the dark end used in
 // the logo gradient and hero panels. Previous values (#0052cc etc.) predate this brand handoff and
 // didn't match colors.css — that mismatch was the root cause of sidebar-hover/header-icon colors
@@ -12,7 +12,7 @@ $primaryDark: #062667; // = deepblue-600
 $primary200: #d5e4fe; // = azure-100 (reused — no intermediate ramp needed yet)
 $primary800: #062667; // = deepblue-600 (reused)
 
-// secondary — Envoy brand Vivid Green ramp, labelled "secondary / positive" in colors.css itself.
+// secondary — Fluid brand Vivid Green ramp, labelled "secondary / positive" in colors.css itself.
 // Previous teal (#0891b5) has no place in the actual brand palette (blue/deepblue/green/amber/charcoal).
 $secondaryLight: #c1ffc5; // = green-100
 $secondaryMain: #13ba2f; // = green-300

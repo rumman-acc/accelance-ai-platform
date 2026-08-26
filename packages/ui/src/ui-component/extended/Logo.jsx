@@ -2,7 +2,8 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 // ==============================|| LOGO ||============================== //
-// Envoy mark "2a — Courier E": three bars of an E, the middle bar leaves as
+// Fluid mark "2a — Courier E" (renamed 2026-08-26, was Envoy; geometry unchanged — see
+// DESIGN_SPEC.md Section 9 for the flagged letterform mismatch): three bars of an E, the middle bar leaves as
 // an arrow (the two short accent bars). Solid colors, not the gradient used
 // at hero sizes — this renders at ~24px, matching the design's own small-size
 // (32px/20px) treatment rather than the 96px hero.
@@ -36,7 +37,7 @@ const Logo = ({ variant = 'auto', size = 24 }) => {
                     color: textColor
                 }}
             >
-                envoy
+                fluid
             </span>
         </div>
     )

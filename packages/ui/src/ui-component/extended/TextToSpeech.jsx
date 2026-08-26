@@ -244,7 +244,7 @@ const TextToSpeech = ({ dialogProps }) => {
         try {
             const providerConfig = textToSpeech?.[selectedProvider] || {}
             const body = {
-                text: 'Today is a wonderful day to build something with Envoy!',
+                text: 'Today is a wonderful day to build something with Fluid!',
                 provider: selectedProvider,
                 credentialId: providerConfig.credentialId,
                 voice: providerConfig.voice,
@@ -610,7 +610,7 @@ const TextToSpeech = ({ dialogProps }) => {
                         </Typography>
 
                         <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
-                            Test text: &quot;Today is a wonderful day to build something with Envoy!&quot;
+                            Test text: &quot;Today is a wonderful day to build something with Fluid!&quot;
                         </Typography>
 
                         <AudioWaveform

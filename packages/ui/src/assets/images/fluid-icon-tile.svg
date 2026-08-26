@@ -1,11 +1,11 @@
 <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="envoyTileGrad" x1="0" y1="0" x2="96" y2="96">
+    <linearGradient id="fluidTileGrad" x1="0" y1="0" x2="96" y2="96">
       <stop offset="0" stop-color="#0F74BD"/>
       <stop offset="1" stop-color="#062667"/>
     </linearGradient>
   </defs>
-  <rect width="96" height="96" rx="24" fill="url(#envoyTileGrad)"/>
+  <rect width="96" height="96" rx="24" fill="url(#fluidTileGrad)"/>
   <svg x="22" y="22" width="52" height="52" viewBox="0 0 96 96" fill="none">
     <path d="M20 24 H70" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
     <path d="M20 48 H46" stroke="#8FBEFE" stroke-width="12" stroke-linecap="round"/>
